@@ -1,5 +1,5 @@
 //
-//  SecondViewController.swift
+//  ViewController.swift
 //  MotoIntercom
 //
 //  Created by Logan Kember on 2016-07-05.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SecondViewController: UIViewController {
+class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

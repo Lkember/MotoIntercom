@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B2515BD01D2C756800760DE0"
+               BlueprintIdentifier = "B2515C0C1D2C78C400760DE0"
                BuildableName = "MotoIntercom.app"
                BlueprintName = "MotoIntercom"
                ReferencedContainer = "container:MotoIntercom.xcodeproj">
@@ -32,7 +32,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B2515BE61D2C756800760DE0"
+               BlueprintIdentifier = "B2515C201D2C78C400760DE0"
                BuildableName = "MotoIntercomTests.xctest"
                BlueprintName = "MotoIntercomTests"
                ReferencedContainer = "container:MotoIntercom.xcodeproj">
@@ -42,7 +42,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B2515BF11D2C756800760DE0"
+               BlueprintIdentifier = "B2515C2B1D2C78C400760DE0"
                BuildableName = "MotoIntercomUITests.xctest"
                BlueprintName = "MotoIntercomUITests"
                ReferencedContainer = "container:MotoIntercom.xcodeproj">
@@ -52,7 +52,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B2515BD01D2C756800760DE0"
+            BlueprintIdentifier = "B2515C0C1D2C78C400760DE0"
             BuildableName = "MotoIntercom.app"
             BlueprintName = "MotoIntercom"
             ReferencedContainer = "container:MotoIntercom.xcodeproj">
@@ -75,7 +75,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B2515BD01D2C756800760DE0"
+            BlueprintIdentifier = "B2515C0C1D2C78C400760DE0"
             BuildableName = "MotoIntercom.app"
             BlueprintName = "MotoIntercom"
             ReferencedContainer = "container:MotoIntercom.xcodeproj">
@@ -94,7 +94,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B2515BD01D2C756800760DE0"
+            BlueprintIdentifier = "B2515C0C1D2C78C400760DE0"
             BuildableName = "MotoIntercom.app"
             BlueprintName = "MotoIntercom"
             ReferencedContainer = "container:MotoIntercom.xcodeproj">

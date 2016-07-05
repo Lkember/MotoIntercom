@@ -7,66 +7,64 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B2515BD51D2C756800760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515BD41D2C756800760DE0 /* AppDelegate.swift */; };
-		B2515BD71D2C756800760DE0 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515BD61D2C756800760DE0 /* FirstViewController.swift */; };
-		B2515BD91D2C756800760DE0 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515BD81D2C756800760DE0 /* SecondViewController.swift */; };
-		B2515BDC1D2C756800760DE0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515BDA1D2C756800760DE0 /* Main.storyboard */; };
-		B2515BDE1D2C756800760DE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2515BDD1D2C756800760DE0 /* Assets.xcassets */; };
-		B2515BE11D2C756800760DE0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515BDF1D2C756800760DE0 /* LaunchScreen.storyboard */; };
-		B2515BEC1D2C756800760DE0 /* MotoIntercomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515BEB1D2C756800760DE0 /* MotoIntercomTests.swift */; };
-		B2515BF71D2C756800760DE0 /* MotoIntercomUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515BF61D2C756800760DE0 /* MotoIntercomUITests.swift */; };
+		B2515C111D2C78C400760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C101D2C78C400760DE0 /* AppDelegate.swift */; };
+		B2515C131D2C78C400760DE0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C121D2C78C400760DE0 /* ViewController.swift */; };
+		B2515C161D2C78C400760DE0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515C141D2C78C400760DE0 /* Main.storyboard */; };
+		B2515C181D2C78C400760DE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2515C171D2C78C400760DE0 /* Assets.xcassets */; };
+		B2515C1B1D2C78C400760DE0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515C191D2C78C400760DE0 /* LaunchScreen.storyboard */; };
+		B2515C261D2C78C400760DE0 /* MotoIntercomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C251D2C78C400760DE0 /* MotoIntercomTests.swift */; };
+		B2515C311D2C78C400760DE0 /* MotoIntercomUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C301D2C78C400760DE0 /* MotoIntercomUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		B2515BE81D2C756800760DE0 /* PBXContainerItemProxy */ = {
+		B2515C221D2C78C400760DE0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = B2515BC91D2C756700760DE0 /* Project object */;
+			containerPortal = B2515C051D2C78C400760DE0 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = B2515BD01D2C756800760DE0;
+			remoteGlobalIDString = B2515C0C1D2C78C400760DE0;
 			remoteInfo = MotoIntercom;
 		};
-		B2515BF31D2C756800760DE0 /* PBXContainerItemProxy */ = {
+		B2515C2D1D2C78C400760DE0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = B2515BC91D2C756700760DE0 /* Project object */;
+			containerPortal = B2515C051D2C78C400760DE0 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = B2515BD01D2C756800760DE0;
+			remoteGlobalIDString = B2515C0C1D2C78C400760DE0;
 			remoteInfo = MotoIntercom;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B2515BD11D2C756800760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2515BD41D2C756800760DE0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		B2515BD61D2C756800760DE0 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
-		B2515BD81D2C756800760DE0 /* SecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondViewController.swift; sourceTree = "<group>"; };
-		B2515BDB1D2C756800760DE0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		B2515BDD1D2C756800760DE0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		B2515BE01D2C756800760DE0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		B2515BE21D2C756800760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B2515BE71D2C756800760DE0 /* MotoIntercomTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotoIntercomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2515BEB1D2C756800760DE0 /* MotoIntercomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoIntercomTests.swift; sourceTree = "<group>"; };
-		B2515BED1D2C756800760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B2515BF21D2C756800760DE0 /* MotoIntercomUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotoIntercomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2515BF61D2C756800760DE0 /* MotoIntercomUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoIntercomUITests.swift; sourceTree = "<group>"; };
-		B2515BF81D2C756800760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2515C0D1D2C78C400760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2515C101D2C78C400760DE0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B2515C121D2C78C400760DE0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B2515C151D2C78C400760DE0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B2515C171D2C78C400760DE0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2515C1A1D2C78C400760DE0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B2515C1C1D2C78C400760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2515C211D2C78C400760DE0 /* MotoIntercomTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotoIntercomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2515C251D2C78C400760DE0 /* MotoIntercomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoIntercomTests.swift; sourceTree = "<group>"; };
+		B2515C271D2C78C400760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2515C2C1D2C78C400760DE0 /* MotoIntercomUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotoIntercomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2515C301D2C78C400760DE0 /* MotoIntercomUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoIntercomUITests.swift; sourceTree = "<group>"; };
+		B2515C321D2C78C400760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		B2515BCE1D2C756800760DE0 /* Frameworks */ = {
+		B2515C0A1D2C78C400760DE0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BE41D2C756800760DE0 /* Frameworks */ = {
+		B2515C1E1D2C78C400760DE0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BEF1D2C756800760DE0 /* Frameworks */ = {
+		B2515C291D2C78C400760DE0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -76,54 +74,53 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		B2515BC81D2C756700760DE0 = {
+		B2515C041D2C78C400760DE0 = {
 			isa = PBXGroup;
 			children = (
-				B2515BD31D2C756800760DE0 /* MotoIntercom */,
-				B2515BEA1D2C756800760DE0 /* MotoIntercomTests */,
-				B2515BF51D2C756800760DE0 /* MotoIntercomUITests */,
-				B2515BD21D2C756800760DE0 /* Products */,
+				B2515C0F1D2C78C400760DE0 /* MotoIntercom */,
+				B2515C241D2C78C400760DE0 /* MotoIntercomTests */,
+				B2515C2F1D2C78C400760DE0 /* MotoIntercomUITests */,
+				B2515C0E1D2C78C400760DE0 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		B2515BD21D2C756800760DE0 /* Products */ = {
+		B2515C0E1D2C78C400760DE0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B2515BD11D2C756800760DE0 /* MotoIntercom.app */,
-				B2515BE71D2C756800760DE0 /* MotoIntercomTests.xctest */,
-				B2515BF21D2C756800760DE0 /* MotoIntercomUITests.xctest */,
+				B2515C0D1D2C78C400760DE0 /* MotoIntercom.app */,
+				B2515C211D2C78C400760DE0 /* MotoIntercomTests.xctest */,
+				B2515C2C1D2C78C400760DE0 /* MotoIntercomUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B2515BD31D2C756800760DE0 /* MotoIntercom */ = {
+		B2515C0F1D2C78C400760DE0 /* MotoIntercom */ = {
 			isa = PBXGroup;
 			children = (
-				B2515BD41D2C756800760DE0 /* AppDelegate.swift */,
-				B2515BD61D2C756800760DE0 /* FirstViewController.swift */,
-				B2515BD81D2C756800760DE0 /* SecondViewController.swift */,
-				B2515BDA1D2C756800760DE0 /* Main.storyboard */,
-				B2515BDD1D2C756800760DE0 /* Assets.xcassets */,
-				B2515BDF1D2C756800760DE0 /* LaunchScreen.storyboard */,
-				B2515BE21D2C756800760DE0 /* Info.plist */,
+				B2515C101D2C78C400760DE0 /* AppDelegate.swift */,
+				B2515C121D2C78C400760DE0 /* ViewController.swift */,
+				B2515C141D2C78C400760DE0 /* Main.storyboard */,
+				B2515C171D2C78C400760DE0 /* Assets.xcassets */,
+				B2515C191D2C78C400760DE0 /* LaunchScreen.storyboard */,
+				B2515C1C1D2C78C400760DE0 /* Info.plist */,
 			);
 			path = MotoIntercom;
 			sourceTree = "<group>";
 		};
-		B2515BEA1D2C756800760DE0 /* MotoIntercomTests */ = {
+		B2515C241D2C78C400760DE0 /* MotoIntercomTests */ = {
 			isa = PBXGroup;
 			children = (
-				B2515BEB1D2C756800760DE0 /* MotoIntercomTests.swift */,
-				B2515BED1D2C756800760DE0 /* Info.plist */,
+				B2515C251D2C78C400760DE0 /* MotoIntercomTests.swift */,
+				B2515C271D2C78C400760DE0 /* Info.plist */,
 			);
 			path = MotoIntercomTests;
 			sourceTree = "<group>";
 		};
-		B2515BF51D2C756800760DE0 /* MotoIntercomUITests */ = {
+		B2515C2F1D2C78C400760DE0 /* MotoIntercomUITests */ = {
 			isa = PBXGroup;
 			children = (
-				B2515BF61D2C756800760DE0 /* MotoIntercomUITests.swift */,
-				B2515BF81D2C756800760DE0 /* Info.plist */,
+				B2515C301D2C78C400760DE0 /* MotoIntercomUITests.swift */,
+				B2515C321D2C78C400760DE0 /* Info.plist */,
 			);
 			path = MotoIntercomUITests;
 			sourceTree = "<group>";
@@ -131,13 +128,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B2515BD01D2C756800760DE0 /* MotoIntercom */ = {
+		B2515C0C1D2C78C400760DE0 /* MotoIntercom */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2515BFB1D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercom" */;
+			buildConfigurationList = B2515C351D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercom" */;
 			buildPhases = (
-				B2515BCD1D2C756800760DE0 /* Sources */,
-				B2515BCE1D2C756800760DE0 /* Frameworks */,
-				B2515BCF1D2C756800760DE0 /* Resources */,
+				B2515C091D2C78C400760DE0 /* Sources */,
+				B2515C0A1D2C78C400760DE0 /* Frameworks */,
+				B2515C0B1D2C78C400760DE0 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -145,69 +142,69 @@
 			);
 			name = MotoIntercom;
 			productName = MotoIntercom;
-			productReference = B2515BD11D2C756800760DE0 /* MotoIntercom.app */;
+			productReference = B2515C0D1D2C78C400760DE0 /* MotoIntercom.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B2515BE61D2C756800760DE0 /* MotoIntercomTests */ = {
+		B2515C201D2C78C400760DE0 /* MotoIntercomTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2515BFE1D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */;
+			buildConfigurationList = B2515C381D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */;
 			buildPhases = (
-				B2515BE31D2C756800760DE0 /* Sources */,
-				B2515BE41D2C756800760DE0 /* Frameworks */,
-				B2515BE51D2C756800760DE0 /* Resources */,
+				B2515C1D1D2C78C400760DE0 /* Sources */,
+				B2515C1E1D2C78C400760DE0 /* Frameworks */,
+				B2515C1F1D2C78C400760DE0 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B2515BE91D2C756800760DE0 /* PBXTargetDependency */,
+				B2515C231D2C78C400760DE0 /* PBXTargetDependency */,
 			);
 			name = MotoIntercomTests;
 			productName = MotoIntercomTests;
-			productReference = B2515BE71D2C756800760DE0 /* MotoIntercomTests.xctest */;
+			productReference = B2515C211D2C78C400760DE0 /* MotoIntercomTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		B2515BF11D2C756800760DE0 /* MotoIntercomUITests */ = {
+		B2515C2B1D2C78C400760DE0 /* MotoIntercomUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B2515C011D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */;
+			buildConfigurationList = B2515C3B1D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */;
 			buildPhases = (
-				B2515BEE1D2C756800760DE0 /* Sources */,
-				B2515BEF1D2C756800760DE0 /* Frameworks */,
-				B2515BF01D2C756800760DE0 /* Resources */,
+				B2515C281D2C78C400760DE0 /* Sources */,
+				B2515C291D2C78C400760DE0 /* Frameworks */,
+				B2515C2A1D2C78C400760DE0 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B2515BF41D2C756800760DE0 /* PBXTargetDependency */,
+				B2515C2E1D2C78C400760DE0 /* PBXTargetDependency */,
 			);
 			name = MotoIntercomUITests;
 			productName = MotoIntercomUITests;
-			productReference = B2515BF21D2C756800760DE0 /* MotoIntercomUITests.xctest */;
+			productReference = B2515C2C1D2C78C400760DE0 /* MotoIntercomUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		B2515BC91D2C756700760DE0 /* Project object */ = {
+		B2515C051D2C78C400760DE0 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "Logan Kember";
 				TargetAttributes = {
-					B2515BD01D2C756800760DE0 = {
+					B2515C0C1D2C78C400760DE0 = {
 						CreatedOnToolsVersion = 7.3;
 					};
-					B2515BE61D2C756800760DE0 = {
+					B2515C201D2C78C400760DE0 = {
 						CreatedOnToolsVersion = 7.3;
-						TestTargetID = B2515BD01D2C756800760DE0;
+						TestTargetID = B2515C0C1D2C78C400760DE0;
 					};
-					B2515BF11D2C756800760DE0 = {
+					B2515C2B1D2C78C400760DE0 = {
 						CreatedOnToolsVersion = 7.3;
-						TestTargetID = B2515BD01D2C756800760DE0;
+						TestTargetID = B2515C0C1D2C78C400760DE0;
 					};
 				};
 			};
-			buildConfigurationList = B2515BCC1D2C756700760DE0 /* Build configuration list for PBXProject "MotoIntercom" */;
+			buildConfigurationList = B2515C081D2C78C400760DE0 /* Build configuration list for PBXProject "MotoIntercom" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -215,37 +212,37 @@
 				en,
 				Base,
 			);
-			mainGroup = B2515BC81D2C756700760DE0;
-			productRefGroup = B2515BD21D2C756800760DE0 /* Products */;
+			mainGroup = B2515C041D2C78C400760DE0;
+			productRefGroup = B2515C0E1D2C78C400760DE0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B2515BD01D2C756800760DE0 /* MotoIntercom */,
-				B2515BE61D2C756800760DE0 /* MotoIntercomTests */,
-				B2515BF11D2C756800760DE0 /* MotoIntercomUITests */,
+				B2515C0C1D2C78C400760DE0 /* MotoIntercom */,
+				B2515C201D2C78C400760DE0 /* MotoIntercomTests */,
+				B2515C2B1D2C78C400760DE0 /* MotoIntercomUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		B2515BCF1D2C756800760DE0 /* Resources */ = {
+		B2515C0B1D2C78C400760DE0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2515BE11D2C756800760DE0 /* LaunchScreen.storyboard in Resources */,
-				B2515BDE1D2C756800760DE0 /* Assets.xcassets in Resources */,
-				B2515BDC1D2C756800760DE0 /* Main.storyboard in Resources */,
+				B2515C1B1D2C78C400760DE0 /* LaunchScreen.storyboard in Resources */,
+				B2515C181D2C78C400760DE0 /* Assets.xcassets in Resources */,
+				B2515C161D2C78C400760DE0 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BE51D2C756800760DE0 /* Resources */ = {
+		B2515C1F1D2C78C400760DE0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BF01D2C756800760DE0 /* Resources */ = {
+		B2515C2A1D2C78C400760DE0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -255,60 +252,59 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		B2515BCD1D2C756800760DE0 /* Sources */ = {
+		B2515C091D2C78C400760DE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2515BD91D2C756800760DE0 /* SecondViewController.swift in Sources */,
-				B2515BD51D2C756800760DE0 /* AppDelegate.swift in Sources */,
-				B2515BD71D2C756800760DE0 /* FirstViewController.swift in Sources */,
+				B2515C131D2C78C400760DE0 /* ViewController.swift in Sources */,
+				B2515C111D2C78C400760DE0 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BE31D2C756800760DE0 /* Sources */ = {
+		B2515C1D1D2C78C400760DE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2515BEC1D2C756800760DE0 /* MotoIntercomTests.swift in Sources */,
+				B2515C261D2C78C400760DE0 /* MotoIntercomTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B2515BEE1D2C756800760DE0 /* Sources */ = {
+		B2515C281D2C78C400760DE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2515BF71D2C756800760DE0 /* MotoIntercomUITests.swift in Sources */,
+				B2515C311D2C78C400760DE0 /* MotoIntercomUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B2515BE91D2C756800760DE0 /* PBXTargetDependency */ = {
+		B2515C231D2C78C400760DE0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B2515BD01D2C756800760DE0 /* MotoIntercom */;
-			targetProxy = B2515BE81D2C756800760DE0 /* PBXContainerItemProxy */;
+			target = B2515C0C1D2C78C400760DE0 /* MotoIntercom */;
+			targetProxy = B2515C221D2C78C400760DE0 /* PBXContainerItemProxy */;
 		};
-		B2515BF41D2C756800760DE0 /* PBXTargetDependency */ = {
+		B2515C2E1D2C78C400760DE0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B2515BD01D2C756800760DE0 /* MotoIntercom */;
-			targetProxy = B2515BF31D2C756800760DE0 /* PBXContainerItemProxy */;
+			target = B2515C0C1D2C78C400760DE0 /* MotoIntercom */;
+			targetProxy = B2515C2D1D2C78C400760DE0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		B2515BDA1D2C756800760DE0 /* Main.storyboard */ = {
+		B2515C141D2C78C400760DE0 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				B2515BDB1D2C756800760DE0 /* Base */,
+				B2515C151D2C78C400760DE0 /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
-		B2515BDF1D2C756800760DE0 /* LaunchScreen.storyboard */ = {
+		B2515C191D2C78C400760DE0 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				B2515BE01D2C756800760DE0 /* Base */,
+				B2515C1A1D2C78C400760DE0 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -316,7 +312,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		B2515BF91D2C756800760DE0 /* Debug */ = {
+		B2515C331D2C78C400760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -362,7 +358,7 @@
 			};
 			name = Debug;
 		};
-		B2515BFA1D2C756800760DE0 /* Release */ = {
+		B2515C341D2C78C400760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -401,7 +397,7 @@
 			};
 			name = Release;
 		};
-		B2515BFC1D2C756800760DE0 /* Debug */ = {
+		B2515C361D2C78C400760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -412,7 +408,7 @@
 			};
 			name = Debug;
 		};
-		B2515BFD1D2C756800760DE0 /* Release */ = {
+		B2515C371D2C78C400760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -423,7 +419,7 @@
 			};
 			name = Release;
 		};
-		B2515BFF1D2C756800760DE0 /* Debug */ = {
+		B2515C391D2C78C400760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -435,7 +431,7 @@
 			};
 			name = Debug;
 		};
-		B2515C001D2C756800760DE0 /* Release */ = {
+		B2515C3A1D2C78C400760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -447,7 +443,7 @@
 			};
 			name = Release;
 		};
-		B2515C021D2C756800760DE0 /* Debug */ = {
+		B2515C3C1D2C78C400760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = MotoIntercomUITests/Info.plist;
@@ -458,7 +454,7 @@
 			};
 			name = Debug;
 		};
-		B2515C031D2C756800760DE0 /* Release */ = {
+		B2515C3D1D2C78C400760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = MotoIntercomUITests/Info.plist;
@@ -472,40 +468,40 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B2515BCC1D2C756700760DE0 /* Build configuration list for PBXProject "MotoIntercom" */ = {
+		B2515C081D2C78C400760DE0 /* Build configuration list for PBXProject "MotoIntercom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B2515BF91D2C756800760DE0 /* Debug */,
-				B2515BFA1D2C756800760DE0 /* Release */,
+				B2515C331D2C78C400760DE0 /* Debug */,
+				B2515C341D2C78C400760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B2515BFB1D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercom" */ = {
+		B2515C351D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B2515BFC1D2C756800760DE0 /* Debug */,
-				B2515BFD1D2C756800760DE0 /* Release */,
+				B2515C361D2C78C400760DE0 /* Debug */,
+				B2515C371D2C78C400760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
-		B2515BFE1D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */ = {
+		B2515C381D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B2515BFF1D2C756800760DE0 /* Debug */,
-				B2515C001D2C756800760DE0 /* Release */,
+				B2515C391D2C78C400760DE0 /* Debug */,
+				B2515C3A1D2C78C400760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
-		B2515C011D2C756800760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */ = {
+		B2515C3B1D2C78C400760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B2515C021D2C756800760DE0 /* Debug */,
-				B2515C031D2C756800760DE0 /* Release */,
+				B2515C3C1D2C78C400760DE0 /* Debug */,
+				B2515C3D1D2C78C400760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = B2515BC91D2C756700760DE0 /* Project object */;
+	rootObject = B2515C051D2C78C400760DE0 /* Project object */;
 }
