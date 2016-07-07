@@ -17,18 +17,18 @@ class FirstViewController: UIViewController {
     
     // MARK: Actions
     @IBAction func setRandomLabel(sender: UIButton) {
-        randLabel.text = textField.text;
+        if (textField.text != "") {
+            randLabel.text = textField.text;
+        }
+        else {
+            randLabel.text = "Nice try"
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
     }
-
-//    override func didReceiveMemoryWarning() {
-//        super.didReceiveMemoryWarning()
-//        // Dispose of any resources that can be recreated.
-//    }
 
 }
 
