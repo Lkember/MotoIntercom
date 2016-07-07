@@ -10,6 +10,8 @@ import UIKit
 
 class FirstViewController: UIViewController {
     
+    let connectionManager = ConnectionManager()
+    
     // MARK: Properties
     @IBOutlet weak var randLabel: UILabel!
     @IBOutlet weak var textField: UITextField!

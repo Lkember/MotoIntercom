@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
 		B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */; };
 		B2515C4D1D2C7CCB00760DE0 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4C1D2C7CCB00760DE0 /* FirstViewController.swift */; };
 		B2515C4F1D2C7CCB00760DE0 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4E1D2C7CCB00760DE0 /* SecondViewController.swift */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		B2515C471D2C7CCB00760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B2515C4C1D2C7CCB00760DE0 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				B2515C531D2C7CCB00760DE0 /* Assets.xcassets */,
 				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
+				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 			);
 			path = MotoIntercom;
 			sourceTree = "<group>";
@@ -260,6 +263,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2515C4F1D2C7CCB00760DE0 /* SecondViewController.swift in Sources */,
+				B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */,
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
 				B2515C4D1D2C7CCB00760DE0 /* FirstViewController.swift in Sources */,
 			);
@@ -488,6 +492,7 @@
 				B2515C731D2C7CCB00760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B2515C741D2C7CCB00760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */ = {
 			isa = XCConfigurationList;
@@ -496,6 +501,7 @@
 				B2515C761D2C7CCB00760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B2515C771D2C7CCB00760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */ = {
 			isa = XCConfigurationList;
@@ -504,6 +510,7 @@
 				B2515C791D2C7CCB00760DE0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
