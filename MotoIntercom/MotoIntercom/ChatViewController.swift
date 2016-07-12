@@ -7,12 +7,92 @@
 //
 
 import UIKit
+import MultipeerConnectivity
 
-class ChatViewController : UIViewController {
+class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+    
+    var messagesArray : [Dictionary<String, String>] = []
+    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    
+    // MARK: Properties
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var messageField: UITextField!
+    @IBOutlet weak var sendButton: UIButton!
+    @IBOutlet weak var messageValue: UILabel!
+    @IBOutlet weak var senderInfo: UILabel!
+    
+    // MARK: Actions
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        tableView.estimatedRowHeight = 60.0
+        tableView.rowHeight = UITableViewAutomaticDimension
+        
+        messageField.delegate = self
     }
     
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        
+        let messageDictionary: [String: String] = ["message": textField.text!]
+        
+        if appDelegate.connectionManager.sendData(dictionaryWithData: messageDictionary, toPeer: appDelegate.connectionManager.session.connectedPeers[0] as MCPeerID) {
+            let dictionary: [String: String] = ["sender": "self", "message": textField.text!]
+            messagesArray.append(dictionary)
+            
+            self.updateTableView()
+        }
+        else {
+            NSLog("&@", "Could not send data.")
+        }
+        
+        textField.text = ""
+        return true
+    }
+    
+    //Displaying messages
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("idCell")! as UITableViewCell
+        
+        let currentMessage = messagesArray[indexPath.row] as Dictionary<String, String>
+        if let sender = currentMessage["Sender"] {
+            var senderLabelText: String
+            var senderColor : UIColor
+            
+            if sender == "self" {
+                senderLabelText = "I said:"
+                senderColor = UIColor.purpleColor()
+            }
+            else {
+                senderLabelText = sender + " said:"
+                senderColor = UIColor.orangeColor()
+            }
+            cell.detailTextLabel?.text = senderLabelText
+            cell.detailTextLabel?.textColor = senderColor
+        }
+        
+        if let message = currentMessage["message"] {
+            cell.textLabel?.text = message
+        }
+        
+        return cell
+    }
+    
+    //Getting the number of rows in the table there should be
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return messagesArray.count
+    }
+    
+    func updateTableView() {
+        self.tableView.reloadData()
+        
+        if self.tableView.contentSize.height > self.tableView.frame.size.height {
+            tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: messagesArray.count - 1, inSection: 0), atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+        }
+    }
 }
