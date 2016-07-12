@@ -34,6 +34,8 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         tableView.rowHeight = UITableViewAutomaticDimension
         
         messageField.delegate = self
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("handleMPCReceiveDataWithNotification:"), name: "receivedMPCDataNotification", object: nil)
     }
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
