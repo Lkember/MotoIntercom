@@ -97,4 +97,39 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
             tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: messagesArray.count - 1, inSection: 0), atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
         }
     }
+    
+    func handleMPCReceivedDataWithNotification(notification: NSNotification) {
+        let receivedDataDictionary = notification.object as! Dictionary<String, AnyObject>
+        
+        let data = receivedDataDictionary["data"] as? NSData
+        let fromPeer = receivedDataDictionary["fromPeer"] as! MCPeerID
+        
+        let dataDictionary = NSKeyedUnarchiver.unarchiveObjectWithData(data!) as! Dictionary<String, String>
+        
+        if let message = dataDictionary["message"] {
+            if message != "_end_chat_" {
+                let messageDictionary: [String: String] = ["sender": fromPeer.displayName, "message": message]
+                messagesArray.append(messageDictionary)
+                
+                NSOperationQueue.mainQueue().addOperationWithBlock({ () -> Void in
+                    self.updateTableView()
+                })
+            }
+                
+            else {
+                let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.Alert)
+                
+                let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default) { (alertAction) -> Void in
+                    self.appDelegate.connectionManager.session.disconnect()
+                    self.dismissViewControllerAnimated(true, completion: nil)
+                }
+                
+                alert.addAction(doneAction)
+                
+                NSOperationQueue.mainQueue().addOperationWithBlock({ () -> Void in
+                    self.presentViewController(alert, animated: true, completion: nil)
+                })
+            }
+        }
+    }
 }

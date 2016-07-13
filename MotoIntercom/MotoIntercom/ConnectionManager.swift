@@ -34,20 +34,19 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //Array of peers
     var foundPeers = [MCPeerID]()
     //invitation handler
-    var invitationHandler: ((Bool, MCSession!)-> Void)!
-    
+    var invitationHandler: ((Bool, MCSession) -> Void)?
     
     override init() {
-        super.init()
         
         peer = MCPeerID(displayName: UIDevice.currentDevice().name)
         session = MCSession(peer: peer)
-        session.delegate = self
-        
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
-        browser.delegate = self
-        
         advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
+
+        super.init()
+        
+        session.delegate = self
+        browser.delegate = self
         advertiser.delegate = self
         
         
@@ -76,22 +75,28 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        // changed from original code
-        for i in 0 ..< foundPeers.count {
-            if foundPeers[i] == peerID {
-                foundPeers.removeAtIndex(i)
-                break
-            }
+        if session.connectedPeers[0] == peerID {
+            session.disconnect()
         }
-        delegate?.lostPeer()
-        NSLog("%@", "lostPeer: \(peerID)")
+        else {
+            // changed from original code
+            for i in 0 ..< foundPeers.count {
+                if foundPeers[i] == peerID {
+                    foundPeers.removeAtIndex(i)
+                    break
+                }
+            }
+            delegate?.lostPeer()
+            NSLog("%@", "lostPeer: \(peerID)")
+        }
     }
     
     func browser(browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: NSError) {
         NSLog("%@", "didNotStartBrowsingForPeers: \(error)")
     }
 
-    func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: ((Bool, MCSession!) -> Void)!) {
+    func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
+//    func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: ((Bool, MCSession!) -> Void)!) {
         self.invitationHandler = invitationHandler
         NSLog("%@", "didReceiveInvitationFromPeer: \(peerID)")
         delegate?.inviteWasReceived(peerID.displayName)

@@ -81,11 +81,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.Alert)
         
         let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.Default) { (alertAction) -> Void in
-            self.appDelegate.connectionManager.invitationHandler(true, self.appDelegate.connectionManager.session)
+            self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.session)
         }
         
         let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.Cancel) { (alertAction) -> Void in
-            self.appDelegate.connectionManager.invitationHandler(false, nil)
+            self.appDelegate.connectionManager.invitationHandler!(false, self.appDelegate.connectionManager.session)
         }
         
         alert.addAction(acceptAction)
