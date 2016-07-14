@@ -15,8 +15,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: Properties
     @IBOutlet weak var peersTable: UITableView!
-    @IBOutlet weak var peersCell: UITableViewCell!
+//    @IBOutlet weak var peersCell: UITableViewCell!
     @IBOutlet weak var viewSwitch: UISwitch!
+    @IBOutlet weak var deviceName: UILabel!
     
     
     // MARK: Actions
@@ -39,14 +40,20 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         appDelegate.connectionManager.browser.startBrowsingForPeers()
     }
     
-    //Getting the number of peers to display
+    // returns the number of sections in the table view
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    //Getting the number of rows/peers to display
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return appDelegate.connectionManager.foundPeers.count
     }
     
     //Displaying the peers
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) ->UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("idCellPeer")! as UITableViewCell
+        let cellIdentifier = "PeerTableViewCell"
+        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as UITableViewCell
         
         cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
         
