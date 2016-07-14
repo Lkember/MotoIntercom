@@ -34,7 +34,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
+        print("Starting...")
         //set the delegate to self, and start browsing for peers
         appDelegate.connectionManager.delegate = self
         appDelegate.connectionManager.browser.startBrowsingForPeers()
@@ -47,17 +47,34 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //Getting the number of rows/peers to display
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return appDelegate.connectionManager.foundPeers.count
+        if appDelegate.connectionManager.foundPeers.count != 0 {
+            return appDelegate.connectionManager.foundPeers.count
+        }
+        else {
+            return 1
+        }
     }
     
     //Displaying the peers
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) ->UITableViewCell {
+        
+        print("Searching and displaying peers.")
+        
         let cellIdentifier = "PeerTableViewCell"
         let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as UITableViewCell
         
-        cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+        print("Found \(appDelegate.connectionManager.foundPeers.count) peer(s)")
         
-        return cell
+        if (appDelegate.connectionManager.foundPeers.count != 0) {
+            cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+            print("Set text label as: \(cell.textLabel!.text)");
+            return cell
+        }
+        else {
+            cell.textLabel?.text = "Searching for devices..."
+            print("Set text label as Searching for devices")
+            return cell
+        }
     }
     
     //Setting the height of each row
@@ -67,10 +84,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //When a cell is selected
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        // get selected peer
-        let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
-        //send an invite to peer
-        appDelegate.connectionManager.browser.invitePeer(selectedPeer, toSession: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
+        if (appDelegate.connectionManager.foundPeers.count != 0) {
+            // get selected peer
+            let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
+            //send an invite to peer
+            appDelegate.connectionManager.browser.invitePeer(selectedPeer, toSession: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
+        }
+        else {
+            // do nothing
+        }
     }
     
     // If a peer was found, then reload data
@@ -113,8 +135,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 
 extension PeerViewController : MCNearbyServiceBrowserDelegate {
     func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        NSLog("%@", "foundPeer: \(peerID)")
-        NSLog("%@", "invitePeer: \(peerID)")
+        print( "foundPeer: \(peerID)")
+        print( "invitePeer: \(peerID)")
         //This could be wrong, supposed to be self.session
         browser.invitePeer(peerID, toSession: connectionManager.session, withContext: nil, timeout: 10)
     }

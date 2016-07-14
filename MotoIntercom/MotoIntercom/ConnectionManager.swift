@@ -69,7 +69,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //MCNearbyServiceBrowserDelegate
     func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         foundPeers.append(peerID)
-        NSLog("%@", "foundPeer: \(peerID)")
+        print( "foundPeer: \(peerID)")
         
         delegate?.foundPeer()
     }
@@ -87,54 +87,54 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
                 }
             }
             delegate?.lostPeer()
-            NSLog("%@", "lostPeer: \(peerID)")
+            print( "lostPeer: \(peerID)")
         }
     }
     
     func browser(browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: NSError) {
-        NSLog("%@", "didNotStartBrowsingForPeers: \(error)")
+        print( "didNotStartBrowsingForPeers: \(error)")
     }
 
     func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
 //    func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: ((Bool, MCSession!) -> Void)!) {
         self.invitationHandler = invitationHandler
-        NSLog("%@", "didReceiveInvitationFromPeer: \(peerID)")
+        print( "didReceiveInvitationFromPeer: \(peerID)")
         delegate?.inviteWasReceived(peerID.displayName)
     }
     
     func advertiser(advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: NSError) {
-        NSLog("%@", "didNotStartAdvertisingPeer: \(error)")
+        print( "didNotStartAdvertisingPeer: \(error)")
     }
     
     func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
         switch  state {
         case MCSessionState.Connected:
-            NSLog("%@", "Connected to session: \(session)")
+            print( "Connected to session: \(session)")
             delegate?.connectedWithPeer(peerID)
         case MCSessionState.Connecting:
-            NSLog("%@", "Connecting to session: \(session)")
+            print( "Connecting to session: \(session)")
             
         default:
-            NSLog("%@", "Failed to connect to session: \(session)")
+            print( "Failed to connect to session: \(session)")
         }
     }
     
     func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
         let dictionary: [String: AnyObject] = ["data": data, "fromPeer": peerID]
         NSNotificationCenter.defaultCenter().postNotificationName("receivedMPCDataNotification", object: dictionary)
-        NSLog("%@", "didReceiveData: \(data)")
+        print( "didReceiveData: \(data)")
     }
     
     func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        NSLog("%@", "didReceiveStream")
+        print( "didReceiveStream")
     }
     
     func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {
-        NSLog("%@", "didFinishReceivingResourceWithName")
+        print( "didFinishReceivingResourceWithName")
     }
     
     func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
-        NSLog("%@", "didStartReceivingResourceWithName")
+        print( "didStartReceivingResourceWithName")
     }
     
 }
