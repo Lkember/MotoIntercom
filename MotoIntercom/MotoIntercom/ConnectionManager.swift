@@ -26,10 +26,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var peer : MCPeerID!
     var browser : MCNearbyServiceBrowser!
     var advertiser : MCNearbyServiceAdvertiser
-//    private let ServiceType = "Moto-Intercom"
-//    private let myPeerID = MCPeerID(displayName: UIDevice.currentDevice().name)
-//    private let serviceAdvertiser : MCNearbyServiceAdvertiser
-//    private var serviceBrowser : MCNearbyServiceBrowser
     
     //Array of peers
     var foundPeers = [MCPeerID]()
@@ -37,7 +33,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var invitationHandler: ((Bool, MCSession) -> Void)?
     
     override init() {
-        
         peer = MCPeerID(displayName: UIDevice.currentDevice().name)
         session = MCSession(peer: peer)
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
@@ -48,12 +43,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         session.delegate = self
         browser.delegate = self
         advertiser.delegate = self
-        
-        
     }
     
     //Send data to recipient
     func sendData(dictionaryWithData dictionary: Dictionary<String, String>, toPeer targetPeer: MCPeerID) -> Bool {
+        print("Sending data to peer.")
         let dataToSend = NSKeyedArchiver.archivedDataWithRootObject(dictionary)
         let peersArray = NSArray(object: targetPeer)
         do {
@@ -75,54 +69,54 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        if session.connectedPeers[0] == peerID {
-            session.disconnect()
-        }
-        else {
-            // changed from original code
-            for i in 0 ..< foundPeers.count {
-                if foundPeers[i] == peerID {
-                    foundPeers.removeAtIndex(i)
-                    break
-                }
+        print("Removing lost peers...")
+        for i in 0 ..< foundPeers.count {
+            print("i = \(i)")
+            print("Check: \(foundPeers[i]) == \(peerID)")
+            
+            if foundPeers[i] == peerID {
+                print("Removing peer \(foundPeers[i])")
+                foundPeers.removeAtIndex(i)
             }
+            
             delegate?.lostPeer()
             print( "lostPeer: \(peerID)")
         }
     }
     
     func browser(browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: NSError) {
-        print( "didNotStartBrowsingForPeers: \(error)")
+        print("didNotStartBrowsingForPeers: \(error)")
     }
 
     func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
-//    func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: ((Bool, MCSession!) -> Void)!) {
         self.invitationHandler = invitationHandler
-        print( "didReceiveInvitationFromPeer: \(peerID)")
+        print("didReceiveInvitationFromPeer: \(peerID)")
         delegate?.inviteWasReceived(peerID.displayName)
     }
     
     func advertiser(advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: NSError) {
-        print( "didNotStartAdvertisingPeer: \(error)")
+        print("didNotStartAdvertisingPeer: \(error.localizedDescription)")
     }
     
     func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
         switch  state {
         case MCSessionState.Connected:
-            print( "Connected to session: \(session)")
+            print( "Connected to peer: \(peerID)")
             delegate?.connectedWithPeer(peerID)
-        case MCSessionState.Connecting:
-            print( "Connecting to session: \(session)")
             
-        default:
-            print( "Failed to connect to session: \(session)")
+        case MCSessionState.Connecting:
+            print("Connecting to peer: \(peerID)")
+            
+        case MCSessionState.NotConnected:
+            print("Failed to connect to session: \(session)")
+            print("Currently connected to \(session.connectedPeers.count) sessions")
         }
     }
     
     func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
         let dictionary: [String: AnyObject] = ["data": data, "fromPeer": peerID]
         NSNotificationCenter.defaultCenter().postNotificationName("receivedMPCDataNotification", object: dictionary)
-        print( "didReceiveData: \(data)")
+        print( "Received Data: \(data)")
     }
     
     func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
