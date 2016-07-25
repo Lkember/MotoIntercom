@@ -6,7 +6,7 @@
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
-        <!--Getting Started...-->
+        <!--Getting Started-->
         <scene sceneID="cba-9i-Gne">
             <objects>
                 <viewController id="5MZ-j8-dRz" customClass="StartupViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
@@ -31,6 +31,7 @@ To enable Bluetooth you can open the control center and select the Bluetooth log
                                 <state key="normal" title="Start Searching for Peers"/>
                                 <connections>
                                     <action selector="startSearching:" destination="5MZ-j8-dRz" eventType="touchUpInside" id="sr8-cc-rUq"/>
+                                    <segue destination="9pv-A4-QxB" kind="show" id="5B4-rv-Z74"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -44,18 +45,17 @@ To enable Bluetooth you can open the control center and select the Bluetooth log
                             <constraint firstItem="DPf-ws-xVD" firstAttribute="top" secondItem="4BF-se-8Ev" secondAttribute="bottom" constant="13" id="qXj-bI-KFl"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Getting Started..." id="8I4-0G-Ugr"/>
+                    <navigationItem key="navigationItem" title="Getting Started" id="8I4-0G-Ugr">
+                        <barButtonItem key="backBarButtonItem" title="Stop Search" id="slv-MJ-UBR"/>
+                    </navigationItem>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="600" height="600"/>
-                    <connections>
-                        <segue destination="vNj-gC-FwK" kind="show" identifier="chatSegue" id="Swk-m0-qtQ"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nlL-F4-BgR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="457" y="28"/>
         </scene>
-        <!--Searching for Peers...-->
+        <!--Searching...-->
         <scene sceneID="hNz-n2-bh7">
             <objects>
                 <viewController id="9pv-A4-QxB" customClass="PeerViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
@@ -109,12 +109,8 @@ To enable Bluetooth you can open the control center and select the Bluetooth log
                             <constraint firstItem="cNb-il-2tG" firstAttribute="top" secondItem="516-5M-e0q" secondAttribute="bottom" constant="8" symbolic="YES" id="zrV-eC-1rV"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Searching for Peers..." id="osz-oF-VI8">
-                        <barButtonItem key="leftBarButtonItem" title="Stop Search" id="Pmg-Vh-gjo">
-                            <connections>
-                                <action selector="stopSearch:" destination="9pv-A4-QxB" id="eX9-Ic-Mo5"/>
-                            </connections>
-                        </barButtonItem>
+                    <navigationItem key="navigationItem" title="Searching..." id="osz-oF-VI8">
+                        <barButtonItem key="backBarButtonItem" title="Search" id="4Xc-ct-vHn"/>
                     </navigationItem>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="600" height="600"/>
@@ -122,7 +118,6 @@ To enable Bluetooth you can open the control center and select the Bluetooth log
                         <outlet property="peersTable" destination="516-5M-e0q" id="jaA-o1-PhU"/>
                         <outlet property="viewSwitch" destination="Ciz-4L-fJA" id="L6M-au-k7e"/>
                         <segue destination="qAR-hF-vh5" kind="show" identifier="idChatSegue" id="b9P-0g-Ner"/>
-                        <segue destination="5MZ-j8-dRz" kind="push" identifier="gettingStarted" id="C6C-UA-vze"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W5J-7L-Pyd" sceneMemberID="firstResponder"/>
@@ -236,6 +231,6 @@ To enable Bluetooth you can open the control center and select the Bluetooth log
         <image name="first" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="C6C-UA-vze"/>
+        <segue reference="5B4-rv-Z74"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -15,9 +15,12 @@ class StartupViewController: UIViewController {
     
     // MARK: Actions
     @IBAction func startSearching(sender: UIButton) {
-        performSegueWithIdentifier("chatSegue", sender: self)
+        print("Changing to ChatView")
     }
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        navigationItem.backBarButtonItem?.title = "Stop Search"
+    }
     
     override func viewDidLoad() {
         

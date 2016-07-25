@@ -31,22 +31,21 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    @IBAction func stopSearch(sender: UIBarButtonItem) {
-        appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-        appDelegate.connectionManager.browser.stopBrowsingForPeers()
-        print("Stopped advertising and browsing.");
+    // If the view disappears than stop advertising and browsing for peers.
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
         
-        performSegueWithIdentifier("gettingStarted", sender: self)
-    }
-    
-    
-    override func viewWillAppear(animated: Bool) {
-        navigationItem.title = "Searching for Peers..."
+        if self.isMovingFromParentViewController() {
+            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
+            appDelegate.connectionManager.browser.stopBrowsingForPeers()
+            print("Stopped advertising and browsing.")
+        }
     }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.leftBarButtonItem?.title = "Back"
         // Do any additional setup after loading the view, typically from a nib.
         print("Starting...")
         
@@ -94,7 +93,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             return cell
         }
         else {
-            cell.textLabel?.text = "Searching..."
+            cell.textLabel?.text = "Searching for peers..."
             print("Set text label as: \(cell.textLabel!.text)")
             return cell
         }
