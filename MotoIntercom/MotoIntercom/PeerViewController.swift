@@ -27,10 +27,23 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         else {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-            print("Stopped advertising to peers...")
+            print("Stopped advertising to peers.")
         }
     }
-
+    
+    @IBAction func stopSearch(sender: UIBarButtonItem) {
+        appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
+        appDelegate.connectionManager.browser.stopBrowsingForPeers()
+        print("Stopped advertising and browsing.");
+        
+        performSegueWithIdentifier("gettingStarted", sender: self)
+    }
+    
+    
+    override func viewWillAppear(animated: Bool) {
+        navigationItem.title = "Searching for Peers..."
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,7 +94,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             return cell
         }
         else {
-            cell.textLabel?.text = "Searching for devices..."
+            cell.textLabel?.text = "Searching..."
             print("Set text label as: \(cell.textLabel!.text)")
             return cell
         }
@@ -89,7 +102,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //Setting the height of each row
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        print("Setting the height of each row to 60.0")
         return 60.0;
     }
     
@@ -149,16 +161,3 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
 
 }
-
-//extension PeerViewController : MCNearbyServiceBrowserDelegate {
-//    func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-//        print( "foundPeer: \(peerID)")
-//        print( "invitePeer: \(peerID)")
-//        //This could be wrong, supposed to be self.session
-//        browser.invitePeer(peerID, toSession: connectionManager.session, withContext: nil, timeout: 10)
-//    }
-//    
-//    func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-//        
-//    }
-//}

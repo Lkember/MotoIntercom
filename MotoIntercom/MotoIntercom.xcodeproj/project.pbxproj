@@ -15,6 +15,7 @@
 		B2515C571D2C7CCB00760DE0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */; };
 		B2515C621D2C7CCB00760DE0 /* MotoIntercomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C611D2C7CCB00760DE0 /* MotoIntercomTests.swift */; };
 		B2515C6D1D2C7CCB00760DE0 /* MotoIntercomUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C6C1D2C7CCB00760DE0 /* MotoIntercomUITests.swift */; };
+		B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B274AE821D464C9200E732FD /* StartupViewController.swift */; };
 		B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28EEA501D34185300AF5E5D /* ChatViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		B2515C681D2C7CCB00760DE0 /* MotoIntercomUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MotoIntercomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2515C6C1D2C7CCB00760DE0 /* MotoIntercomUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotoIntercomUITests.swift; sourceTree = "<group>"; };
 		B2515C6E1D2C7CCB00760DE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B274AE821D464C9200E732FD /* StartupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupViewController.swift; sourceTree = "<group>"; };
 		B28EEA501D34185300AF5E5D /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -104,6 +106,7 @@
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
 				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
+				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B28EEA501D34185300AF5E5D /* ChatViewController.swift */,
 				B2515C531D2C7CCB00760DE0 /* Assets.xcassets */,
 				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
@@ -267,6 +270,7 @@
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
 				B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */,
 				B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */,
+				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

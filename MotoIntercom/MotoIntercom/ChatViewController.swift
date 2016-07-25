@@ -50,7 +50,7 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
             self.updateTableView()
         }
         else {
-            NSLog("&@", "Could not send data.")
+            print("Could not send data.")
         }
         
         textField.text = ""
