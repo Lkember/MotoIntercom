@@ -14,11 +14,11 @@ class StartupViewController: UIViewController {
     
     
     // MARK: Actions
-    @IBAction func startSearching(sender: UIButton) {
+    @IBAction func startSearching(_ sender: UIButton) {
         print("Changing to ChatView")
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         navigationItem.backBarButtonItem?.title = "Stop Search"
     }
     

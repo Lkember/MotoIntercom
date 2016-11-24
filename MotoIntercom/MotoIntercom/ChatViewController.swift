@@ -12,7 +12,7 @@ import MultipeerConnectivity
 class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     var messagesArray : [Dictionary<String, String>] = []
-    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // MARK: Properties
     @IBOutlet weak var tableView: UITableView!
@@ -34,11 +34,11 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         
 //        messageField.delegate = self
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("handleMPCReceiveDataWithNotification:"), name: "receivedMPCDataNotification", object: nil)
+        NotificationCenter.default.addObserver(self, selector: Selector("handleMPCReceiveDataWithNotification:"), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
         
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         
         let messageDictionary: [String: String] = ["message": textField.text!]
@@ -58,8 +58,8 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
     }
     
     //Displaying messages
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("idCell")! as UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "idCell")! as UITableViewCell
         
         let currentMessage = messagesArray[indexPath.row] as Dictionary<String, String>
         if let sender = currentMessage["Sender"] {
@@ -68,11 +68,11 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
             
             if sender == "self" {
                 senderLabelText = "I said:"
-                senderColor = UIColor.purpleColor()
+                senderColor = UIColor.purple
             }
             else {
                 senderLabelText = sender + " said:"
-                senderColor = UIColor.orangeColor()
+                senderColor = UIColor.orange
             }
             cell.detailTextLabel?.text = senderLabelText
             cell.detailTextLabel?.textColor = senderColor
@@ -86,7 +86,7 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
     }
     
     //Getting the number of rows in the table there should be
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messagesArray.count
     }
     
@@ -94,40 +94,40 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         self.tableView.reloadData()
         
         if self.tableView.contentSize.height > self.tableView.frame.size.height {
-            tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: messagesArray.count - 1, inSection: 0), atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+            tableView.scrollToRow(at: IndexPath(row: messagesArray.count - 1, section: 0), at: UITableViewScrollPosition.bottom, animated: true)
         }
     }
     
-    func handleMPCReceivedDataWithNotification(notification: NSNotification) {
+    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
         let receivedDataDictionary = notification.object as! Dictionary<String, AnyObject>
         
-        let data = receivedDataDictionary["data"] as? NSData
+        let data = receivedDataDictionary["data"] as? Data
         let fromPeer = receivedDataDictionary["fromPeer"] as! MCPeerID
         
-        let dataDictionary = NSKeyedUnarchiver.unarchiveObjectWithData(data!) as! Dictionary<String, String>
+        let dataDictionary = NSKeyedUnarchiver.unarchiveObject(with: data!) as! Dictionary<String, String>
         
         if let message = dataDictionary["message"] {
             if message != "_end_chat_" {
                 let messageDictionary: [String: String] = ["sender": fromPeer.displayName, "message": message]
                 messagesArray.append(messageDictionary)
                 
-                NSOperationQueue.mainQueue().addOperationWithBlock({ () -> Void in
+                OperationQueue.main.addOperation({ () -> Void in
                     self.updateTableView()
                 })
             }
                 
             else {
-                let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.Alert)
+                let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
                 
-                let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default) { (alertAction) -> Void in
+                let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.default) { (alertAction) -> Void in
                     self.appDelegate.connectionManager.session.disconnect()
-                    self.dismissViewControllerAnimated(true, completion: nil)
+                    self.dismiss(animated: true, completion: nil)
                 }
                 
                 alert.addAction(doneAction)
                 
-                NSOperationQueue.mainQueue().addOperationWithBlock({ () -> Void in
-                    self.presentViewController(alert, animated: true, completion: nil)
+                OperationQueue.main.addOperation({ () -> Void in
+                    self.present(alert, animated: true, completion: nil)
                 })
             }
         }

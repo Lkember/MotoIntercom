@@ -11,17 +11,15 @@ import MultipeerConnectivity
 
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
-    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate //    let connectionManager = ConnectionManager()
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate //    let connectionManager = ConnectionManager()
     
     // MARK: Properties
-    @IBOutlet weak var peersTable: UITableView!
     @IBOutlet weak var viewSwitch: UISwitch!
-    @IBOutlet weak var deviceName: UILabel!
-    
+    @IBOutlet weak var peersTable: UITableView!
     
     // MARK: Actions
-    @IBAction func switchView(sender: UISwitch) {
-        if viewSwitch.on {
+    @IBAction func switchView(_ sender: UISwitch) {
+        if viewSwitch.isOn {
             appDelegate.connectionManager.advertiser.startAdvertisingPeer()
             print("Advertising to peers...")
         }
@@ -32,10 +30,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // If the view disappears than stop advertising and browsing for peers.
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        if self.isMovingFromParentViewController() {
+        if self.isMovingFromParentViewController {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
             appDelegate.connectionManager.browser.stopBrowsingForPeers()
             print("Stopped advertising and browsing.")
@@ -57,17 +55,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         appDelegate.connectionManager.browser.startBrowsingForPeers()
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
-        viewSwitch.on = true
+        viewSwitch.isOn = true
         print("Now advertising and browsing for peers.")
     }
     
     // returns the number of sections in the table view
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     //Getting the number of rows/peers to display
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         print("Getting number of peers...")
         if appDelegate.connectionManager.foundPeers.count != 0 {
             return appDelegate.connectionManager.foundPeers.count
@@ -78,12 +76,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //Displaying the peers
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         print("Displaying peer(s).")
         
         let cellIdentifier = "PeerTableViewCell"
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as UITableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
         
         print("Found \(appDelegate.connectionManager.foundPeers.count) peer(s)")
         
@@ -100,18 +98,18 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //Setting the height of each row
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60.0;
     }
     
     //When a cell is selected
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("A peer has been selected")
         if (appDelegate.connectionManager.foundPeers.count != 0) {
             // get selected peer
             let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
             //send an invite to peer
-            appDelegate.connectionManager.browser.invitePeer(selectedPeer, toSession: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
+            appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
             tableView.reloadData()
         }
         else {
@@ -132,30 +130,30 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // When an invite is received
-    func inviteWasReceived(fromPeer : String) {
+    func inviteWasReceived(_ fromPeer : String) {
         print("Invite has been received. Displaying invite.")
-        let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.Alert)
+        let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
         
-        let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.Default) { (alertAction) -> Void in
+        let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
             self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.session)
         }
         
-        let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.Cancel) { (alertAction) -> Void in
+        let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
             self.appDelegate.connectionManager.invitationHandler!(false, self.appDelegate.connectionManager.session)
         }
         
         alert.addAction(acceptAction)
         alert.addAction(declineAction)
         
-        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-            self.presentViewController(alert, animated: true, completion: nil)
+        OperationQueue.main.addOperation { () -> Void in
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
-    func connectedWithPeer(peerID : MCPeerID) {
+    func connectedWithPeer(_ peerID : MCPeerID) {
         print("Connected to peer")
-        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-            self.performSegueWithIdentifier("idSegueChat", sender: self)
+        OperationQueue.main.addOperation { () -> Void in
+            self.performSegue(withIdentifier: "idSegueChat", sender: self)
         }
     }
 

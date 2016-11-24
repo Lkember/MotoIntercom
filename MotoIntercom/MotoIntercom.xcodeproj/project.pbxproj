@@ -109,9 +109,9 @@
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B28EEA501D34185300AF5E5D /* ChatViewController.swift */,
 				B2515C531D2C7CCB00760DE0 /* Assets.xcassets */,
-				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
+				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 			);
 			path = MotoIntercom;
 			sourceTree = "<group>";
@@ -203,13 +203,16 @@
 					B2515C461D2C7CCB00760DE0 = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = X2RHS589XN;
+						LastSwiftMigration = 0810;
 					};
 					B2515C5C1D2C7CCB00760DE0 = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0810;
 						TestTargetID = B2515C461D2C7CCB00760DE0;
 					};
 					B2515C671D2C7CCB00760DE0 = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0810;
 						TestTargetID = B2515C461D2C7CCB00760DE0;
 					};
 				};
@@ -422,6 +425,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -438,6 +442,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -450,6 +455,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercomTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MotoIntercom.app/MotoIntercom";
 			};
 			name = Debug;
@@ -462,6 +468,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercomTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MotoIntercom.app/MotoIntercom";
 			};
 			name = Release;
@@ -473,6 +480,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercomUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = MotoIntercom;
 			};
 			name = Debug;
@@ -484,6 +492,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kember.MotoIntercomUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = MotoIntercom;
 			};
 			name = Release;
