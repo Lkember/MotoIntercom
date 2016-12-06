@@ -19,6 +19,7 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
     @IBOutlet weak var messageField: UITextField!
     @IBOutlet weak var sendButton: UIButton!
     @IBOutlet weak var senderInfo: UILabel!
+    @IBOutlet weak var messageView: UIView!
     
     // MARK: Actions
     
@@ -34,7 +35,13 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         
         messageField.delegate = self
         
+        //Adding an observer for when data is received
         NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        
+        
+        //Adding observers for when the keyboard is toggled
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardToggle(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardToggle(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
         print("ChatView > viewDidLoad > Exit")
     }
@@ -71,7 +78,6 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         
         let currentMessage = messagesArray[indexPath.row] as Dictionary<String, String>
         if let sender = currentMessage["sender"] {
-            print("HEREHEREHEREHEREHERE")
             var senderLabelText: String
             var senderColor : UIColor
             
@@ -84,7 +90,7 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
                 senderColor = UIColor.orange
             }
             cell.textLabel?.text = senderLabelText
-//            cell.textLabel?.textColor = senderColor
+            cell.textLabel?.textColor = senderColor
             
 //            cell.detailTextLabel?.text = senderLabelText
 //            cell.detailTextLabel?.textColor = senderColor
@@ -150,4 +156,26 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
             }
         }
     }
+    
+
+    func keyboardToggle(_ notification: Notification) {
+        let userInfo = (notification as NSNotification).userInfo!
+        
+        let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: tableView)
+        let navHeight = self.navigationController!.navigationBar.frame.height
+        
+        if notification.name == NSNotification.Name.UIKeyboardWillHide {
+            tableView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: messageView.frame.height, right: 0)
+            messageView.frame.origin.y += keyboardViewEndFrame.height
+//            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: 0, right: 0)
+            print("AddProject: Keyboard is hidden.")
+        } else {
+//            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
+            tableView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height + messageView.frame.height, right: 0)
+            messageView.frame.origin.y -= keyboardViewEndFrame.height
+            print("AddProject: Keyboard is showing.")
+        }
+    }
+    
 }
