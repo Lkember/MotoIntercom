@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2657" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="agF-ob-HpW">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11761" systemVersion="16B2657" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="agF-ob-HpW">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -28,14 +28,17 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="495" id="Ins-39-oub"/>
                                 </constraints>
-                                <mutableString key="text">To use this app you must be able to view other devices. To do so please be sure that either your bluetooth is on or you and the other device are connected to the same WiFi network.
- To enable Bluetooth you can open control center and select the Bluetooth logo, or you can go into your phone's settings. </mutableString>
+                                <string key="text">To use this app you must be able to view other devices. To do so please be sure that either your bluetooth is on or you and the other device are connected to the same WiFi network.
+ To enable Bluetooth you can open control center and select the Bluetooth logo, or you can go into your phone's settings. </string>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rju-9P-hRx">
                                 <rect key="frame" x="16" y="580" width="343" height="67"/>
                                 <color key="backgroundColor" red="0.4334842230481924" green="0.83099902849740936" blue="0.48071033700332488" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="67" id="6mN-DV-gil"/>
+                                </constraints>
                                 <state key="normal" title="Start Searching for Peers"/>
                                 <connections>
                                     <action selector="startSearching:" destination="5MZ-j8-dRz" eventType="touchUpInside" id="sr8-cc-rUq"/>
@@ -101,15 +104,15 @@
                                     <constraint firstItem="wjD-Fd-7Mf" firstAttribute="top" secondItem="Ciz-4L-fJA" secondAttribute="top" id="nke-vh-EuO"/>
                                 </constraints>
                             </view>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-rq-qeY">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="70" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-rq-qeY">
                                 <rect key="frame" x="0.0" y="64" width="375" height="549"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="PeerTableViewCell" rowHeight="1" id="oN5-Bv-Xhq">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="1"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="PeerTableViewCell" rowHeight="70" id="oN5-Bv-Xhq">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="70"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="oN5-Bv-Xhq" id="TU4-tf-ROi">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.0"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="69"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -153,35 +156,67 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter a message..." textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zlR-Dn-VhC">
-                                <rect key="frame" x="134.5" y="629" width="140.5" height="30"/>
+                                <rect key="frame" x="16" y="629" width="299" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PC3-xQ-S6J">
-                                <rect key="frame" x="305" y="629" width="36" height="30"/>
+                                <rect key="frame" x="323" y="629" width="36" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="36" id="vvU-gf-Z4s"/>
+                                    <constraint firstAttribute="width" constant="36" id="aYh-V9-voO"/>
                                 </constraints>
                                 <state key="normal" title="Send"/>
                             </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="60" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="SUt-R2-Oqd">
+                                <rect key="frame" x="0.0" y="64" width="375" height="557"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="chatViewCell" textLabel="BgS-Yi-F9s" detailTextLabel="eWC-p8-NI6" rowHeight="60" style="IBUITableViewCellStyleValue1" id="Drz-XQ-mN1">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="60"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Drz-XQ-mN1" id="Epb-01-VgX">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="59"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="BgS-Yi-F9s">
+                                                    <rect key="frame" x="15" y="19" width="34" height="21"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="eWC-p8-NI6">
+                                                    <rect key="frame" x="316" y="19" width="44" height="21"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                            </tableView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstAttribute="trailingMargin" secondItem="PC3-xQ-S6J" secondAttribute="trailing" constant="18" id="AnB-KY-4vh"/>
-                            <constraint firstItem="PC3-xQ-S6J" firstAttribute="leading" secondItem="zlR-Dn-VhC" secondAttribute="trailing" constant="30" id="XnA-xR-fU7"/>
-                            <constraint firstItem="zlR-Dn-VhC" firstAttribute="top" secondItem="PC3-xQ-S6J" secondAttribute="top" id="hRq-ZT-lE6"/>
-                            <constraint firstItem="ndH-RG-ZAc" firstAttribute="top" secondItem="zlR-Dn-VhC" secondAttribute="bottom" constant="8" symbolic="YES" id="nNU-fQ-TKL"/>
+                            <constraint firstItem="ndH-RG-ZAc" firstAttribute="top" secondItem="zlR-Dn-VhC" secondAttribute="bottom" constant="8" symbolic="YES" id="9Rq-fY-qcn"/>
+                            <constraint firstItem="zlR-Dn-VhC" firstAttribute="top" secondItem="PC3-xQ-S6J" secondAttribute="top" id="S0x-cu-TWG"/>
+                            <constraint firstItem="PC3-xQ-S6J" firstAttribute="leading" secondItem="zlR-Dn-VhC" secondAttribute="trailing" constant="8" symbolic="YES" id="SOg-1L-llA"/>
+                            <constraint firstItem="zlR-Dn-VhC" firstAttribute="leading" secondItem="7Vr-tn-5Ns" secondAttribute="leadingMargin" id="fsh-Bu-2BT"/>
+                            <constraint firstItem="PC3-xQ-S6J" firstAttribute="trailing" secondItem="7Vr-tn-5Ns" secondAttribute="trailingMargin" id="tr8-pD-H5E"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="messageField" destination="zlR-Dn-VhC" id="IpG-GU-fzC"/>
                         <outlet property="sendButton" destination="PC3-xQ-S6J" id="DvP-64-xHJ"/>
-                        <outlet property="tableView" destination="Xo2-rq-qeY" id="fc5-Od-gtR"/>
+                        <outlet property="tableView" destination="SUt-R2-Oqd" id="FX8-In-dhG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="D2k-2V-1On" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2298" y="37"/>
+            <point key="canvasLocation" x="2296.8000000000002" y="36.431784107946029"/>
         </scene>
         <!--First-->
         <scene sceneID="hqQ-xL-yes">

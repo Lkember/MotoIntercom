@@ -47,7 +47,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Send data to recipient
     func sendData(dictionaryWithData dictionary: Dictionary<String, String>, toPeer targetPeer: MCPeerID) -> Bool {
-        print("Sending data to peer.")
+        print("ConnectionManager > sendData > Sending data to peer.")
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: dictionary)
         let peersArray = NSArray(object: targetPeer)
         do {
@@ -62,73 +62,79 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
+        
         foundPeers.append(peerID)
-        print( "foundPeer: \(peerID)")
+        print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID). New size of foundPeers array = \(foundPeers.count)")
         
         delegate?.foundPeer()
     }
     
+    //removes all previously seen peers
+    func resetPeerArray() {
+        foundPeers.removeAll()
+    }
+    
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        print("Removing lost peers...")
+        print("ConnectionManager > lostPeer > Entry")
         for i in 0 ..< foundPeers.count {
-            print("i = \(i)")
-            print("Check: \(foundPeers[i]) == \(peerID)")
+            print("ConnectionManager > lostPeer > Finding the lost peer... \(i)")
+            print("ConnectionManager > lostPeer > Check: \(foundPeers[i]) == \(peerID)")
             
             if foundPeers[i] == peerID {
-                print("Removing peer \(foundPeers[i])")
+                print("ConnectionManager > lostPeer > Removing peer \(foundPeers[i])")
                 foundPeers.remove(at: i)
             }
             
             delegate?.lostPeer()
-            print( "lostPeer: \(peerID)")
+            print("ConnectionManager > lostPeer > lostPeer: \(peerID)")
         }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
-        print("didNotStartBrowsingForPeers: \(error)")
+        print("ConnectionManager > didNotStartBrowsingForPeers > \(error)")
     }
 
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         self.invitationHandler = invitationHandler
-        print("didReceiveInvitationFromPeer: \(peerID)")
+        print("ConnectionManager > didReceiveInvitationFromPeer > \(peerID)")
         delegate?.inviteWasReceived(peerID.displayName)
     }
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
-        print("didNotStartAdvertisingPeer: \(error.localizedDescription)")
+        print("ConnectionManager > didNotStartAdvertisingPeer > \(error.localizedDescription)")
     }
     
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch  state {
         case MCSessionState.connected:
-            print( "Connected to peer: \(peerID)")
+            print("ConnectionManager > session didChange state > Connected to peer: \(peerID)")
             delegate?.connectedWithPeer(peerID)
             
         case MCSessionState.connecting:
-            print("Connecting to peer: \(peerID)")
+            print("ConnectionManager > session didChange state > Connecting to peer: \(peerID)")
             
         case MCSessionState.notConnected:
-            print("Failed to connect to session: \(session)")
-            print("Currently connected to \(session.connectedPeers.count) sessions")
+            print("ConnectionManager > session didChange state > Failed to connect to session: \(session)")
+            print("ConnectionManager > session didChange state > Currently connected to \(session.connectedPeers.count) sessions")
         }
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         let dictionary: [String: AnyObject] = ["data": data as AnyObject, "fromPeer": peerID]
         NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: dictionary)
-        print( "Received Data: \(data)")
+        print("ConnectionManager > session didReceive data > Received Data \(data) from peer \(peerID)")
     }
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        print( "didReceiveStream")
+        print("ConnectionManager > didReceiveStream")
     }
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        print( "didFinishReceivingResourceWithName")
+        print("ConnectionManager > didFinishReceivingResourceWithName")
     }
     
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?) {
-        print( "didStartReceivingResourceWithName")
+        print("ConnectionManager > didStartReceivingResourceWithName")
     }
     
 }

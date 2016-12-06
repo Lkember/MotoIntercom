@@ -104,13 +104,13 @@
 			isa = PBXGroup;
 			children = (
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
-				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
-				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
-				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B28EEA501D34185300AF5E5D /* ChatViewController.swift */,
+				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
+				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
+				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B2515C531D2C7CCB00760DE0 /* Assets.xcassets */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
-				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
+				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
 				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 			);
 			path = MotoIntercom;

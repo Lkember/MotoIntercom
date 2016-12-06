@@ -18,51 +18,60 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var messageField: UITextField!
     @IBOutlet weak var sendButton: UIButton!
-    @IBOutlet weak var messageValue: UILabel!
     @IBOutlet weak var senderInfo: UILabel!
     
     // MARK: Actions
     
     override func viewDidLoad() {
+        print("ChatView > viewDidLoad > Entry")
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        print("ChatView > viewDidLoad > Setting Delegates")
         tableView.delegate = self
         tableView.dataSource = self
         
-        tableView.estimatedRowHeight = 60.0
         tableView.rowHeight = UITableViewAutomaticDimension
         
-//        messageField.delegate = self
+        messageField.delegate = self
         
-        NotificationCenter.default.addObserver(self, selector: Selector("handleMPCReceiveDataWithNotification:"), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
         
+        print("ChatView > viewDidLoad > Exit")
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
+        print("ChatView > textFieldShouldReturn > Entry")
+        messageField.resignFirstResponder()
         
-        let messageDictionary: [String: String] = ["message": textField.text!]
+        let messageDictionary: [String: String] = ["message": messageField.text!]
         
         if appDelegate.connectionManager.sendData(dictionaryWithData: messageDictionary, toPeer: appDelegate.connectionManager.session.connectedPeers[0] as MCPeerID) {
-            let dictionary: [String: String] = ["sender": "self", "message": textField.text!]
+            let dictionary: [String: String] = ["sender": "self", "message": messageField.text!]
+            
             messagesArray.append(dictionary)
             
             self.updateTableView()
+            print("ChatView > textFieldShouldReturn > New messagesArray size = \(messagesArray.count)")
         }
         else {
-            print("Could not send data.")
+            print("ChatView > textFieldShouldReturn > Could not send data.")
         }
         
-        textField.text = ""
+        messageField.text = ""
+        
+        print("ChatView > textFieldShouldReturn > Exit")
+        
         return true
     }
     
     //Displaying messages
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "idCell")! as UITableViewCell
+        print("ChatView > tableView > cellForRowAt > Entry")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "chatViewCell")! as UITableViewCell
         
         let currentMessage = messagesArray[indexPath.row] as Dictionary<String, String>
-        if let sender = currentMessage["Sender"] {
+        if let sender = currentMessage["sender"] {
+            print("HEREHEREHEREHEREHERE")
             var senderLabelText: String
             var senderColor : UIColor
             
@@ -74,12 +83,19 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
                 senderLabelText = sender + " said:"
                 senderColor = UIColor.orange
             }
-            cell.detailTextLabel?.text = senderLabelText
-            cell.detailTextLabel?.textColor = senderColor
+            cell.textLabel?.text = senderLabelText
+//            cell.textLabel?.textColor = senderColor
+            
+//            cell.detailTextLabel?.text = senderLabelText
+//            cell.detailTextLabel?.textColor = senderColor
         }
         
         if let message = currentMessage["message"] {
-            cell.textLabel?.text = message
+            print("ChatView > tableView > cellForRowAt the message is: \(message)")
+            cell.detailTextLabel?.text = message
+        }
+        else {
+            print("ChatView > tableView > cellForRowAt problem getting message...")
         }
         
         return cell
@@ -87,10 +103,12 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
     
     //Getting the number of rows in the table there should be
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print("ChatView > tableView > numberOfRowsInSection > Entry")
         return messagesArray.count
     }
     
     func updateTableView() {
+        print("ChatView > updateTableView > updating table...")
         self.tableView.reloadData()
         
         if self.tableView.contentSize.height > self.tableView.frame.size.height {
