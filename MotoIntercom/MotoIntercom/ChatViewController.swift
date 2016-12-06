@@ -9,17 +9,17 @@
 import UIKit
 import MultipeerConnectivity
 
-class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDelegate, UITableViewDataSource {
     
     var messagesArray : [Dictionary<String, String>] = []
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // MARK: Properties
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var messageField: UITextField!
     @IBOutlet weak var sendButton: UIButton!
     @IBOutlet weak var senderInfo: UILabel!
     @IBOutlet weak var messageView: UIView!
+    @IBOutlet weak var messageField: UITextView!
     
     // MARK: Actions
     
@@ -30,10 +30,10 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         print("ChatView > viewDidLoad > Setting Delegates")
         tableView.delegate = self
         tableView.dataSource = self
-        
-        tableView.rowHeight = UITableViewAutomaticDimension
-        
         messageField.delegate = self
+        
+        // Setting the rowheight to be dynamic
+        tableView.rowHeight = UITableViewAutomaticDimension
         
         //Adding an observer for when data is received
         NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
@@ -46,11 +46,14 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         print("ChatView > viewDidLoad > Exit")
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("ChatView > textFieldShouldReturn > Entry")
-        messageField.resignFirstResponder()
+    
+    // When the send button is clicked send the message
+    // TODO: When a message fails to send, we should notify the user somehow.
+    @IBAction func sendButtonIsClicked(_ sender: UIButton) {
+        print("ChatView > sendButtonIsClicked > Entry")
         
-        let messageDictionary: [String: String] = ["message": messageField.text!]
+        let messageDictionary: [String: String] = ["sender": "self", "message": messageField.text!]
+        
         
         if appDelegate.connectionManager.sendData(dictionaryWithData: messageDictionary, toPeer: appDelegate.connectionManager.session.connectedPeers[0] as MCPeerID) {
             let dictionary: [String: String] = ["sender": "self", "message": messageField.text!]
@@ -58,17 +61,45 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
             messagesArray.append(dictionary)
             
             self.updateTableView()
-            print("ChatView > textFieldShouldReturn > New messagesArray size = \(messagesArray.count)")
+            print("ChatView > sendButtonIsClicked > New messagesArray size = \(messagesArray.count)")
+            messageField.text = ""
         }
         else {
-            print("ChatView > textFieldShouldReturn > Could not send data.")
+            print("ChatView > sendButtonIsClicked > Could not send data.")
         }
         
-        messageField.text = ""
+        print("ChatView > sendButtonIsClicked > Exit")
+    }
+    
+    
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        print("ChatView > textFieldShouldReturn > Entry")
+//        messageField.resignFirstResponder()
         
-        print("ChatView > textFieldShouldReturn > Exit")
+//        let messageDictionary: [String: String] = ["message": messageField.text!]
+//        
+//        if (textField.text != "") {
+//            if appDelegate.connectionManager.sendData(dictionaryWithData: messageDictionary, toPeer: appDelegate.connectionManager.session.connectedPeers[0] as MCPeerID) {
+//                let dictionary: [String: String] = ["sender": "self", "message": messageField.text!]
+//                
+//                messagesArray.append(dictionary)
+//                
+//                self.updateTableView()
+//                print("ChatView > textFieldShouldReturn > New messagesArray size = \(messagesArray.count)")
+//            }
+//            else {
+//                print("ChatView > textFieldShouldReturn > Could not send data.")
+//            }
+//            
+//            messageField.text = ""
+//        
+//        }
+//        
+//        print("ChatView > textFieldShouldReturn > Exit")
+        messageField.text?.append("\n")
         
-        return true
+        return false
     }
     
     //Displaying messages
@@ -163,18 +194,18 @@ class ChatViewController : UIViewController, UITextFieldDelegate, UITableViewDel
         
         let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: tableView)
-        let navHeight = self.navigationController!.navigationBar.frame.height
+//        let navHeight = self.navigationController!.navigationBar.frame.height
         
         if notification.name == NSNotification.Name.UIKeyboardWillHide {
-            tableView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: messageView.frame.height, right: 0)
+            tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             messageView.frame.origin.y += keyboardViewEndFrame.height
 //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: 0, right: 0)
-            print("AddProject: Keyboard is hidden.")
+            print("ChatView > keyboardToggle > Keyboard is hidden.")
         } else {
 //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
-            tableView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height + messageView.frame.height, right: 0)
+            tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
             messageView.frame.origin.y -= keyboardViewEndFrame.height
-            print("AddProject: Keyboard is showing.")
+            print("ChatView > keyboardToggle > Keyboard is showing.")
         }
     }
     

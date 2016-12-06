@@ -63,16 +63,31 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         
-        foundPeers.append(peerID)
-        print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID). New size of foundPeers array = \(foundPeers.count)")
-        
-        delegate?.foundPeer()
+        if (!doesPeerAlreadyExist(peerID: peerID)) {
+            foundPeers.append(peerID)
+            delegate?.foundPeer()
+            print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID)")
+        }
+        else {
+            print("ConnectionManager > foundPeer > Peer was found but already exists with ID: \(peerID)")
+        }
+    }
+    
+    // checks to see if the current peer is already in the table
+    func doesPeerAlreadyExist(peerID: MCPeerID) -> Bool {
+        for peer in foundPeers {
+            if peerID == peer {
+                return true
+            }
+        }
+        return false
     }
     
     //removes all previously seen peers
     func resetPeerArray() {
         foundPeers.removeAll()
     }
+    
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         print("ConnectionManager > lostPeer > Entry")
@@ -83,6 +98,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             if foundPeers[i] == peerID {
                 print("ConnectionManager > lostPeer > Removing peer \(foundPeers[i])")
                 foundPeers.remove(at: i)
+                break
             }
             
             delegate?.lostPeer()

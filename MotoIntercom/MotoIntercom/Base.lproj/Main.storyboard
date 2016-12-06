@@ -146,7 +146,7 @@
         <!--Chat View Controller-->
         <scene sceneID="PtU-yq-FHp">
             <objects>
-                <viewController id="qAR-hF-vh5" userLabel="Chat View Controller" customClass="ChatViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController automaticallyAdjustsScrollViewInsets="NO" id="qAR-hF-vh5" userLabel="Chat View Controller" customClass="ChatViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="Cfh-3b-QI9"/>
                         <viewControllerLayoutGuide type="bottom" id="ndH-RG-ZAc"/>
@@ -155,7 +155,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="60" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="SUt-R2-Oqd">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="60" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="SUt-R2-Oqd">
                                 <rect key="frame" x="0.0" y="64" width="375" height="557"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
@@ -188,46 +188,49 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fKQ-zA-ZIQ">
                                 <rect key="frame" x="0.0" y="621" width="375" height="46"/>
                                 <subviews>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter a message..." textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zlR-Dn-VhC">
-                                        <rect key="frame" x="8" y="8" width="315" height="30"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PC3-xQ-S6J">
                                         <rect key="frame" x="331" y="7" width="36" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="36" id="aYh-V9-voO"/>
                                         </constraints>
                                         <state key="normal" title="Send"/>
+                                        <connections>
+                                            <action selector="sendButtonIsClicked:" destination="qAR-hF-vh5" eventType="touchUpInside" id="Wwl-xU-vJu"/>
+                                        </connections>
                                     </button>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" indicatorStyle="black" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="PQJ-Qt-WHZ">
+                                        <rect key="frame" x="8" y="8" width="315" height="30"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
                                 </subviews>
                                 <color key="backgroundColor" red="0.89333711139896377" green="0.89333711139896377" blue="0.89333711139896377" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="bottom" secondItem="zlR-Dn-VhC" secondAttribute="bottom" constant="8" id="A90-aZ-ktg"/>
+                                    <constraint firstItem="PQJ-Qt-WHZ" firstAttribute="top" secondItem="fKQ-zA-ZIQ" secondAttribute="top" constant="8" id="7eo-mk-VA9"/>
                                     <constraint firstAttribute="bottom" secondItem="PC3-xQ-S6J" secondAttribute="bottom" constant="9" id="AfF-yd-nEx"/>
-                                    <constraint firstItem="PC3-xQ-S6J" firstAttribute="leading" secondItem="zlR-Dn-VhC" secondAttribute="trailing" constant="8" id="CJo-GP-1tv"/>
-                                    <constraint firstItem="zlR-Dn-VhC" firstAttribute="leading" secondItem="fKQ-zA-ZIQ" secondAttribute="leading" constant="8" id="Sqp-3E-noF"/>
+                                    <constraint firstAttribute="bottom" secondItem="PQJ-Qt-WHZ" secondAttribute="bottom" constant="8" id="Pes-dE-zGO"/>
                                     <constraint firstAttribute="trailing" secondItem="PC3-xQ-S6J" secondAttribute="trailing" constant="8" id="a5W-zW-FxW"/>
                                     <constraint firstItem="PC3-xQ-S6J" firstAttribute="trailing" secondItem="fKQ-zA-ZIQ" secondAttribute="trailingMargin" id="cd1-vw-NFf"/>
-                                    <constraint firstItem="zlR-Dn-VhC" firstAttribute="top" secondItem="fKQ-zA-ZIQ" secondAttribute="top" constant="8" id="nFa-bD-9kt"/>
+                                    <constraint firstItem="PC3-xQ-S6J" firstAttribute="leading" secondItem="PQJ-Qt-WHZ" secondAttribute="trailing" constant="8" id="dSN-hm-Z4A"/>
+                                    <constraint firstItem="PQJ-Qt-WHZ" firstAttribute="leading" secondItem="fKQ-zA-ZIQ" secondAttribute="leading" constant="8" id="eLo-Wc-CYI"/>
                                     <constraint firstItem="PC3-xQ-S6J" firstAttribute="top" secondItem="fKQ-zA-ZIQ" secondAttribute="top" constant="7" id="qkt-G0-rZT"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="SUt-R2-Oqd" firstAttribute="leading" secondItem="7Vr-tn-5Ns" secondAttribute="leading" id="Dap-T3-hkV"/>
-                            <constraint firstItem="fKQ-zA-ZIQ" firstAttribute="top" secondItem="SUt-R2-Oqd" secondAttribute="bottom" id="aNw-0C-HXY"/>
+                            <constraint firstItem="SUt-R2-Oqd" firstAttribute="top" secondItem="Cfh-3b-QI9" secondAttribute="bottom" id="M2s-Mc-1dd"/>
+                            <constraint firstItem="SUt-R2-Oqd" firstAttribute="trailing" secondItem="fKQ-zA-ZIQ" secondAttribute="trailing" id="TIT-f3-lW2"/>
                             <constraint firstItem="fKQ-zA-ZIQ" firstAttribute="leading" secondItem="7Vr-tn-5Ns" secondAttribute="leading" id="bXu-Sv-Jqw"/>
+                            <constraint firstItem="SUt-R2-Oqd" firstAttribute="leading" secondItem="fKQ-zA-ZIQ" secondAttribute="leading" id="dD6-Pe-XvS"/>
                             <constraint firstItem="ndH-RG-ZAc" firstAttribute="top" secondItem="fKQ-zA-ZIQ" secondAttribute="bottom" id="dGG-Pm-7XM"/>
-                            <constraint firstItem="fKQ-zA-ZIQ" firstAttribute="top" secondItem="SUt-R2-Oqd" secondAttribute="bottom" id="doa-4p-6Ya"/>
-                            <constraint firstAttribute="trailing" secondItem="SUt-R2-Oqd" secondAttribute="trailing" id="jJo-3T-zcN"/>
-                            <constraint firstItem="SUt-R2-Oqd" firstAttribute="top" secondItem="Cfh-3b-QI9" secondAttribute="bottom" id="wl2-cz-NQb"/>
+                            <constraint firstItem="fKQ-zA-ZIQ" firstAttribute="top" secondItem="SUt-R2-Oqd" secondAttribute="bottom" id="vBj-mP-zLR"/>
                             <constraint firstAttribute="trailing" secondItem="fKQ-zA-ZIQ" secondAttribute="trailing" id="yqK-5i-AUC"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="messageField" destination="zlR-Dn-VhC" id="IpG-GU-fzC"/>
+                        <outlet property="messageField" destination="PQJ-Qt-WHZ" id="LfF-sC-ubh"/>
                         <outlet property="messageView" destination="fKQ-zA-ZIQ" id="ETm-h1-GOg"/>
                         <outlet property="sendButton" destination="PC3-xQ-S6J" id="DvP-64-xHJ"/>
                         <outlet property="tableView" destination="SUt-R2-Oqd" id="FX8-In-dhG"/>

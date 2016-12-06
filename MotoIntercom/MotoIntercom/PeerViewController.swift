@@ -63,6 +63,14 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("PeerView > viewDidLoad > Advertising and browsing for peers.")
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
+        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
+        
+        viewSwitch.isOn = true
+        print("PeerView > viewDidAppear > Advertising and browsing for peers.")
+    }
+    
     // returns the number of sections in the table view
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
