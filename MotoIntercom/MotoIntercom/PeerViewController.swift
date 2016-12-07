@@ -36,11 +36,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if self.isMovingFromParentViewController {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
             appDelegate.connectionManager.browser.stopBrowsingForPeers()
-            print("Stopped advertising and browsing.")
+            print("peerView > viewWillDisappear > Stopped advertising and browsing.")
         }
         
-        appDelegate.connectionManager.resetPeerArray()
-        print("PeerView > viewWillDisappear > Resetting table")
+//        appDelegate.connectionManager.resetPeerArray()
+//        print("PeerView > viewWillDisappear > Resetting table")
     }
     
     
@@ -64,28 +64,56 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        appDelegate.connectionManager.resetPeerArray()
+        
         appDelegate.connectionManager.browser.startBrowsingForPeers()
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
         viewSwitch.isOn = true
+        
+        peersTable.reloadData()
+        
         print("PeerView > viewDidAppear > Advertising and browsing for peers.")
     }
     
     // returns the number of sections in the table view
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
     
     //Getting the number of rows/peers to display
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if appDelegate.connectionManager.foundPeers.count != 0 {
-            let numPeers = appDelegate.connectionManager.foundPeers.count
-            print("PeerView > numberOfRowsInSection > Currently there are \(numPeers) peers")
-            return numPeers
+        if (section == 0) {
+            return appDelegate.connectionManager.session.connectedPeers.count
         }
         else {
-            print("PeerView > numberOfRowsInSection > No peers found.")
-            return 1
+            if appDelegate.connectionManager.foundPeers.count != 0 {
+                let numPeers = appDelegate.connectionManager.foundPeers.count
+                print("PeerView > numberOfRowsInSection > Currently there are \(numPeers) peers")
+                return numPeers
+            }
+            else {
+                print("PeerView > numberOfRowsInSection > No peers found.")
+                return 1
+            }
+        }
+    }
+    
+    //Getting the title for the current section
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if (section == 0) {
+            if (appDelegate.connectionManager.session.connectedPeers.count != 0) {
+                return "Connected Peers"
+            }
+            else {
+                return nil
+            }
+        }
+        else if (section == 1) {
+            return "Visible Peers"
+        }
+        else {
+            return "Past Conversations"
         }
     }
     
@@ -97,17 +125,26 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         let cellIdentifier = "PeerTableViewCell"
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
         
-        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s)")
+        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.session.connectedPeers.count) peer(s)")
         
-        if (appDelegate.connectionManager.foundPeers.count != 0) {
-            cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
-            print("Set text label as: \(cell.textLabel!.text)");
-            cell.selectionStyle = UITableViewCellSelectionStyle.blue
-            return cell
+        if (indexPath.section == 1) {
+        
+            if (appDelegate.connectionManager.foundPeers.count != 0) {
+                cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+                print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)");
+                cell.selectionStyle = UITableViewCellSelectionStyle.blue
+                return cell
+            }
+            else {
+                cell.textLabel?.text = "Searching for peers..."
+                cell.selectionStyle = UITableViewCellSelectionStyle.none
+                return cell
+            }
         }
         else {
-            cell.textLabel?.text = "Searching for peers..."
-            cell.selectionStyle = UITableViewCellSelectionStyle.none
+            cell.textLabel?.text = appDelegate.connectionManager.session.connectedPeers[indexPath.row].displayName
+            print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)")
+            cell.selectionStyle = UITableViewCellSelectionStyle.blue
             return cell
         }
     }
@@ -118,17 +155,25 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //When a cell is selected
+    //TODO
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("PeerView > didSelectRowAt > A peer has been selected")
-        if (appDelegate.connectionManager.foundPeers.count != 0) {
-            // get selected peer
-            let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
-            //send an invite to peer
-            appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
-            tableView.reloadData()
+        if (indexPath.section == 0) {
+            OperationQueue.main.addOperation { () -> Void in
+                self.performSegue(withIdentifier: "idChatSegue", sender: self)
+            }
         }
         else {
-            tableView.reloadData()
+            if (appDelegate.connectionManager.foundPeers.count != 0) {
+                // get selected peer
+                let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
+                //send an invite to peer
+                appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
+                tableView.reloadData()
+            }
+            else {
+                tableView.reloadData()
+            }
         }
     }
     
@@ -146,7 +191,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // When an invite is received
     func inviteWasReceived(_ fromPeer : String) {
-        print("Invite has been received. Displaying invite.")
+        print("PeerView > inviteWasReceived > Invite has been received. Displaying invite.")
         let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
         
         let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
@@ -167,6 +212,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func connectedWithPeer(_ peerID : MCPeerID) {
         print("PeerView > connectedWithPeer > Connected to peer")
+//        appDelegate.connectionManager.session.connectedPeers.append(peerID)
+        appDelegate.connectionManager.removeFoundPeer(peerID: peerID)
         OperationQueue.main.addOperation { () -> Void in
             self.performSegue(withIdentifier: "idChatSegue", sender: self)
         }

@@ -21,6 +21,8 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     @IBOutlet weak var messageView: UIView!
     @IBOutlet weak var messageField: UITextView!
     
+    let endChat = "_end_chat_"
+    
     // MARK: Actions
     
     override func viewDidLoad() {
@@ -107,6 +109,8 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         print("ChatView > tableView > cellForRowAt > Entry")
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatViewCell")! as UITableViewCell
         
+        cell.selectionStyle = UITableViewCellSelectionStyle.none
+        
         let currentMessage = messagesArray[indexPath.row] as Dictionary<String, String>
         if let sender = currentMessage["sender"] {
             var senderLabelText: String
@@ -162,7 +166,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         let dataDictionary = NSKeyedUnarchiver.unarchiveObject(with: data!) as! Dictionary<String, String>
         
         if let message = dataDictionary["message"] {
-            if message != "_end_chat_" {
+            if message != endChat {
                 let messageDictionary: [String: String] = ["sender": fromPeer.displayName, "message": message]
                 messagesArray.append(messageDictionary)
                 
