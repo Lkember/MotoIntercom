@@ -15,7 +15,7 @@ class StartupViewController: UIViewController {
     
     // MARK: Actions
     @IBAction func startSearching(_ sender: UIButton) {
-        print("Changing to ChatView")
+//        print("Changing to ChatView")
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

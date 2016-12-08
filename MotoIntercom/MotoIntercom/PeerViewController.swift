@@ -11,12 +11,16 @@ import MultipeerConnectivity
 
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate     //    let connectionManager = ConnectionManager()
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    let endChat = "_end_chat_"
     
     // MARK: Properties
     @IBOutlet weak var viewSwitch: UISwitch!
     @IBOutlet weak var peersTable: UITableView!
     var refreshControl: UIRefreshControl!
+    var messages = [MessageObject]()
+    var destinationPeerID: MCPeerID?
+    var isDestPeerIDSet = false
     
     // MARK: Actions
     @IBAction func switchView(_ sender: UISwitch) {
@@ -47,10 +51,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        print("PeerView > viewDidLoad > Resetting peer array.")
         appDelegate.connectionManager.resetPeerArray()
         navigationItem.leftBarButtonItem?.title = "Back"
-        // Do any additional setup after loading the view, typically from a nib.
-        print("Starting...")
         
         peersTable.delegate = self
         peersTable.dataSource = self
@@ -66,12 +70,14 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         appDelegate.connectionManager.browser.startBrowsingForPeers()
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
+        //Adding an observer for when data is received
+        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        
         viewSwitch.isOn = true
         print("PeerView > viewDidLoad > Advertising and browsing for peers.")
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        appDelegate.connectionManager.resetPeerArray()
         
         appDelegate.connectionManager.browser.startBrowsingForPeers()
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
@@ -89,6 +95,31 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         peersTable.reloadData()
         refreshControl.endRefreshing()
     }
+    
+    
+    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+        print("PeerView > handleMPCReceivedDataWithNotification > Entry")
+        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! MessageObject
+        
+        print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(newMessage.selfID) to \(newMessage.peerID)")
+        
+        if newMessage.messages[0] != endChat {
+            for message in messages {
+                print("Current peer: \(message.peerID) is equal to \(newMessage.selfID)?")
+                if (message.peerID == newMessage.selfID) {
+                    message.messages.append(newMessage.messages[0])
+                    message.messageIsFrom.append(newMessage.messageIsFrom[0])
+                    
+                    print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript. # of messages = \(message.messages.count)")
+                }
+            }
+        }
+        print("PeerView > handleMPCReceivedDataWithNotification > Exit")
+    }
+    
+    
+    
+    // MARK: TableDelegate Methods
     
     // returns the number of sections in the table view
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -225,12 +256,46 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func connectedWithPeer(_ peerID : MCPeerID) {
-        print("PeerView > connectedWithPeer > Connected to peer")
+        print("PeerView > connectedWithPeer > Connected to peer \(peerID)")
 //        appDelegate.connectionManager.session.connectedPeers.append(peerID)
         appDelegate.connectionManager.removeFoundPeer(peerID: peerID)
-        OperationQueue.main.addOperation { () -> Void in
+        
+        destinationPeerID = peerID  // This is used so we know what peer was clicked on
+        isDestPeerIDSet = true
+        
+        OperationQueue.main.addOperation {
             self.performSegue(withIdentifier: "idChatSegue", sender: self)
         }
     }
-
+    
+    // This function is run before a segue is performed
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        print("PeerView > prepare > Entry: destinationPeerID = \(destinationPeerID)")
+        if (segue.identifier == "idChatSegue" && isDestPeerIDSet) {
+            let dest = segue.destination as? ChatViewController
+            
+            var messageIsSet = false
+            
+            for message in messages {
+                print("PeerView > prepare > Currently looking at messages from peer \(message.peerID)")
+                if (message.peerID == destinationPeerID) {
+                    dest?.messages = message
+                    messageIsSet = true
+                    
+                    print("PeerView > prepare > # of messages \(message.messages.count)")
+                    break
+                }
+            }
+            
+            if (messageIsSet == false) {
+                let newMessageObject = MessageObject.init(peerID: destinationPeerID!, messageFrom: [], messages: [])
+                messages.append(newMessageObject)
+                
+                print("PeerView > prepare > Could not find message object. Creating a new message object.")
+                
+                dest!.messages = self.messages[messages.count-1]
+            }
+        }
+        print("PeerView > prepare > Exit")
+    }
 }

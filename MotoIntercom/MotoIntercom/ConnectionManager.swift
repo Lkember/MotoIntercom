@@ -62,31 +62,52 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+    //Send MessageObject data to peer
+    func sendData(message: MessageObject, toPeer targetPeer: MCPeerID) -> Bool {
+        print("ConnectionManager > sendData > Sending message to peer.")
+        
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: message)
+        let peersArray = NSArray(object: targetPeer)
+        
+        do {
+            try session.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+        }
+        catch let error as NSError {
+            print("ConnectionManager > sendData > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            return false
+        }
+        return true
+    }
+    
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         
         if (!doesPeerAlreadyExist(peerID: peerID)) {
             foundPeers.append(peerID)
-            delegate?.foundPeer()
             print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID)")
         }
         else {
             print("ConnectionManager > foundPeer > Peer was found but already exists with ID: \(peerID)")
         }
+        
+        delegate?.foundPeer()
     }
     
     // checks to see if the current peer is already in the table
     func doesPeerAlreadyExist(peerID: MCPeerID) -> Bool {
         for peer in foundPeers {
             if peerID == peer {
+                print("ConnectionManager > doesPeerAlreadyExist > True")
                 return true
             }
         }
+        print("ConnectionManager > doesPeerAlreadyExist > False")
         return false
     }
     
     //removes all previously seen peers
     func resetPeerArray() {
+        print("ConnectionManager > resetPeerArray > The peer array is being reset!")
         foundPeers.removeAll()
     }
     
@@ -109,9 +130,10 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
 //                removeConnectedPeer(peerID: peerID)
 //            }
             
-            delegate?.lostPeer()
             print("ConnectionManager > lostPeer > lostPeer: \(peerID)")
         }
+        
+        delegate?.lostPeer()
     }
     
     
@@ -197,8 +219,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        let dictionary: [String: AnyObject] = ["data": data as AnyObject, "fromPeer": peerID]
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: dictionary)
+//        let dictionary: [String: AnyObject] = ["data": data as AnyObject, "fromPeer": peerID]
+//        let newMessage: Data = data as! MessageObject
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: data)
         print("ConnectionManager > session didReceive data > Received Data \(data) from peer \(peerID)")
     }
     
