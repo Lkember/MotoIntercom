@@ -16,6 +16,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: Properties
     @IBOutlet weak var viewSwitch: UISwitch!
     @IBOutlet weak var peersTable: UITableView!
+    var refreshControl: UIRefreshControl!
     
     // MARK: Actions
     @IBAction func switchView(_ sender: UISwitch) {
@@ -54,6 +55,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         peersTable.delegate = self
         peersTable.dataSource = self
         
+        refreshControl = UIRefreshControl()
+//        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
+        
+        peersTable.addSubview(refreshControl)
+        
         //set the delegate to self, and start browsing for peers
         appDelegate.connectionManager.delegate = self
         appDelegate.connectionManager.browser.startBrowsingForPeers()
@@ -74,6 +81,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         peersTable.reloadData()
         
         print("PeerView > viewDidAppear > Advertising and browsing for peers.")
+    }
+    
+    //Called to refresh the table
+    func refresh(sender: AnyObject) {
+        print("PeerView > refresh > Refreshing table")
+        peersTable.reloadData()
+        refreshControl.endRefreshing()
     }
     
     // returns the number of sections in the table view
