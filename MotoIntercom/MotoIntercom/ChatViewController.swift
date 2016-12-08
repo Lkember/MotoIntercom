@@ -34,6 +34,10 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         tableView.dataSource = self
         messageField.delegate = self
         
+        messageField.layer.cornerRadius = 15
+        messageField.layer.borderColor = UIColor.gray.cgColor
+        messageField.layer.borderWidth = 1
+        
         // Setting the rowheight to be dynamic
         tableView.rowHeight = UITableViewAutomaticDimension
         
