@@ -99,18 +99,29 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func handleMPCReceivedDataWithNotification(_ notification: Notification) {
         print("PeerView > handleMPCReceivedDataWithNotification > Entry")
-        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! MessageObject
         
-        print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(newMessage.selfID) to \(newMessage.peerID)")
-        
-        if newMessage.messages[0] != endChat {
-            for message in messages {
-                print("Current peer: \(message.peerID) is equal to \(newMessage.selfID)?")
-                if (message.peerID == newMessage.selfID) {
-                    message.messages.append(newMessage.messages[0])
-                    message.messageIsFrom.append(newMessage.messageIsFrom[0])
-                    
-                    print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript. # of messages = \(message.messages.count)")
+        if let _ = navigationController?.visibleViewController as? PeerViewController {
+            let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
+            
+    //        let test = NSKeyedUnarchiver.unarchiveObject(with: dictionary) as! [String: Any]
+    //        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! MessageObject
+            
+            let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
+            
+    //        let newMessage = dictionary["data"] as! MessageObject
+            let fromPeer = dictionary["peer"] as! MCPeerID
+            
+            print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(fromPeer)")
+            
+            if newMessage.messages[0] != endChat {
+                for message in messages {
+                    print("Current peer: \(message.peerID) is equal to \(fromPeer)?")
+                    if (message.peerID == fromPeer) {
+                        message.messages.append(newMessage.messages[0])
+                        message.messageIsFrom.append(newMessage.messageIsFrom[0])
+                        
+                        print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript. # of messages = \(message.messages.count)")
+                    }
                 }
             }
         }
@@ -222,6 +233,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
+    //MARK: Connection Manager
+    
     // If a peer was found, then reload data
     func foundPeer() {
         print("PeerView > foundPeer > New peer was found, updating table.")
@@ -267,6 +281,62 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.performSegue(withIdentifier: "idChatSegue", sender: self)
         }
     }
+    
+    func disconnectedFromPeer(_ peerID: MCPeerID) {
+        print("PeerView > disconnectedFromPeer > Disconnected from peer \(peerID)")
+        
+        if let currView = navigationController?.topViewController as? ChatViewController {
+            print("PeerView > disconnectedFromPeeer > topViewController is ChatView. ")
+            if (peerID == currView.messages.peerID) {
+                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+
+                let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+
+                    //Go back to PeerView
+                    _ = self.navigationController?.popViewController(animated: true)
+                }
+
+                alert.addAction(okAction)
+
+                OperationQueue.main.addOperation { () -> Void in
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
+        }
+        else {
+            print("PeerView > disconnectedFromPeer > Reloading peer table.")
+            peersTable.reloadSections(IndexSet.init(integer: 0), with: .fade)
+        }
+        
+//        if ((navigationController?.isViewLoaded)! && ((navigationController?.view.window != nil))) {
+//            print("PeerView > disconnectedFromPeer > Reloading peer table.")
+//            peersTable.reloadSections(IndexSet.init(integer: 0), with: .fade)
+//        }
+//        else {
+//            print("PeerView > disconnectedFromPeeer > topViewController is ChatView. ")
+//            
+//            if let currView = navigationController?.topViewController as? ChatViewController {
+//                if (peerID == currView.messages.peerID) {
+//                    let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+//                    
+//                    let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+//                        
+//                        //Go back to PeerView
+//                        _ = self.navigationController?.popViewController(animated: true)
+//                    }
+//                    
+//                    alert.addAction(okAction)
+//                    
+//                    OperationQueue.main.addOperation { () -> Void in
+//                        self.present(alert, animated: true, completion: nil)
+//                    }
+//                }
+//            }
+//            
+//        }
+    }
+    
+    //MARK: Segue
     
     // This function is run before a segue is performed
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

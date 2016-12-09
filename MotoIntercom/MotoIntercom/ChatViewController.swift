@@ -9,9 +9,8 @@
 import UIKit
 import MultipeerConnectivity
 
-class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDelegate, UITableViewDataSource {
+class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
-//    var messagesArray : [Dictionary<String, String>] = []
     var messages: MessageObject!
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -81,7 +80,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
                 let alert = UIAlertController(title: "Connection Lost", message: "There was an error sending your message.", preferredStyle: UIAlertControllerStyle.alert)
                 
                 let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                    self.appDelegate.connectionManager.invitationHandler!(false, self.appDelegate.connectionManager.session)
+                    // Do nothing
                 }
                 
                 alert.addAction(okAction)
@@ -183,8 +182,16 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     }
     
     func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+        print("ChatView > handleMPCReceivedDataWithNotification > Message received \(messages.messages.count).")
         
-        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! MessageObject
+//        tableView.insertRows(at: [IndexPath.init(row: messages.messages.count-1, section: 0)], with: .fade)
+//        tableView.reloadData()
+        
+        let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
+        
+//        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! MessageObject
+        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
+//        let fromPeer = dictionary["peer"] as! MCPeerID
         
         let fromPeer = newMessage.peerID
         
@@ -210,36 +217,6 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
                 self.present(alert, animated: true, completion: nil)
             }
         }
-//        let data = receivedDataDictionary["data"] as? Data
-//        let fromPeer = receivedDataDictionary["fromPeer"] as! MCPeerID
-        
-//        let dataDictionary = NSKeyedUnarchiver.unarchiveObject(with: data!) as! Dictionary<String, String>
-//        
-//        if let message = dataDictionary["message"] {
-//            if message != endChat {
-//                let messageDictionary: [String: String] = ["sender": fromPeer.displayName, "message": message]
-//                messagesArray.append(messageDictionary)
-//                
-//                OperationQueue.main.addOperation({ () -> Void in
-//                    self.updateTableView()
-//                })
-//            }
-//                
-//            else {
-//                let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
-//                
-//                let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-//                    self.appDelegate.connectionManager.session.disconnect()
-//                    self.dismiss(animated: true, completion: nil)
-//                }
-//                
-//                alert.addAction(doneAction)
-//                
-//                OperationQueue.main.addOperation({ () -> Void in
-//                    self.present(alert, animated: true, completion: nil)
-//                })
-//            }
-//        }
     }
     
 
@@ -279,4 +256,45 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
 //        }
 //        self.messageField.frame = newFrame
     }
+    
+    
+    //MARK: Connection Manager
+    func foundPeer() {
+        print("ChatView > foundPeer > Peer was found.")
+    }
+    
+    func lostPeer() {
+        print("ChatView > lostPeer > Peer was lost.")
+    }
+    
+    func connectedWithPeer(_ peerID: MCPeerID) {
+        print("ChatView > connectedWithPeer > connected to new peer \(peerID)")
+    }
+    
+    func disconnectedFromPeer(_ peerID: MCPeerID) {
+        print("ChatView > disconnectedFromPeeer > disconnected from peer \(peerID)")
+        
+        //TODO: Check if the peer that was disconnected from is this peer. If so, go back to chat view.
+        if (peerID == messages.peerID) {
+            let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+            
+            let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+                
+                //Go back to PeerView
+                _ = self.navigationController?.popViewController(animated: true)
+            }
+            
+            alert.addAction(okAction)
+            
+            OperationQueue.main.addOperation { () -> Void in
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    
+    func inviteWasReceived(_ fromPeer: String) {
+        //TODO: Need to decide what to do if invite is received.
+    }
 }
+

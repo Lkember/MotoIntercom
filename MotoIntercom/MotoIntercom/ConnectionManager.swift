@@ -15,6 +15,7 @@ protocol ConnectionManagerDelegate {
     func lostPeer()
     func inviteWasReceived(_ fromPeer : String)
     func connectedWithPeer(_ peerID : MCPeerID)
+    func disconnectedFromPeer(_ peerID: MCPeerID)
 }
 
 class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
@@ -212,6 +213,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
 //            if(checkIfAlreadyConnected(peerID: peerID)) {
 //                removeConnectedPeer(peerID: peerID)
 //            }
+            delegate?.disconnectedFromPeer(peerID)
             if (!doesPeerAlreadyExist(peerID: peerID)) {
                 foundPeers.append(peerID)
             }
@@ -221,7 +223,12 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
 //        let dictionary: [String: AnyObject] = ["data": data as AnyObject, "fromPeer": peerID]
 //        let newMessage: Data = data as! MessageObject
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: data)
+        
+        let myDict: [String: AnyObject] = ["data": data as AnyObject, "peer": peerID]
+        let archiveData = NSKeyedArchiver.archivedData(withRootObject: myDict)
+        
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: archiveData)
+        
         print("ConnectionManager > session didReceive data > Received Data \(data) from peer \(peerID)")
     }
     
