@@ -7,16 +7,27 @@
 //
 
 import UIKit
+import MultipeerConnectivity
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     var connectionManager : ConnectionManager!
+    var peer : MCPeerID!
+    var peerIDString = "selfMCPeerID"
 
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        connectionManager = ConnectionManager()
+        if (!canLoadMCPeerID()) {
+            connectionManager = ConnectionManager()
+            
+            saveMCPeerID(peer: connectionManager.peer)
+        }
+        else {
+            connectionManager = ConnectionManager(peerID: peer)
+        }
         return true
     }
 
@@ -46,6 +57,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         connectionManager.advertiser.stopAdvertisingPeer()
     }
 
-
+    
+    // MARK: Saving
+    
+    func saveMCPeerID(peer : MCPeerID) {
+        print("AppDelegate > saveMCPeerID > peerID \(peer.displayName) is being saved permanently.")
+        
+        let data = NSKeyedArchiver.archivedData(withRootObject: peer)
+        
+        let defaults = UserDefaults.standard
+        defaults.set(data, forKey: peerIDString)
+    }
+    
+    func canLoadMCPeerID() -> Bool {
+        let defaults = UserDefaults.standard
+        
+        if let data = defaults.object(forKey: peerIDString) as? Data {
+            if let peerID = NSKeyedUnarchiver.unarchiveObject(with: data) as? MCPeerID {
+                self.peer = peerID
+                print("AppDelegate > canLoadMCPeerID > true")
+                return true
+            }
+            print("AppDelegate > canLoadMCPeerID > false, could not unarchive data")
+            return false
+        }
+        print("AppDelegate > canLoadMCPeerID > false, defaults object could not be found")
+        return false
+    }
+    
 }
 

@@ -10,6 +10,7 @@
 import Foundation
 import MultipeerConnectivity
 
+
 protocol ConnectionManagerDelegate {
     func foundPeer()
     func lostPeer()
@@ -18,7 +19,10 @@ protocol ConnectionManagerDelegate {
     func disconnectedFromPeer(_ peerID: MCPeerID)
 }
 
+
 class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
+    
+    // MARK: Properties
     
     var delegate : ConnectionManagerDelegate?
     
@@ -36,11 +40,28 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var invitationHandler: ((Bool, MCSession) -> Void)?
     
     override init() {
-        peer = MCPeerID(displayName: UIDevice.current.name)
+        print("ConnectionManager > init > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
+        
+        peer = MCPeerID(displayName: UIDevice.current.name)        
         session = MCSession(peer: peer)
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
         advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
 
+        super.init()
+        
+        session.delegate = self
+        browser.delegate = self
+        advertiser.delegate = self
+    }
+    
+    init(peerID : MCPeerID) {
+        print("ConnectionManager > init:peerID > Initializing ConnectionManager with existing peerID: \(peerID.displayName)")
+        
+        peer = peerID
+        session = MCSession(peer: peer)
+        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
+        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
+        
         super.init()
         
         session.delegate = self
@@ -85,7 +106,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         if (!doesPeerAlreadyExist(peerID: peerID)) {
             foundPeers.append(peerID)
-            print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID)")
+            print("ConnectionManager > foundPeer > Peer was found with ID: \(peerID.displayName)")
         }
         else {
             print("ConnectionManager > foundPeer > Peer was found but already exists with ID: \(peerID)")
@@ -178,6 +199,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     
+    // MARK: ConnectionManager
+    
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         print("ConnectionManager > didNotStartBrowsingForPeers > \(error)")
     }
@@ -191,6 +214,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         print("ConnectionManager > didNotStartAdvertisingPeer > \(error.localizedDescription)")
     }
+    
+    //MARK: MCSession
     
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch  state {

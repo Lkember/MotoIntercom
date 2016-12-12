@@ -19,6 +19,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var peersTable: UITableView!
     var refreshControl: UIRefreshControl!
     var messages = [MessageObject]()
+    
     var destinationPeerID: MCPeerID?
     var isDestPeerIDSet = false
     
@@ -250,7 +251,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //Setting the height of each row
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60.0;
+        if (indexPath.section == 1) {
+            if (appDelegate.connectionManager.foundPeers.count != 0) {
+                return 70.0
+            }
+            else {
+                return 60.0
+            }
+        }
+        else {
+            return 70
+        }
     }
     
     //When a cell is selected

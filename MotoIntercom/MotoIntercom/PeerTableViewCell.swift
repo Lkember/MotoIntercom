@@ -23,7 +23,8 @@ class PeerTableViewCell: UITableViewCell {
         
         peerDisplayNameLabel?.text = ""
         isAvailableLabel?.text = ""
-        
+        messageButton.contentMode = .scaleAspectFit
+        phoneButton.contentMode = .scaleAspectFit
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
