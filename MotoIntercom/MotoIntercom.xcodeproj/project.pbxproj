@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */; };
 		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
 		B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */; };
 		B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */; };
@@ -38,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		B2515C471D2C7CCB00760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
+				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B28EEA501D34185300AF5E5D /* ChatViewController.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
@@ -277,6 +280,7 @@
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
 				B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */,
 				B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */,
+				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
 				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

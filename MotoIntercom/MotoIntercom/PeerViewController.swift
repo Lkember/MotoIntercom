@@ -174,32 +174,75 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //Displaying the peers
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        
+//        print("PeerView > cellForRowAt > Entry")
+//        
+//        let cellIdentifier = "PeerTableViewCell"
+//        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
+//        
+//        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.session.connectedPeers.count) peer(s)")
+//        
+//        if (indexPath.section == 1) {
+//        
+//            if (appDelegate.connectionManager.foundPeers.count != 0) {
+//                cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+//                print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)");
+//                cell.selectionStyle = UITableViewCellSelectionStyle.blue
+//                return cell
+//            }
+//            else {
+//                cell.textLabel?.text = "Searching for peers..."
+//                cell.selectionStyle = UITableViewCellSelectionStyle.none
+//                return cell
+//            }
+//        }
+//        else {
+//            cell.textLabel?.text = appDelegate.connectionManager.session.connectedPeers[indexPath.row].displayName
+//            print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)")
+//            cell.selectionStyle = UITableViewCellSelectionStyle.blue
+//            return cell
+//        }
+//    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         print("PeerView > cellForRowAt > Entry")
         
-        let cellIdentifier = "PeerTableViewCell"
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
+//        let cell = PeerTableViewCell()
+        let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
         print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.session.connectedPeers.count) peer(s)")
         
-        if (indexPath.section == 1) {
-        
+        if (indexPath.section == 1) {   // Then the peer is available but is not connected to
+            
             if (appDelegate.connectionManager.foundPeers.count != 0) {
-                cell.textLabel?.text = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
-                print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)");
+                print("PeerView > cellForRowAt > Set text label as: \(appDelegate.connectionManager.foundPeers[indexPath.row].displayName)");
+                cell.setPeerDisplayName(displayName: appDelegate.connectionManager.foundPeers[indexPath.row].displayName)
                 cell.selectionStyle = UITableViewCellSelectionStyle.blue
+                cell.peerIsAvailable()
+                
+                //TODO: Add tap gesture recognizer
+                
                 return cell
             }
             else {
-                cell.textLabel?.text = "Searching for peers..."
-                cell.selectionStyle = UITableViewCellSelectionStyle.none
-                return cell
+                let cellIdentifier = "PeerTableViewCell"
+                let tempCell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
+                
+                tempCell.textLabel?.text = "Searching for peers..."
+                tempCell.selectionStyle = UITableViewCellSelectionStyle.none
+                return tempCell
             }
         }
-        else {
-            cell.textLabel?.text = appDelegate.connectionManager.session.connectedPeers[indexPath.row].displayName
-            print("PeerView > cellForRowAt > Set text label as: \(cell.textLabel!.text)")
+        else {  // The peer is currently connected to
+            cell.setPeerDisplayName(displayName: appDelegate.connectionManager.session.connectedPeers[indexPath.row].displayName)
+            
+            print("PeerView > cellForRowAt > Set text label as: \(cell.peerDisplayNameLabel?.text)")
+            cell.peerIsAvailable()
+            
+            // TODO: Add tap gesture recognizer
+            
             cell.selectionStyle = UITableViewCellSelectionStyle.blue
             return cell
         }
