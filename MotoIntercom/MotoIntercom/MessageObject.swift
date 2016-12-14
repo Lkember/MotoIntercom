@@ -28,7 +28,7 @@ class MessageObject: NSObject, NSCoding {
     }
     
     init(peerID: MCPeerID, messageFrom: [Int], messages: [String]) {
-        print("MessageObject > init > Correctly initializing message object for peer \(peerID)")
+        print("MessageObject > init > Correctly initializing message object for peer \(peerID.displayName)")
         self.peerID = peerID
         self.selfID = MCPeerID.init(displayName: UIDevice.current.name)
         self.messageIsFrom = messageFrom

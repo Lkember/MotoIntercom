@@ -12,6 +12,7 @@ class PeerTableViewCell: UITableViewCell {
 
     // MARK: Properties
     @IBOutlet weak var peerDisplayNameLabel: UILabel?
+    @IBOutlet weak var latestMessage: UILabel?
     @IBOutlet weak var isAvailableLabel: UILabel?     //🔵 is online, 🔴 is offline
     @IBOutlet weak var messageButton: UIImageView!
     @IBOutlet weak var phoneButton: UIImageView!
@@ -38,12 +39,15 @@ class PeerTableViewCell: UITableViewCell {
         isAvailableLabel?.text = "🔵"
     }
     
-    
     func peerIsUnavailable() {
         isAvailableLabel?.text = "🔴"
     }
     
     func setPeerDisplayName(displayName: String) {
         peerDisplayNameLabel?.text = displayName
+    }
+    
+    func setLatestMessage(latestMessage: String) {
+        self.latestMessage?.text = latestMessage
     }
 }

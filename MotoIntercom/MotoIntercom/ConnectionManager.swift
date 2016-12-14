@@ -74,10 +74,20 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         sessions.append(session)
     }
     
-    
+    // a function which returns the index to an unused session
     func checkForReusableSession() -> Int {
         for i in 0..<sessions.count {
             if sessions[i].connectedPeers.count == 0 {
+                return i
+            }
+        }
+        return -1
+    }
+    
+    // a function which finds the index for a session with a given peer
+    func findSinglePeerSession(peer: MCPeerID) -> Int {
+        for i in 0..<sessions.count {
+            if (sessions[i].connectedPeers.count == 1 && sessions[i].connectedPeers[0] == peer) {
                 return i
             }
         }

@@ -35,6 +35,18 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
+    // A function which returns the index for a given peer
+    func getIndexForPeer(peer: MCPeerID) -> Int {
+        for i in 0..<messages.count {
+            if (messages[i].peerID == peer) {
+                return i
+            }
+        }
+        return -1
+    }
+    
+    //MARK: View Functions
     // If the view disappears than stop advertising and browsing for peers.
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -115,17 +127,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(fromPeer)")
             
             if newMessage.messages[0] != endChat {
-                for message in messages {
-                    print("Current peer: \(message.peerID) is equal to \(fromPeer)?")
-                    if (message.peerID == fromPeer) {
-                        message.messages.append(newMessage.messages[0])
-                        message.messageIsFrom.append(newMessage.messageIsFrom[0])
-                        
-                        print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript. # of messages = \(message.messages.count)")
-                    }
-                }
+                
+                let peerIndex = getIndexForPeer(peer: fromPeer)
+                
+                messages[peerIndex].messages.append(newMessage.messages[0])
+                messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
+                print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript")
+                
+                peersTable.reloadRows(at: [IndexPath.init(row: peerIndex, section: 0)], with: .fade)
             }
         }
+        
         print("PeerView > handleMPCReceivedDataWithNotification > Exit")
     }
     
@@ -151,6 +163,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             print("PeerView > numberOfRowsInSection > Exit \(count)")
+//            return appDelegate.connectionManager.foundPeers.count
+            
             return count
         }
         else {
@@ -174,18 +188,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             for session in appDelegate.connectionManager.sessions {
                 if (session.connectedPeers.count != 0) {
                     count += 1
+                    break
                 }
             }
             
-            if (count != 0) {
-                return "Connected Peers"
-            }
-            else {
-                return nil
-            }
+//            if (count != 0) {
+                return "Available"
+//            }
         }
         else if (section == 1) {
-            return "Visible Peers"
+            return "Unavailable"
         }
         else {
             return "Past Conversations"
@@ -228,12 +240,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         print("PeerView > cellForRowAt > Entry")
         
-//        let cell = PeerTableViewCell()
         let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
-        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.sessions.count) peer(s)")
-        print("PeerView > cellForRowAt > Current index \(indexPath.row) in section \(indexPath.section)")
-        print("PeerView > cellForRowAt > # of sessions \(appDelegate.connectionManager.sessions.count)")
+        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), # of sessions \(appDelegate.connectionManager.sessions.count)")
         
         if (indexPath.section == 1) {   // Then the peer is available but is not connected to
             
@@ -242,6 +251,27 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.setPeerDisplayName(displayName: appDelegate.connectionManager.foundPeers[indexPath.row].displayName)
                 cell.selectionStyle = UITableViewCellSelectionStyle.blue
                 cell.peerIsAvailable()
+                
+                var isHistory = false
+                for message in messages {
+                    if message.peerID == appDelegate.connectionManager.foundPeers[indexPath.row] {
+                        
+                        isHistory = true
+                        
+                        if (message.messages.count != 0) {
+                            cell.setLatestMessage(latestMessage: message.messages[message.messages.count-1])
+                            break
+                        }
+                        else {
+                            cell.setLatestMessage(latestMessage: "No history")
+                            break
+                        }
+                    }
+                }
+                
+                if (!isHistory) {
+                    cell.setLatestMessage(latestMessage: "No history")
+                }
                 
                 //TODO: Add tap gesture recognizer
                 
@@ -260,6 +290,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             //TODO: Must change if allowed to connect to multiple users in one chat
             print("PeerView > cellForRowAt > # of connectedPeers in session = \(appDelegate.connectionManager.sessions[indexPath.row].connectedPeers.count)")
             cell.setPeerDisplayName(displayName: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0].displayName)
+            
+            let index = getIndexForPeer(peer: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0])
+            let messagesIndex = messages[index].messages.count-1
+            
+            cell.setLatestMessage(latestMessage: messages[index].messages[messagesIndex])
             
             print("PeerView > cellForRowAt > Set text label as: \(cell.peerDisplayNameLabel?.text)")
             cell.peerIsAvailable()
@@ -325,48 +360,32 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // If a peer was found, then reload data
     func foundPeer() {
-        print("PeerView > foundPeer > New peer was found, updating table.")
+        print("PeerView > foundPeer > Entry")
         peersTable.reloadData()
+        print("PeerView > foundPeer > Exit")
     }
     
     // If a peer was lost, then reload data
     func lostPeer() {
-        print("PeerView > lostPeer > Peer was lost, updating table.")
+        print("PeerView > lostPeer > Entry")
+        appDelegate.connectionManager.cleanSessions()
         peersTable.reloadData()
+        print("PeerView > lostPeer > Exit")
     }
     
     // When an invite is received
     func inviteWasReceived(_ fromPeer : MCPeerID) {
-        print("PeerView > inviteWasReceived > Invite has been received. Displaying invite.")
+        print("PeerView > inviteWasReceived > Entry")
         let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
         
         let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
             
             print("PeerView > inviteWasReceived > User selected Accept")
             
-//            var sess : MCSession?
-//            var sessIsFound : Bool = false
-//            
-//            for session in self.appDelegate.connectionManager.sessions {
-//                if session.connectedPeers.contains(fromPeer) {
-//                    sess = session
-//                    sessIsFound = true
-//                    break
-//                }
-//            }
-//            
-//            if (sessIsFound) {
-//                print("PeerView > inviteWasReceived > sessIsFound = true")
-//                self.appDelegate.connectionManager.invitationHandler!(true, sess!)
-//            }
-//            else {
-//                print("PeerView > inviteWasReceived > sessIsFound = false")
             let index = self.appDelegate.connectionManager.createNewSession()
-//            let index = self.appDelegate.connectionManager.sessions.count-1
                 
             print("PeerView > inviteWasReceived > Accepted invitation handler")
             self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
-//            }
         }
         
         let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
@@ -388,6 +407,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         OperationQueue.main.addOperation { () -> Void in
             self.present(alert, animated: true, completion: nil)
         }
+        print("PeerView > foundPeer > Exit")
     }
     
     func connectedWithPeer(_ peerID : MCPeerID) {
