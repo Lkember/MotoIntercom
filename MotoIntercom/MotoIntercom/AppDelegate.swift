@@ -52,7 +52,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         print("AppDelegate > applicationWillTerminate > disconnecting from session.")
-        connectionManager.session.disconnect()
+        
+        for session in connectionManager.sessions {
+            session.disconnect()
+        }
+        
         connectionManager.browser.stopBrowsingForPeers()
         connectionManager.advertiser.stopAdvertisingPeer()
     }

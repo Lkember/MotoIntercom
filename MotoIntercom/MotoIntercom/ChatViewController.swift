@@ -207,7 +207,18 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
             let alert = UIAlertController(title: "", message: "\(fromPeer?.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
             
             let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                self.appDelegate.connectionManager.session.disconnect()
+                
+                var sess : MCSession?
+                
+                for session in self.appDelegate.connectionManager.sessions {
+                    if session.connectedPeers.contains(fromPeer!) {
+                        sess = session
+                        break
+                    }
+                }
+                
+                sess!.disconnect()
+                
                 self.dismiss(animated: true, completion: nil)
             }
 
@@ -293,8 +304,9 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     }
     
     
-    func inviteWasReceived(_ fromPeer: String) {
+    func inviteWasReceived(_ fromPeer: MCPeerID) {
         //TODO: Need to decide what to do if invite is received.
+        
     }
 }
 

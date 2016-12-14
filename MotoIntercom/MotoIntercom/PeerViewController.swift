@@ -140,17 +140,27 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //Getting the number of rows/peers to display
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print("PeerView > numberOfRowsInSection > Entry \(section)")
         if (section == 0) {
-            return appDelegate.connectionManager.session.connectedPeers.count
+            var count = 0
+            
+            for session in appDelegate.connectionManager.sessions {
+                if session.connectedPeers.count != 0 {
+                    count += 1
+                }
+            }
+            
+            print("PeerView > numberOfRowsInSection > Exit \(count)")
+            return count
         }
         else {
             if appDelegate.connectionManager.foundPeers.count != 0 {
                 let numPeers = appDelegate.connectionManager.foundPeers.count
-                print("PeerView > numberOfRowsInSection > Currently there are \(numPeers) peers")
+                print("PeerView > numberOfRowsInSection > Exit - \(numPeers) peer(s)")
                 return numPeers
             }
             else {
-                print("PeerView > numberOfRowsInSection > No peers found.")
+                print("PeerView > numberOfRowsInSection > Exit - No peers found")
                 return 1
             }
         }
@@ -159,7 +169,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     //Getting the title for the current section
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if (section == 0) {
-            if (appDelegate.connectionManager.session.connectedPeers.count != 0) {
+            
+            var count = 0
+            for session in appDelegate.connectionManager.sessions {
+                if (session.connectedPeers.count != 0) {
+                    count += 1
+                }
+            }
+            
+            if (count != 0) {
                 return "Connected Peers"
             }
             else {
@@ -213,7 +231,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //        let cell = PeerTableViewCell()
         let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
-        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.session.connectedPeers.count) peer(s)")
+        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), connected to \(appDelegate.connectionManager.sessions.count) peer(s)")
+        print("PeerView > cellForRowAt > Current index \(indexPath.row) in section \(indexPath.section)")
+        print("PeerView > cellForRowAt > # of sessions \(appDelegate.connectionManager.sessions.count)")
         
         if (indexPath.section == 1) {   // Then the peer is available but is not connected to
             
@@ -237,7 +257,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         else {  // The peer is currently connected to
-            cell.setPeerDisplayName(displayName: appDelegate.connectionManager.session.connectedPeers[indexPath.row].displayName)
+            //TODO: Must change if allowed to connect to multiple users in one chat
+            print("PeerView > cellForRowAt > # of connectedPeers in session = \(appDelegate.connectionManager.sessions[indexPath.row].connectedPeers.count)")
+            cell.setPeerDisplayName(displayName: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0].displayName)
             
             print("PeerView > cellForRowAt > Set text label as: \(cell.peerDisplayNameLabel?.text)")
             cell.peerIsAvailable()
@@ -269,6 +291,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("PeerView > didSelectRowAt > A peer has been selected")
         if (indexPath.section == 0) {
+            print("PeerView > didSelectRowAt > Performing segue...")
             OperationQueue.main.addOperation { () -> Void in
                 self.performSegue(withIdentifier: "idChatSegue", sender: self)
             }
@@ -277,8 +300,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             if (appDelegate.connectionManager.foundPeers.count != 0) {
                 // get selected peer
                 let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
-                //send an invite to peer
-                appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.session, withContext: nil, timeout: 20)
+                
+                print("PeerView > didSelectRowAt > attempting to connect to peer \(selectedPeer.displayName)")
+                
+                //TODO: Create new session first
+                let index = appDelegate.connectionManager.createNewSession()
+//                let index = appDelegate.connectionManager.sessions.count-1
+                
+                //Send invite to peer
+                appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.sessions[index], withContext: nil, timeout: 20)
+                
+                //TODO: If the peer declines the invitation then delete the session.
                 tableView.reloadData()
             }
             else {
@@ -286,6 +318,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
     }
+    
     
     
     //MARK: Connection Manager
@@ -303,16 +336,50 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // When an invite is received
-    func inviteWasReceived(_ fromPeer : String) {
+    func inviteWasReceived(_ fromPeer : MCPeerID) {
         print("PeerView > inviteWasReceived > Invite has been received. Displaying invite.")
-        let alert = UIAlertController(title: "", message: "\(fromPeer) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
         
         let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-            self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.session)
+            
+            print("PeerView > inviteWasReceived > User selected Accept")
+            
+//            var sess : MCSession?
+//            var sessIsFound : Bool = false
+//            
+//            for session in self.appDelegate.connectionManager.sessions {
+//                if session.connectedPeers.contains(fromPeer) {
+//                    sess = session
+//                    sessIsFound = true
+//                    break
+//                }
+//            }
+//            
+//            if (sessIsFound) {
+//                print("PeerView > inviteWasReceived > sessIsFound = true")
+//                self.appDelegate.connectionManager.invitationHandler!(true, sess!)
+//            }
+//            else {
+//                print("PeerView > inviteWasReceived > sessIsFound = false")
+            let index = self.appDelegate.connectionManager.createNewSession()
+//            let index = self.appDelegate.connectionManager.sessions.count-1
+                
+            print("PeerView > inviteWasReceived > Accepted invitation handler")
+            self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+//            }
         }
         
         let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
-            self.appDelegate.connectionManager.invitationHandler!(false, self.appDelegate.connectionManager.session)
+            
+            var sess : MCSession?
+            
+            for session in self.appDelegate.connectionManager.sessions {
+                if session.connectedPeers.contains(fromPeer) {
+                    sess = session
+                }
+            }
+            
+            self.appDelegate.connectionManager.invitationHandler!(false, sess!)
         }
         
         alert.addAction(acceptAction)

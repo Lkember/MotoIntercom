@@ -14,7 +14,7 @@ import MultipeerConnectivity
 protocol ConnectionManagerDelegate {
     func foundPeer()
     func lostPeer()
-    func inviteWasReceived(_ fromPeer : String)
+    func inviteWasReceived(_ fromPeer : MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
 }
@@ -27,7 +27,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var delegate : ConnectionManagerDelegate?
     
     //Creating service types, session, peerID, browser and advertiser
-    var session : MCSession!
+    var sessions : [MCSession] = []
+//    var session : MCSession!
     var peer : MCPeerID!
     var browser : MCNearbyServiceBrowser!
     var advertiser : MCNearbyServiceAdvertiser
@@ -43,7 +44,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("ConnectionManager > init > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
         
         peer = MCPeerID(displayName: UIDevice.current.name)        
-        session = MCSession(peer: peer)
+        let session = MCSession(peer: peer)
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
         advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
 
@@ -52,13 +53,15 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         session.delegate = self
         browser.delegate = self
         advertiser.delegate = self
+        
+        sessions.append(session)
     }
     
     init(peerID : MCPeerID) {
         print("ConnectionManager > init:peerID > Initializing ConnectionManager with existing peerID: \(peerID.displayName)")
         
         peer = peerID
-        session = MCSession(peer: peer)
+        let session = MCSession(peer: peer)
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
         advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
         
@@ -67,6 +70,57 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         session.delegate = self
         browser.delegate = self
         advertiser.delegate = self
+        
+        sessions.append(session)
+    }
+    
+    
+    func checkForReusableSession() -> Int {
+        for i in 0..<sessions.count {
+            if sessions[i].connectedPeers.count == 0 {
+                return i
+            }
+        }
+        return -1
+    }
+    
+    
+    // Creates a new session for a new peer, returns it's index
+    func createNewSession() -> Int {
+        print("ConnectionManager > createNewSession > Creating a new session.")
+        
+        let reusableSession = checkForReusableSession()
+        
+        if (reusableSession == -1) {
+            let session = MCSession(peer: peer)
+            session.delegate = self
+            sessions.append(session)
+            
+            return sessions.count - 1
+        }
+        else {
+            return reusableSession
+        }
+    }
+    
+    // A function which removes sessions that are not connected with any peers.
+    func cleanSessions() {
+        print("ConnectionManager > cleanSessions > Entry \(sessions.count)")
+        var indexToRemove : [Int] = []
+        
+        for i in 0..<sessions.count {
+            if (sessions[i].connectedPeers.count == 0) {
+                indexToRemove.append(i)
+            }
+        }
+        
+        indexToRemove.sort()
+        
+        for i in (0..<sessions.count).reversed() {
+            sessions.remove(at: i)
+        }
+        
+        print("ConnectionManager > cleanSessions > Exit \(sessions.count)")
     }
     
     //Send data to recipient
@@ -74,8 +128,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("ConnectionManager > sendData > Sending data to peer.")
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: dictionary)
         let peersArray = NSArray(object: targetPeer)
+        var sess : MCSession = MCSession(peer: peer)
+        
+        for session in sessions {
+            //TODO: If we allow multi-peer connectivity this method must be modified
+            if session.connectedPeers.contains(targetPeer) {
+                sess = session
+            }
+        }
+        
         do {
-            try session.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print(error.localizedDescription)
@@ -90,9 +153,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: message)
         let peersArray = NSArray(object: targetPeer)
+        var sess : MCSession = MCSession(peer: peer)
+        
+        for session in sessions {
+            //TODO: If we allow multi-peer connectivity this method must be modified
+            if session.connectedPeers.contains(targetPeer) {
+                sess = session
+            }
+        }
         
         do {
-            try session.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print("ConnectionManager > sendData > Error, data could not be sent for the following reason: \(error.localizedDescription)")
@@ -161,8 +232,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Called to check if the current connection is already in the connectedPeers array
     func checkIfAlreadyConnected(peerID: MCPeerID) -> Bool {
-        for peers in session.connectedPeers {
-            if (peers == peerID) {
+        for session in sessions {
+            if session.connectedPeers.contains(peerID) {
                 return true
             }
         }
@@ -208,7 +279,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         self.invitationHandler = invitationHandler
         print("ConnectionManager > didReceiveInvitationFromPeer > \(peerID)")
-        delegate?.inviteWasReceived(peerID.displayName)
+        delegate?.inviteWasReceived(peerID)
     }
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
