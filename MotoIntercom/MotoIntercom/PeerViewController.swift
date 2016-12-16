@@ -8,6 +8,7 @@
 
 import UIKit
 import MultipeerConnectivity
+import AudioToolbox
 
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
@@ -45,6 +46,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         return -1
     }
+    
+    // A function which checks if a message object exists for the current peer
+    func doesMessageObjectExist(forPeer: MCPeerID) -> Int {
+        for i in 0..<messages.count {
+            if (messages[i].peerID == forPeer) {
+                return i
+            }
+        }
+        return -1
+    }
+    
     
     //MARK: View Functions
     // If the view disappears than stop advertising and browsing for peers.
@@ -132,7 +144,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 messages[peerIndex].messages.append(newMessage.messages[0])
                 messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
-                print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript")
+                print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript for peer \(messages[peerIndex].peerID.displayName)")
+                
+                //Vibrate
+                AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
+                print("PeerView > handleMPCReceivedDataWithNotification > Sending vibration notification to device")
                 
                 peersTable.reloadRows(at: [IndexPath.init(row: peerIndex, section: 0)], with: .fade)
             }
@@ -177,6 +193,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 print("PeerView > numberOfRowsInSection > Exit - No peers found")
                 return 1
             }
+            //TODO: Need to get the right return value
+//            return 0
         }
     }
     
@@ -275,6 +293,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 //TODO: Add tap gesture recognizer
                 
+                print("PeerView > cellForRowAt > Exit")
                 return cell
             }
             else {
@@ -283,6 +302,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 tempCell.textLabel?.text = "Searching for peers..."
                 tempCell.selectionStyle = UITableViewCellSelectionStyle.none
+                
+                print("PeerView > cellForRowAt > Exit")
                 return tempCell
             }
         }
@@ -292,9 +313,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.setPeerDisplayName(displayName: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0].displayName)
             
             let index = getIndexForPeer(peer: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0])
-            let messagesIndex = messages[index].messages.count-1
             
-            cell.setLatestMessage(latestMessage: messages[index].messages[messagesIndex])
+            // Check if messages exist, if so show the last message
+            if (messages[index].messages.count != 0) {
+                let messagesIndex = messages[index].messages.count-1
+                cell.setLatestMessage(latestMessage: messages[index].messages[messagesIndex])
+                print("PeerView > cellForRowAt > Latest message to \(messages[index].messages[messagesIndex])")
+            }
+            else {
+                print("PeerView > cellForRowAt > No history.")
+                cell.setLatestMessage(latestMessage: "No history.")
+            }
             
             print("PeerView > cellForRowAt > Set text label as: \(cell.peerDisplayNameLabel?.text)")
             cell.peerIsAvailable()
@@ -302,6 +331,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             // TODO: Add tap gesture recognizer
             
             cell.selectionStyle = UITableViewCellSelectionStyle.blue
+            
+            print("PeerView > cellForRowAt > Exit")
             return cell
         }
     }
@@ -359,16 +390,40 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     //MARK: Connection Manager
     
     // If a peer was found, then reload data
-    func foundPeer() {
+    func foundPeer(_ newPeer: MCPeerID) {
         print("PeerView > foundPeer > Entry")
+        
+        let index = doesMessageObjectExist(forPeer: newPeer)
+        
+        // if message object does not exist, create it
+        if index == -1 {
+            let messageObject = MessageObject.init(peerID: newPeer, messageFrom: [], messages: [])
+            messages.append(messageObject)
+        }
+        else {  // else the peer is available
+            messages[index].isAvailable = true
+        }
+        
+        //TODO: Instead of reloading data use the insertRow function
+        
         peersTable.reloadData()
         print("PeerView > foundPeer > Exit")
     }
     
     // If a peer was lost, then reload data
-    func lostPeer() {
+    func lostPeer(_ lostPeer: MCPeerID) {
         print("PeerView > lostPeer > Entry")
+        
+        let index = doesMessageObjectExist(forPeer: lostPeer)
+        
+        //if message exists
+        if index != -1 {
+            messages[index].isAvailable = false
+        }
+        
         appDelegate.connectionManager.cleanSessions()
+        
+        //TODO: Change from reloadData to moveRow, and move the row to the unavailable section of the table
         peersTable.reloadData()
         print("PeerView > lostPeer > Exit")
     }
@@ -423,6 +478,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    // Called when a peer is disconnected from
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("PeerView > disconnectedFromPeer > Disconnected from peer \(peerID)")
         

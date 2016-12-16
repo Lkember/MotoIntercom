@@ -12,8 +12,8 @@ import MultipeerConnectivity
 
 
 protocol ConnectionManagerDelegate {
-    func foundPeer()
-    func lostPeer()
+    func foundPeer(_ newPeer : MCPeerID)
+    func lostPeer(_ lostPeer: MCPeerID)
     func inviteWasReceived(_ fromPeer : MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
@@ -193,7 +193,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             print("ConnectionManager > foundPeer > Peer was found but already exists with ID: \(peerID)")
         }
         
-        delegate?.foundPeer()
+        delegate?.foundPeer(peerID)
     }
     
     // checks to see if the current peer is already in the table
@@ -236,7 +236,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             print("ConnectionManager > lostPeer > lostPeer: \(peerID)")
         }
         
-        delegate?.lostPeer()
+        delegate?.lostPeer(peerID)
     }
     
     

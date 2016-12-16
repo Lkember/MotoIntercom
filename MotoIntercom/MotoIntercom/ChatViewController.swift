@@ -8,6 +8,7 @@
 
 import UIKit
 import MultipeerConnectivity
+import AudioToolbox
 
 class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
@@ -20,6 +21,8 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     @IBOutlet weak var senderInfo: UILabel!
     @IBOutlet weak var messageView: UIView!
     @IBOutlet weak var messageField: UITextView!
+    
+    var keyboard = 0
     
     let endChat = "_end_chat_"
     
@@ -195,6 +198,9 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         
         let fromPeer = newMessage.peerID
         
+        //Vibrate
+        AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
+        
         if newMessage.messages[0] != endChat {
             self.messages.messages.append(newMessage.messages[0])
             self.messages.messageIsFrom.append(newMessage.messageIsFrom[0])
@@ -232,6 +238,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
 
     func keyboardToggle(_ notification: Notification) {
+        print("ChatView > keyboardToggle > keyboard = \(keyboard), notification = \(notification.name)")
         let userInfo = (notification as NSNotification).userInfo!
         
         let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
@@ -239,15 +246,21 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
 //        let navHeight = self.navigationController!.navigationBar.frame.height
         
         if notification.name == NSNotification.Name.UIKeyboardWillHide {
-            tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-            messageView.frame.origin.y += keyboardViewEndFrame.height
-//            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: 0, right: 0)
-            print("ChatView > keyboardToggle > Keyboard is hidden.")
-        } else {
-//            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
-            tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
-            messageView.frame.origin.y -= keyboardViewEndFrame.height
-            print("ChatView > keyboardToggle > Keyboard is showing.")
+            if (keyboard != 0) {
+                tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+                messageView.frame.origin.y += keyboardViewEndFrame.height
+    //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: 0, right: 0)
+                print("ChatView > keyboardToggle > Keyboard is hidden.")
+                keyboard -= 1
+            }
+        } else if notification.name == NSNotification.Name.UIKeyboardWillShow {
+            if (keyboard != 1) {
+    //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
+                tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
+                messageView.frame.origin.y -= keyboardViewEndFrame.height
+                print("ChatView > keyboardToggle > Keyboard is showing.")
+                keyboard += 1
+            }
         }
     }
     
@@ -270,11 +283,12 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
     
     //MARK: Connection Manager
-    func foundPeer() {
+    func foundPeer(_ newPeer: MCPeerID) {
         print("ChatView > foundPeer > Peer was found.")
     }
     
-    func lostPeer() {
+    // TODO: Check if the peer lost was the current peer, if so go back to peer view
+    func lostPeer(_ lostPeer: MCPeerID) {
         print("ChatView > lostPeer > Peer was lost.")
     }
     
@@ -285,7 +299,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("ChatView > disconnectedFromPeeer > disconnected from peer \(peerID)")
         
-        //TODO: Check if the peer that was disconnected from is this peer. If so, go back to chat view.
+        //TODO: Check if the peer that was disconnected from is this peer. If so, go back to peer view.
         if (peerID == messages.peerID) {
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             

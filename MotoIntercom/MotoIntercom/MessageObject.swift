@@ -16,6 +16,7 @@ class MessageObject: NSObject, NSCoding {
     var selfID: MCPeerID!
     var messageIsFrom = [Int]()     // 0 means from user, 1 means from peer
     var messages = [String]()       // An array of strings, where each string is a message.
+    var isAvailable : Bool = false
     
     
     // MARK: init
