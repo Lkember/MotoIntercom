@@ -43,6 +43,12 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         
         print("ChatView > viewDidLoad > current peerID = \(messages.peerID)")
         
+        if (!messages.isAvailable) {
+            messageField.isSelectable = false
+            messageField.isEditable = false
+            sendButton.isEnabled = false
+        }
+        
         // Setting the rowheight to be dynamic
         tableView.rowHeight = UITableViewAutomaticDimension
         

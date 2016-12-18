@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MultipeerConnectivity
 
 class PeerTableViewCell: UITableViewCell {
 
@@ -16,7 +17,7 @@ class PeerTableViewCell: UITableViewCell {
     @IBOutlet weak var isAvailableLabel: UILabel?     //🔵 is online, 🔴 is offline
     @IBOutlet weak var messageButton: UIImageView!
     @IBOutlet weak var phoneButton: UIImageView!
-    
+    var peerID: MCPeerID?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -36,6 +37,14 @@ class PeerTableViewCell: UITableViewCell {
     
     // MARK: Functions
     func peerIsAvailable() {
+        isAvailableLabel?.text = ""
+    }
+    
+    func removeNewMessageIcon() {
+        isAvailableLabel?.text = ""
+    }
+    
+    func newMessageArrived() {
         isAvailableLabel?.text = "🔵"
     }
     

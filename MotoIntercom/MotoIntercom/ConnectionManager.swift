@@ -327,15 +327,13 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-//        let dictionary: [String: AnyObject] = ["data": data as AnyObject, "fromPeer": peerID]
-//        let newMessage: Data = data as! MessageObject
         
         let myDict: [String: AnyObject] = ["data": data as AnyObject, "peer": peerID]
         let archiveData = NSKeyedArchiver.archivedData(withRootObject: myDict)
         
         NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: archiveData)
         
-        print("ConnectionManager > session didReceive data > Received Data \(data) from peer \(peerID)")
+        print("ConnectionManager > session didReceive data > Received \(data) from peer \(peerID.displayName)")
     }
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
