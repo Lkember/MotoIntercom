@@ -15,8 +15,6 @@ class PeerTableViewCell: UITableViewCell {
     @IBOutlet weak var peerDisplayNameLabel: UILabel?
     @IBOutlet weak var latestMessage: UILabel?
     @IBOutlet weak var isAvailableLabel: UILabel?     //🔵 is online, 🔴 is offline
-    @IBOutlet weak var messageButton: UIImageView!
-    @IBOutlet weak var phoneButton: UIImageView!
     var peerID: MCPeerID?
     
     override func awakeFromNib() {
@@ -25,8 +23,6 @@ class PeerTableViewCell: UITableViewCell {
         
         peerDisplayNameLabel?.text = ""
         isAvailableLabel?.text = ""
-        messageButton.contentMode = .scaleAspectFit
-        phoneButton.contentMode = .scaleAspectFit
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

@@ -5,10 +5,12 @@
 //  Created by Logan Kember on 2016-07-05.
 //  Copyright © 2016 Logan Kember. All rights reserved.
 //
+//  Useful link for InputStream and OutputStream https://robots.thoughtbot.com/streaming-audio-to-multiple-listeners-via-ios-multipeer-connectivity
+//  Useful link for audio http://www.stefanpopp.de/capture-iphone-microphone/
 
 import UIKit
 import MultipeerConnectivity
-import AudioToolbox
+import AudioToolbox             // For sound and vibration
 
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
@@ -21,6 +23,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     var refreshControl: UIRefreshControl!
     var messages = [MessageObject]()
     var newMessage: [MCPeerID] = []
+    
+    var UNSPECIFIED_CONNECTION_TYPE = 0
+    var MESSAGE_CONNECTION_TYPE = 1
+    var PHONE_CONNECTION_TYPE = 2
     
     var destinationPeerID: MCPeerID?
     var isDestPeerIDSet = false
@@ -168,6 +174,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 save()
                 
                 //Vibrate
+                //TODO: Make a noise notification as well
                 AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
                 print("PeerView > handleMPCReceivedDataWithNotification > Sending vibration notification to device")
                 
@@ -334,17 +341,19 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             //TODO: Add tap gesture recognizer
             
-            
             print("PeerView > cellForRowAt > Exit")
             return cell
         }
-        else {      //For section == 1 (unavailable peers)
+        else {      //For section 1 (unavailable peers)
             let currPeer = unavailablePeers[indexPath.row]
             
             cell.peerID = currPeer.peerID
             cell.setPeerDisplayName(displayName: currPeer.peerID.displayName)
             cell.selectionStyle = UITableViewCellSelectionStyle.blue
             cell.peerIsUnavailable()
+            
+//            cell.messageButton.isHidden = true
+//            cell.phoneButton.isHidden = true
             
             if (currPeer.messages.count > 0) {
                 cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1])
@@ -463,39 +472,120 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("PeerView > didSelectRowAt > Entry")
         
         if let currCell = peersTable.cellForRow(at: indexPath) as? PeerTableViewCell {
+            print("PeerView > didSelectRowAt > Current cell is PeerTableViewCell")
             
             // if the peer selected is available
             if indexPath.section == 0 {
                 
-                currCell.removeNewMessageIcon()
+                let optionMenu = UIAlertController(title: nil, message: "Select an option", preferredStyle: .actionSheet)
                 
-                print("PeerView > didSelectRowAt > Checking if connected to \(currCell.peerID?.displayName)")
-                
-                let check = appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
-                
-                // if check is -1 then create a new session
-                if (check == -1) {
-                    print("PeerView > didSelectRowAt > Creating a new session")
-                    let index = appDelegate.connectionManager.createNewSession()
+                let phoneOption = UIAlertAction(title: "Voice", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
-                    appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: appDelegate.connectionManager.sessions[index], withContext: nil, timeout: 20)
-                    
-                    // TODO: If the user declines the invitation, then delete the session
-                }
-                else {
-                    print("PeerView > didSelectRowAt > Session exists")
-                    
-                    self.destinationPeerID = currCell.peerID
-                    self.isDestPeerIDSet = true
-                    
-                    // if already connected, than perform segue
-                    OperationQueue.main.addOperation { () -> Void in
-                        self.performSegue(withIdentifier: "idChatSegue", sender: self)
+                    let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
+                    if (check == -1) {
+                        
+                        //Setting the connection type to voice
+                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+                        self.messages[peerIndex].setConnectionTypeToVoice()
+                        
+                        let index = self.appDelegate.connectionManager.createNewSession()
+                        
+                        // The user selected phone call
+                        let isPhoneCall: Bool = true
+                        let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+                        
+                        print("PeerView > didSelectRowAt > Setting isPhoneCall=\(isPhoneCall)")
+                        
+                        //Inviting peer
+                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
+                        
+//                            let outputStream = try self.appDelegate.connectionManager.sessions[index].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
+//                            print("PeerView > didSelectRowAt > Successfully created stream")
+                            
+                            self.destinationPeerID = currCell.peerID!
+                            self.isDestPeerIDSet = true
+                            
+//                            OperationQueue.main.addOperation { () -> Void in
+//                                print("PeerView > didSelectRowAt > Performing segue")
+//                                self.performSegue(withIdentifier: "callSegue", sender: self)
+//                            }
                     }
-                }
+                    else {
+                        
+                        self.destinationPeerID = currCell.peerID
+                        self.isDestPeerIDSet = true
+                        
+                        
+//                        let outputStream = try self.appDelegate.connectionManager.sessions[check].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
+//                        print("PeerView > didSelectRowAt > Successfully created stream.")
+                        
+                        // Perform segue to phone view
+                        OperationQueue.main.addOperation { () -> Void in
+                            self.performSegue(withIdentifier: "callSegue", sender: self)
+                        }
+                    }
+                })
                 
+                let chatOption = UIAlertAction(title: "Message", style: .default, handler: { (alert: UIAlertAction!) -> Void in
+                    
+                    currCell.removeNewMessageIcon()
+                    print("PeerView > didSelectRowAt > Checking if connected to \(currCell.peerID?.displayName)")
+                    
+                    let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
+                    
+                    // if check is -1 then create a new session
+                    if (check == -1) {
+                        
+                        // Set connection type to message
+                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+                        self.messages[peerIndex].setConnectionTypeToMessage()
+                        
+                        print("PeerView > didSelectRowAt > Creating a new session")
+                        
+                        //Create a new session
+                        let index = self.appDelegate.connectionManager.createNewSession()
+                        
+                        // Set the isPhoneCall to false so that the receiver knows it's a message
+                        let isPhoneCall = false
+                        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+                        
+                        print("PeerView > didSelectRowAt > Setting isPhoneCall=\(isPhoneCall)")
+                        
+                        // Invite the peer to communicate
+                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
+                        
+                        // TODO: If the user declines the invitation, then delete the session
+                    }
+                    else {  //Session already exists, then perform segue
+                        print("PeerView > didSelectRowAt > Session exists")
+                        
+                        self.destinationPeerID = currCell.peerID
+                        self.isDestPeerIDSet = true
+                        
+                        // if already connected, than perform segue
+                        OperationQueue.main.addOperation { () -> Void in
+                            self.performSegue(withIdentifier: "idChatSegue", sender: self)
+                        }
+                    }
+                    
+                })
+                
+                let cancelOption = UIAlertAction(title: "Cancel", style: .cancel, handler: { (alert: UIAlertAction!) -> Void in
+                    self.peersTable.deselectRow(at: indexPath, animated: true)
+                    // Do nothing
+                })
+                
+                optionMenu.addAction(phoneOption)
+                optionMenu.addAction(chatOption)
+                optionMenu.addAction(cancelOption)
+                
+                print("PeerView > didSelectRowAt > Presenting option menu")
+                
+                OperationQueue.main.addOperation { () -> Void in
+                    self.present(optionMenu, animated: true, completion: nil)
+                }
             }
-            else {  //The peer selected is not available
+            else {  //The peer selected is not available so segue to the conversation
                 
                 print("PeerView > didSelectRowAt > Performing segue...")
                 
@@ -595,60 +685,109 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // When an invite is received
-    func inviteWasReceived(_ fromPeer : MCPeerID) {
-        print("PeerView > inviteWasReceived > Entry")
-        let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+        print("PeerView > inviteWasReceived > Entry: isPhoneCall=\(isPhoneCall)")
         
-        let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+        if (!isPhoneCall) {
             
-            print("PeerView > inviteWasReceived > User selected Accept")
+            let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
             
-            let index = self.appDelegate.connectionManager.createNewSession()
+            let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
                 
-            print("PeerView > inviteWasReceived > Accepted invitation handler")
-            self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+                // Set the connection type to message
+                let peerIndex = self.getIndexForPeer(peer: fromPeer)
+                self.messages[peerIndex].setConnectionTypeToMessage()
+                
+                let index = self.appDelegate.connectionManager.createNewSession()
+                    
+                print("PeerView > inviteWasReceived > Accepted invitation handler")
+                
+                if self.appDelegate.connectionManager.invitationHandler != nil {
+                    self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+                    
+                    self.destinationPeerID = fromPeer
+                    self.isDestPeerIDSet = true
+                }
+                
+//                OperationQueue.main.addOperation { () -> Void in
+//                    self.performSegue(withIdentifier: "idChatSegue", sender: self)
+//                }
+            }
             
-        }
-        
-        let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
-            
-            var sess : MCSession?
-            
-            for session in self.appDelegate.connectionManager.sessions {
-                if session.connectedPeers.contains(fromPeer) {
-                    sess = session
+            let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
+                
+                var sess : MCSession?
+                
+                for session in self.appDelegate.connectionManager.sessions {
+                    if session.connectedPeers.contains(fromPeer) {
+                        sess = session
+                    }
+                }
+                
+                print("PeerView > inviteWasReceived > Declined invitation")
+                
+                if self.appDelegate.connectionManager.invitationHandler != nil {
+                    self.appDelegate.connectionManager.invitationHandler!(false, sess!)
                 }
             }
             
-            self.appDelegate.connectionManager.invitationHandler!(false, sess!)
+            alert.addAction(acceptAction)
+            alert.addAction(declineAction)
+            
+            OperationQueue.main.addOperation { () -> Void in
+                self.present(alert, animated: true, completion: nil)
+            }
         }
-        
-        alert.addAction(acceptAction)
-        alert.addAction(declineAction)
-        
-        OperationQueue.main.addOperation { () -> Void in
-            self.present(alert, animated: true, completion: nil)
+        else {
+            // TODO: Need to make an incoming call overlay
+            
+            // TODO: Only do the following if the user accepts the call
+            let peerIndex = getIndexForPeer(peer: fromPeer)
+            messages[peerIndex].setConnectionTypeToVoice()
+            
+            print("PeerView > foundPeer > Incoming call!")
         }
-        
         print("PeerView > foundPeer > Exit")
     }
     
     func connectedWithPeer(_ peerID : MCPeerID) {
         print("PeerView > connectedWithPeer > Connected to peer \(peerID)")
-//        appDelegate.connectionManager.session.connectedPeers.append(peerID)
+        
+        // Remove the peer from foundPeers
         appDelegate.connectionManager.removeFoundPeer(peerID: peerID)
         
         destinationPeerID = peerID  // This is used so we know what peer was clicked on
         isDestPeerIDSet = true
         
-        OperationQueue.main.addOperation {
-            self.performSegue(withIdentifier: "idChatSegue", sender: self)
+        let peerIndex = getIndexForPeer(peer: peerID)
+        let connType = messages[peerIndex].connectionType
+        
+        
+        if (connType == MESSAGE_CONNECTION_TYPE) {
+            print("PeerView > connectedWithPeer > Connection type is MESSAGE_CONNECTION_TYPE)")
+            OperationQueue.main.addOperation {
+                self.performSegue(withIdentifier: "idChatSegue", sender: self)
+            }
         }
+        else if (connType == PHONE_CONNECTION_TYPE) {
+            print("PeerView > connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
+            OperationQueue.main.addOperation {
+                self.performSegue(withIdentifier: "callSegue", sender: self)
+            }
+        }
+        else {
+            print("PeerView > connectedWithPeer > Could NOT recognize a connection type. Cannot perform segue.")
+        }
+        
     }
     
     // Called when a peer is disconnected from
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("PeerView > disconnectedFromPeer > Entry: Disconnected from peer \(peerID)")
+        
+        // Resetting the peers connected type
+        let peerIndex = getIndexForPeer(peer: peerID)
+        messages[peerIndex].resetConnectionType()
         
         if let currView = navigationController?.topViewController as? ChatViewController {
             print("PeerView > disconnectedFromPeeer > topViewController is ChatView. ")

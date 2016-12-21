@@ -14,7 +14,7 @@ import MultipeerConnectivity
 protocol ConnectionManagerDelegate {
     func foundPeer(_ newPeer : MCPeerID)
     func lostPeer(_ lostPeer: MCPeerID)
-    func inviteWasReceived(_ fromPeer : MCPeerID)
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
 }
@@ -97,7 +97,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // Creates a new session for a new peer, returns it's index
     func createNewSession() -> Int {
-        print("ConnectionManager > createNewSession > Creating a new session.")
         
         let reusableSession = checkForReusableSession()
         
@@ -106,9 +105,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             session.delegate = self
             sessions.append(session)
             
+            print("ConnectionManager > createNewSession > Creating a new session.")
             return sessions.count - 1
         }
         else {
+            print("ConnectionManager > createNewSession > Found reusable session.")
             return reusableSession
         }
     }
@@ -288,8 +289,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
 
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         self.invitationHandler = invitationHandler
-        print("ConnectionManager > didReceiveInvitationFromPeer > \(peerID)")
-        delegate?.inviteWasReceived(peerID)
+        
+        let isPhoneCall = NSKeyedUnarchiver.unarchiveObject(with: context!) as! Bool
+        
+        print("ConnectionManager > didReceiveInvitationFromPeer > \(peerID), isPhoneCall=\(isPhoneCall)")
+        delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
     }
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
@@ -303,9 +307,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         case MCSessionState.connected:
             print("ConnectionManager > session didChange state > Connected to peer: \(peerID)")
             delegate?.connectedWithPeer(peerID)
-//            if (!checkIfAlreadyConnected(peerID: peerID)) {
-//                connectedPeers.append(peerID)
-//            }
+
             if (doesPeerAlreadyExist(peerID: peerID)) {
                 removeFoundPeer(peerID: peerID)
             }
@@ -315,10 +317,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             
         case MCSessionState.notConnected:
             print("ConnectionManager > session didChange state > Failed to connect to session: \(session)")
-            print("ConnectionManager > session didChange state > Currently connected to \(session.connectedPeers.count) sessions")
-//            if(checkIfAlreadyConnected(peerID: peerID)) {
-//                removeConnectedPeer(peerID: peerID)
-//            }
+
             delegate?.disconnectedFromPeer(peerID)
             if (!doesPeerAlreadyExist(peerID: peerID)) {
                 foundPeers.append(peerID)
@@ -331,13 +330,13 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         let myDict: [String: AnyObject] = ["data": data as AnyObject, "peer": peerID]
         let archiveData = NSKeyedArchiver.archivedData(withRootObject: myDict)
         
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: archiveData)
+        print("ConnectionManager > didReceive data > Received \(data) from peer \(peerID.displayName)")
         
-        print("ConnectionManager > session didReceive data > Received \(data) from peer \(peerID.displayName)")
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: archiveData)
     }
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        print("ConnectionManager > didReceiveStream")
+        print("ConnectionManager > didReceiveStream from peer \(peerID.displayName) with streamName \(streamName)")
     }
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
@@ -349,15 +348,3 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
 }
-
-//extension MCSessionState {
-//    
-//    func stringValue() -> String {
-//        switch(self) {
-//        case .NotConnected: return "NotConnected"
-//        case .Connecting: return "Connecting"
-//        case .Connected: return "Connected"
-//        default: return "Unknown"
-//        }
-//    }
-//}

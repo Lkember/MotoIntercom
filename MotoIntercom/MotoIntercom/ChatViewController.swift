@@ -26,13 +26,15 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
     let endChat = "_end_chat_"
     
-    // MARK: Actions
+    // MARK: Views
     
     override func viewDidLoad() {
         print("ChatView > viewDidLoad > Entry")
         super.viewDidLoad()
         
-        print("ChatView > viewDidLoad > Setting Delegates")
+        print("ChatView > viewDidLoad > Stopped browsing for peers")
+        appDelegate.connectionManager.browser.stopBrowsingForPeers()
+        
         tableView.delegate = self
         tableView.dataSource = self
         messageField.delegate = self
@@ -60,6 +62,11 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardToggle(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
         print("ChatView > viewDidLoad > Exit")
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        print("ChatView > viewWillDisappear > Starting to browse for peers")
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
     }
     
     
@@ -305,7 +312,6 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("ChatView > disconnectedFromPeeer > disconnected from peer \(peerID)")
         
-        //TODO: Check if the peer that was disconnected from is this peer. If so, go back to peer view.
         if (peerID == messages.peerID) {
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             
@@ -324,7 +330,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     }
     
     
-    func inviteWasReceived(_ fromPeer: MCPeerID) {
+    func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: Bool) {
         //TODO: Need to decide what to do if invite is received.
         
     }

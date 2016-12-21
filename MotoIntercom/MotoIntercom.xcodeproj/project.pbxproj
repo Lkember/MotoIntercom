@@ -19,6 +19,7 @@
 		B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B262DE381DF9B97A00DA9931 /* MessageObject.swift */; };
 		B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B274AE821D464C9200E732FD /* StartupViewController.swift */; };
 		B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28EEA501D34185300AF5E5D /* ChatViewController.swift */; };
+		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		B262DE381DF9B97A00DA9931 /* MessageObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageObject.swift; sourceTree = "<group>"; };
 		B274AE821D464C9200E732FD /* StartupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupViewController.swift; sourceTree = "<group>"; };
 		B28EEA501D34185300AF5E5D /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
 				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B2515C531D2C7CCB00760DE0 /* Assets.xcassets */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
@@ -280,6 +283,7 @@
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
 				B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */,
 				B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */,
+				B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */,
 				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
 				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);

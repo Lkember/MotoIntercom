@@ -18,6 +18,8 @@ class MessageObject: NSObject, NSCoding {
     var messages = [String]()       // An array of strings, where each string is a message.
     var isAvailable : Bool = false
     
+    var connectionType : Int = 0    // 0= not specified, 1 = message, 2 = voice
+    
     
     // MARK: init
     override init() {
@@ -45,8 +47,25 @@ class MessageObject: NSObject, NSCoding {
     }
     
     // MARK: Functions
+    func resetConnectionType() {
+        print("MessageObject > resetConnectionType > forPeer \(self.peerID.displayName)")
+        connectionType = 0
+    }
     
+    func setConnectionTypeToMessage() {
+        print("MessageObject > setConnectionTypeToMessage > forPeer \(self.peerID.displayName)")
+        connectionType = 1
+    }
     
+    func setConnectionTypeToVoice() {
+        print("MessageObject > setConnectionTypeToVoice > forPeer \(self.peerID.displayName)")
+        connectionType = 2
+    }
+    
+    func getConnectionType() -> Int {
+        print("MessageObject > getConnectionType > RETURN \(connectionType) forPeer \(self.peerID.displayName)")
+        return connectionType
+    }
     
     // MARK: NSCoding
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
