@@ -16,6 +16,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let endChat = "_end_chat_"
+    let incomingCall = "_incoming_call_"
     
     // MARK: Properties
     @IBOutlet weak var viewSwitch: UISwitch!
@@ -161,11 +162,36 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
             let fromPeer = dictionary["peer"] as! MCPeerID
             
-            print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(fromPeer.displayName)")
+            let peerIndex = getIndexForPeer(peer: fromPeer)
             
-            if newMessage.messages[0] != endChat {
+            // If the message is an end chat message
+            if (newMessage.messages[0] == endChat) {
+                //TODO: Need to close connection
+                print("PeerView > handleMPCReceivedDataNotification > endChat message received")
                 
-                let peerIndex = getIndexForPeer(peer: fromPeer)
+                let peer = messages[peerIndex].peerID
+                let sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: peer!)
+                
+                if sessionIndex != -1 {
+                    // disconnect from session and clean sessions
+                    appDelegate.connectionManager.sessions[sessionIndex].disconnect()
+                    appDelegate.connectionManager.cleanSessions()
+                    
+                    peersTable.reloadData()
+                    
+                    print("PeerView > handleMPCReceivedDataNotification > disconnected from session")
+                }
+            }
+                
+            // If the message is an incoming call message
+            else if (newMessage.messages[0] == incomingCall) {
+                //TODO: Need to let the user know there is an incoming call
+                print("PeerView > handleMPCReceivedDataNotification > incomingCall message received")
+            }
+                
+            // If the message is a chat message
+            else {
+                print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(fromPeer.displayName)")
                 
                 messages[peerIndex].messages.append(newMessage.messages[0])
                 messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
@@ -187,11 +213,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         self.newMessage.append(fromPeer)
                     }
                     self.peersTable.reloadRows(at: [IndexPath.init(row: peerIndex, section: 0)], with: .fade)
-//                    self.peersTable.reloadData()
                 }
-            }
-            else {
-                //TODO: If the incoming message is the end chat message
             }
         }
         print("PeerView > handleMPCReceivedDataWithNotification > Exit")
