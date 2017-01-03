@@ -25,6 +25,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     var keyboard = 0
     
     let endChat = "_end_chat_"
+    let incomingCall = "_incoming_call_"
     
     // MARK: Views
     
@@ -223,21 +224,17 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
             }
         }
         else {
-            let alert = UIAlertController(title: "", message: "\(fromPeer?.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
+            let alert = UIAlertController(title: "", message: "\(fromPeer!.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
             
             let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.default) { (alertAction) -> Void in
                 
                 var sess : MCSession?
+                let sessIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: fromPeer!)
                 
-                for session in self.appDelegate.connectionManager.sessions {
-                    if session.connectedPeers.contains(fromPeer!) {
-                        sess = session
-                        break
-                    }
+                if sessIndex != -1 {
+                    sess = self.appDelegate.connectionManager.sessions[sessIndex]
+                    sess?.disconnect()
                 }
-                
-                sess!.disconnect()
-                
                 self.dismiss(animated: true, completion: nil)
             }
 
@@ -329,6 +326,9 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         }
     }
     
+    func connectingWithPeer(_ peerID: MCPeerID) {
+        // Nothing to do here
+    }
     
     func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: Bool) {
         //TODO: Need to decide what to do if invite is received.

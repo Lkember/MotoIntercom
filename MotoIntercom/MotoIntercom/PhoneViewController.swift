@@ -13,15 +13,18 @@ import MultipeerConnectivity
 class PhoneViewController: UIViewController, AVAudioRecorderDelegate, ConnectionManagerDelegate {
 
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    let incomingCall = "_incoming_call_"
     
     // MARK: Properties
     @IBOutlet weak var timerLabel: UILabel!
     @IBOutlet weak var endCallButton: UIButton!
     
     var peerID: MCPeerID?
+    var sessionIndex: Int?
+    var outputStream: OutputStream?
+    var outputStreamIsSet: Bool = false
     
     var streamingThread: Thread?
-    var outputStream: OutputStream?
     var startTime = NSDate.timeIntervalSinceReferenceDate
     var timer = Timer()
     
@@ -32,6 +35,56 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
         print("PhoneView > viewDidLoad > Entry")
         super.viewDidLoad()
         
+        sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: peerID!)
+        
+        // sessionIndex is -1 then we are not connected to peer, so send invite
+        if (sessionIndex == -1) {
+            sessionIndex = self.appDelegate.connectionManager.createNewSession()
+            
+            let isPhoneCall: Bool = true
+            let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+            
+            self.appDelegate.connectionManager.browser.invitePeer(self.peerID!, to: self.appDelegate.connectionManager.sessions[sessionIndex!], withContext: dataToSend, timeout: 20)
+        }
+        else {
+            let phoneMessage = MessageObject.init(peerID: self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers[0], messageFrom: [1], messages: [incomingCall])
+            
+            // Attempt to send phone message
+            if (!self.appDelegate.connectionManager.sendData(message: phoneMessage, toPeer: self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers[0])) {
+                
+                print("PhoneView > viewDidLoad > Phone call failed")
+                timerLabel.text = "Call Failed"
+                
+                //TODO: Play a beeping sound to let the user know the call failed
+                
+                // Wait 2 seconds and then end call
+                sleep(2)
+                
+                endCallButtonIsClicked(endCallButton)
+            }
+        }
+        
+        do {
+            outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
+            outputStreamIsSet = true
+        }
+        catch let error as NSError {
+            print("PhoneView > viewDidLoad > Failed to create outputStream: \(error.localizedDescription)")
+        }
+        
+        print("PhoneView > viewDidLoad > sessionIndex = \(sessionIndex)")
+        
+        self.navigationController?.navigationBar.isHidden = true
+        
+        if (outputStreamIsSet) {
+            setupAVRecorder()
+        }
+        
+        print("PhoneView > viewDidLoad > Exit")
+    }
+    
+    
+    func setupAVRecorder() {
         recordingSession = AVAudioSession.sharedInstance()
         
         do {
@@ -53,14 +106,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
                 
             }
         }
-        catch {
-            print("PhoneView > viewDidLoad > Failed to begin recording 1")
-            // failed to record
+        catch let error as NSError {
+            // TODO: Figure out what to do when recording fails
+            print("PhoneView > viewDidLoad > Failed to begin recording: \(error.localizedDescription)")
         }
-        
-        self.navigationController?.navigationBar.isHidden = true
-        
-        print("PhoneView > viewDidLoad > Exit")
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -104,8 +153,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     func finishRecording(success: Bool) {
         print("PhoneView > finishRecording > Stopping audio recording")
         // TODO: Stop the updateTime() method from working
-        audioRecorder.stop()
-        audioRecorder = nil
+        if audioRecorder != nil {
+            audioRecorder.stop()
+            audioRecorder = nil
+        }
     }
     
     func updateTime() {
@@ -138,7 +189,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
         // TODO : need to stop timer from incrementing 
         print("PhoneView > endCallButtonIsClicked > Stopping recording")
         
-        audioRecorder.stop()
+        finishRecording(success: true)
+        outputStream?.close()
+        
         _ = self.navigationController?.popViewController(animated: true)
     }
     
@@ -146,19 +199,38 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     // MARK: ConnectionManagerDelegate
     func foundPeer(_ newPeer : MCPeerID) {
         //TODO: implement
+        // nothing to do
     }
     
     func lostPeer(_ lostPeer: MCPeerID) {
-        //TODO: implement
+        // Nothing to do, since disconnectedFromPeer will run if lostPeer is currently connected to peer
+//        if (lostPeer == self.peerID) {
+//            print("PhoneView > lostPeer > Lost peer \(lostPeer.displayName). Ending call, closing output stream.")
+//            finishRecording(success: true)
+//            outputStream?.close()
+//        }
+//        else {
+//            print("PhoneView > lostPeer > \(lostPeer.displayName)")
+//        }
     }
     
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
-        //TODO: implement
+        //TODO: Need to notify the user that someone is trying to connect
     }
     
+    
     func connectedWithPeer(_ peerID : MCPeerID) {
-        //TODO: implement
+        
+        if (peerID == self.peerID) {
+            print("PhoneView > connectedWithPeer > Connected with the current peer. Setting up AVRecorder.")
+            setupAVRecorder()
+        }
+        else {
+            print("PhoneView > connectedWithPeer > New connection to \(peerID.displayName)")
+        }
+        
     }
+    
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         if (peerID == self.peerID!) {
@@ -180,6 +252,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
         }
     }
     
+    func connectingWithPeer(_ peerID: MCPeerID) {
+        timerLabel.text = "Connecting..."
+    }
     
     /*
     // MARK: - Navigation

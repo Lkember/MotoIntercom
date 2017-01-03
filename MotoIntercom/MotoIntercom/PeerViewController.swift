@@ -181,7 +181,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //                let currCell = peersTable.cellForRow(at: IndexPath.init(row: peerIndex, section: 0)) as! PeerTableViewCell
 //                currCell.newMessageArrived()
                 
-
                 //Changes to UI must be done by main thread
                 DispatchQueue.main.async {
                     if (!self.newMessage.contains(fromPeer)) {
@@ -488,33 +487,30 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
                         self.messages[peerIndex].setConnectionTypeToVoice()
                         
-                        let index = self.appDelegate.connectionManager.createNewSession()
+//                        let index = self.appDelegate.connectionManager.createNewSession()
                         
                         // The user selected phone call
-                        let isPhoneCall: Bool = true
-                        let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-                        
-                        print("PeerView > didSelectRowAt > Setting isPhoneCall=\(isPhoneCall)")
+//                        let isPhoneCall: Bool = true
+//                        let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
                         
                         //Inviting peer
-                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
+//                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
                         
 //                            let outputStream = try self.appDelegate.connectionManager.sessions[index].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
 //                            print("PeerView > didSelectRowAt > Successfully created stream")
                             
-                            self.destinationPeerID = currCell.peerID!
-                            self.isDestPeerIDSet = true
-                            
-//                            OperationQueue.main.addOperation { () -> Void in
-//                                print("PeerView > didSelectRowAt > Performing segue")
-//                                self.performSegue(withIdentifier: "callSegue", sender: self)
-//                            }
+                        self.destinationPeerID = currCell.peerID!
+                        self.isDestPeerIDSet = true
+                        
+                        OperationQueue.main.addOperation { () -> Void in
+                            print("PeerView > didSelectRowAt > Performing segue")
+                            self.performSegue(withIdentifier: "callSegue", sender: self)
+                        }
                     }
                     else {
                         
                         self.destinationPeerID = currCell.peerID
                         self.isDestPeerIDSet = true
-                        
                         
 //                        let outputStream = try self.appDelegate.connectionManager.sessions[check].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
 //                        print("PeerView > didSelectRowAt > Successfully created stream.")
@@ -715,19 +711,23 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
-                
-                var sess : MCSession?
-                
-                for session in self.appDelegate.connectionManager.sessions {
-                    if session.connectedPeers.contains(fromPeer) {
-                        sess = session
-                    }
-                }
-                
                 print("PeerView > inviteWasReceived > Declined invitation")
                 
-                if self.appDelegate.connectionManager.invitationHandler != nil {
+                var sess : MCSession?
+                var sessIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: fromPeer)
+                
+                if sessIndex == -1 {
+                    print("PeerView > inviteWasReceived > Session could not be found...")
+                    sessIndex = self.appDelegate.connectionManager.createNewSession()
+                }
+                
+                sess = self.appDelegate.connectionManager.sessions[sessIndex]
+                
+                if self.appDelegate.connectionManager.invitationHandler != nil && sess != nil {
                     self.appDelegate.connectionManager.invitationHandler!(false, sess!)
+                }
+                else {
+                    print("PeerView > inviteWasReceived > invitationHandler or session is nil")
                 }
             }
             
@@ -820,11 +820,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
+    func connectingWithPeer(_ peerID: MCPeerID) {
+        // TODO: Need to decide what to do when connecting to peer
+    }
+    
+    
     //MARK: Segue
     
     // This function is run before a segue is performed
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("PeerView > prepare > Entry: \(isDestPeerIDSet) destinationPeerID = \(destinationPeerID)")
+        print("PeerView > prepare > Entry: \(isDestPeerIDSet) destinationPeerID = \(destinationPeerID?.displayName)")
         
         if (segue.identifier == "idChatSegue" && isDestPeerIDSet) {
             let dest = segue.destination as? ChatViewController
@@ -873,6 +878,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            dest?.messageField.isSelectable = false
 //            dest?.messageField.isUserInteractionEnabled = false
         }
+        else if (segue.identifier == "callSegue" && isDestPeerIDSet) {
+            print("PeerView > prepare > current segue is callSegue")
+            
+            let dest = segue.destination as? PhoneViewController
+            dest?.peerID = destinationPeerID
+            
+            // TODO: Need to finish
+            
+        }
+        
         print("PeerView > prepare > Exit")
     }
     

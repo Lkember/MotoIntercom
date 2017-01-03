@@ -15,6 +15,7 @@ protocol ConnectionManagerDelegate {
     func foundPeer(_ newPeer : MCPeerID)
     func lostPeer(_ lostPeer: MCPeerID)
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool)
+    func connectingWithPeer(_ peerID: MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
 }
@@ -296,6 +297,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
     }
     
+    
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         print("ConnectionManager > didNotStartAdvertisingPeer > \(error.localizedDescription)")
     }
@@ -314,6 +316,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             
         case MCSessionState.connecting:
             print("ConnectionManager > session didChange state > Connecting to peer: \(peerID)")
+            delegate?.connectingWithPeer(peerID)
             
         case MCSessionState.notConnected:
             print("ConnectionManager > session didChange state > Failed to connect to session: \(session)")
