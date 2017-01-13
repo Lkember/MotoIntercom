@@ -30,13 +30,13 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     // MARK: Views
     
     override func viewDidLoad() {
-        print("ChatView > viewDidLoad > Entry")
+        print("\(#file) > \(#function) > Entry")
         super.viewDidLoad()
         
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
         
-        print("ChatView > viewDidLoad > Stopped browsing for peers")
+        print("\(#file) > \(#function) > Stopped browsing for peers")
         appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
         tableView.delegate = self
@@ -47,7 +47,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         messageField.layer.borderColor = UIColor.gray.cgColor
         messageField.layer.borderWidth = 1
         
-        print("ChatView > viewDidLoad > current peerID = \(messages.peerID)")
+        print("\(#file) > \(#function) > current peerID = \(messages.peerID)")
         
         if (!messages.isAvailable) {
             messageField.isSelectable = false
@@ -65,18 +65,18 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardToggle(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardToggle(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
-        print("ChatView > viewDidLoad > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        print("ChatView > viewWillDisappear > Starting to browse for peers")
+        print("\(#file) > \(#function) > Starting to browse for peers")
         appDelegate.connectionManager.browser.startBrowsingForPeers()
     }
     
     // When the send button is clicked send the message
     // TODO: When a message fails to send, we should notify the user somehow.
     @IBAction func sendButtonIsClicked(_ sender: UIButton) {
-        print("ChatView > sendButtonIsClicked > Entry: Current Peer \(messages.peerID)")
+        print("\(#file) > \(#function) > Entry: Current Peer \(messages.peerID)")
         
         if (messageField.text! != "") {
             
@@ -90,12 +90,12 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
                 messages.messages.append(messageField.text!)
                 
                 self.updateTableView()
-                print("ChatView > sendButtonIsClicked > new message size = \(self.messages.messages.count)")
+                print("\(#file) > \(#function) > new message size = \(self.messages.messages.count)")
                 
                 messageField.text = ""
             }
             else {
-                print("ChatView > sendButtonIsClicked > ERROR: Could not send data")
+                print("\(#file) > \(#function) > ERROR: Could not send data")
                 let alert = UIAlertController(title: "Connection Lost", message: "There was an error sending your message.", preferredStyle: UIAlertControllerStyle.alert)
                 
                 let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
@@ -116,14 +116,14 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
 //                messagesArray.append(dictionary)
 //                
 //                self.updateTableView()
-//                print("ChatView > sendButtonIsClicked > New messagesArray size = \(messagesArray.count)")
+//                print("\(#file) > \(#function) > New messagesArray size = \(messagesArray.count)")
 //                messageField.text = ""
 //            }
 //            else {
-//                print("ChatView > sendButtonIsClicked > Could not send data.")
+//                print("\(#file) > \(#function) > Could not send data.")
 //            }
         }
-        print("ChatView > sendButtonIsClicked > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -137,7 +137,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
     //Displaying messages
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print("ChatView > tableView > cellForRowAt > Entry")
+        print("\(#file) > \(#function) > Entry")
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatViewCell")! as UITableViewCell
         
         cell.selectionStyle = UITableViewCellSelectionStyle.none
@@ -173,11 +173,11 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         cell.textLabel?.text = senderLabelText
         cell.textLabel?.textColor = senderColor
         
-        print("ChatView > tableView > cellForRowAt the message is: \(messages.messages[indexPath.row])")
+        print("\(#file) > \(#function) > the message is: \(messages.messages[indexPath.row])")
         cell.detailTextLabel?.text = messages.messages[indexPath.row]
         
         if (self.tableView.contentSize.height > self.tableView.frame.size.height && indexPath.row == messages.messages.count-1) {
-            print("ChatView > tableView > auto scrolling...")
+            print("\(#file) > \(#function) > auto scrolling...")
             tableView.scrollToRow(at: IndexPath(row: messages.messages.count - 1, section: 0), at: UITableViewScrollPosition.bottom, animated: true)
         }
         
@@ -186,13 +186,13 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
     //Getting the number of rows in the table there should be
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print("ChatView > tableView > numberOfRowsInSection > returning \(messages.messages.count)")
+        print("\(#file) > \(#function) > returning \(messages.messages.count)")
         return messages.messages.count
 //        return messagesArray.count
     }
     
     func updateTableView() {
-        print("ChatView > updateTableView > updating table...")
+        print("\(#file) > \(#function) > updating table...")
         self.tableView.reloadData()
         
         if self.tableView.contentSize.height > self.tableView.frame.size.height {
@@ -201,7 +201,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     }
     
     func handleMPCReceivedDataWithNotification(_ notification: Notification) {
-        print("ChatView > handleMPCReceivedDataWithNotification > Message received \(messages.messages.count).")
+        print("\(#file) > \(#function) > Message received \(messages.messages.count).")
         
 //        tableView.insertRows(at: [IndexPath.init(row: messages.messages.count-1, section: 0)], with: .fade)
 //        tableView.reloadData()
@@ -250,7 +250,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
 
     func keyboardToggle(_ notification: Notification) {
-        print("ChatView > keyboardToggle > keyboard = \(keyboard), notification = \(notification.name)")
+        print("\(#file) > \(#function) > keyboard = \(keyboard), notification = \(notification.name)")
         let userInfo = (notification as NSNotification).userInfo!
         
         let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
@@ -262,7 +262,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
                 tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
                 messageView.frame.origin.y += keyboardViewEndFrame.height
     //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: 0, right: 0)
-                print("ChatView > keyboardToggle > Keyboard is hidden.")
+                print("\(#file) > \(#function) > Keyboard is hidden.")
                 keyboard -= 1
             }
         } else if notification.name == NSNotification.Name.UIKeyboardWillShow {
@@ -270,7 +270,7 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     //            scrollView.contentInset = UIEdgeInsets(top: navHeight + 20, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
                 tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
                 messageView.frame.origin.y -= keyboardViewEndFrame.height
-                print("ChatView > keyboardToggle > Keyboard is showing.")
+                print("\(#file) > \(#function) > Keyboard is showing.")
                 keyboard += 1
             }
         }
@@ -296,20 +296,20 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
     
     //MARK: Connection Manager
     func foundPeer(_ newPeer: MCPeerID) {
-        print("ChatView > foundPeer > Peer was found.")
+        print("\(#file) > \(#function) > Peer was found.")
     }
     
     // TODO: Check if the peer lost was the current peer, if so go back to peer view
     func lostPeer(_ lostPeer: MCPeerID) {
-        print("ChatView > lostPeer > Peer was lost.")
+        print("\(#file) > \(#function) > Peer was lost.")
     }
     
     func connectedWithPeer(_ peerID: MCPeerID) {
-        print("ChatView > connectedWithPeer > connected to new peer \(peerID)")
+        print("\(#file) > \(#function) > connected to new peer \(peerID)")
     }
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
-        print("ChatView > disconnectedFromPeeer > disconnected from peer \(peerID)")
+        print("\(#file) > \(#function) > disconnected from peer \(peerID)")
         
         if (peerID == messages.peerID) {
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
