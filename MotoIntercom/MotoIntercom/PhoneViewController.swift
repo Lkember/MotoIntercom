@@ -349,6 +349,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (peerID == self.peerID) {
             print("PhoneView > connectedWithPeer > Connected with the current peer. Setting up AVRecorder.")
+            self.timerLabel.text = "Connecting..."
+            
             setupAVRecorder()
         }
         else {
