@@ -12,6 +12,8 @@ class IncomingCallViewController: UIViewController {
 
 //    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    
     @IBOutlet weak var callDisplayNameLabel: UILabel!
     var peerIndex: Int?
     var messages: [MessageObject]?
@@ -55,29 +57,39 @@ class IncomingCallViewController: UIViewController {
     
     @IBAction func acceptButtonIsTouched(_ sender: UIButton) {
 //        let peerIndex = getIndexForPeer(peer: fromPeer)
-        print("IncomingCallView > acceptButtonIsTouched > Entry")
+        print("\(#file) > \(#function) > Entry")
         messages?[peerIndex!].setConnectionTypeToVoice()
         
         if ((self.navigationController?.viewControllers.count)! >= 2) {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
-            print("IncomingCallView > acceptButtonIsTouched > Setting didAcceptCall to true")
+            print("\(#file) > \(#function) > Accepting invitation")
             
-//            superview!.didAcceptCall = true
-            superview!.destinationPeerID = messages?[peerIndex!].peerID
-            superview!.isDestPeerIDSet = true
-            superview!.messages[peerIndex!].setConnectionTypeToVoice()
+            let index = self.appDelegate.connectionManager.createNewSession()
             
-            dismissAnimate()
+            if self.appDelegate.connectionManager.invitationHandler != nil {
+                self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
             
-            print("\(#file) > \(#function) > Accepting Call")
-            superview!.acceptCall()
+    //            superview!.didAcceptCall = true
+                superview!.destinationPeerID = messages?[peerIndex!].peerID
+                superview!.isDestPeerIDSet = true
+                superview!.messages[peerIndex!].setConnectionTypeToVoice()
+            
+                dismissAnimate()
+            
+                print("\(#file) > \(#function) > Accepting Call")
+                superview!.acceptCall()
+            }
+            else {
+                print("\(#file) > \(#function) > Failed to accept invitation.")
+                //TODO: Notify user that connection failed
+            }
         }
         
-        print("IncomingCallView > acceptButtonIsTouched > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
-        print("IncomingCallView > declineButtonIsTouched > Setting didAcceptCall to false")
+        print("\(#file) > \(#function) > Setting didAcceptCall to false")
         dismissAnimate()
     }
     
