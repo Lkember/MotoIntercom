@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var connectionManager : ConnectionManager!
     var peer : MCPeerID!
     var peerIDString = "selfMCPeerID"
+    
+    var didAcceptCall = false
 
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {

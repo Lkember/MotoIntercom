@@ -5,12 +5,15 @@
 //  Created by Logan Kember on 2016-12-18.
 //  Copyright © 2016 Logan Kember. All rights reserved.
 //
+//  This may be helpful when trying to play from the livestream
+//  https://developer.apple.com/library/content/samplecode/HLSCatalog/Introduction/Intro.html#//apple_ref/doc/uid/TP40017320-Intro-DontLinkElementID_2
+//  http://stackoverflow.com/questions/33245063/swift-2-avfoundation-recoding-realtime-audio-samples
 
 import UIKit
 import AVFoundation
 import MultipeerConnectivity
 
-class PhoneViewController: UIViewController, AVAudioRecorderDelegate, ConnectionManagerDelegate {
+class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, ConnectionManagerDelegate {
 
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let incomingCall = "_incoming_call_"
@@ -23,22 +26,66 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     var sessionIndex: Int?
     var outputStream: OutputStream?
     var outputStreamIsSet: Bool = false
+    var isConnecting: Bool = false
     
     var streamingThread: Thread?
     var startTime = NSDate.timeIntervalSinceReferenceDate
     var timer = Timer()
     
+    var captureSession: AVCaptureSession!
     var recordingSession: AVAudioSession!
-    var audioRecorder: AVAudioRecorder!
+    var captureDevice: AVCaptureDevice!
+    var captureDeviceInput: AVCaptureDeviceInput!
+//    var audioRecorder: AVAudioRecorder!
     
     override func viewDidLoad() {
+        //-------------------------------------------------------------------------------
+        
+        if (isConnecting) {
+            timerLabel.text = "Connecting..."
+        }
+        
+        
+        // Initializing recording device
+        
         print("PhoneView > viewDidLoad > Entry")
         super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
+        
+        // Setting the connectionManager delegate to self
+        appDelegate.connectionManager.delegate = self
+        
+//        captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
+//        
+//        do {
+//            try captureDeviceInput = AVCaptureDeviceInput.init(device: captureDevice)
+//        }
+//        catch let error as NSError {
+//            print("PhoneView > viewDidLoad > error: \(error.localizedDescription)")
+//            
+//            // End the call
+//            endCallButtonIsClicked(endCallButton)
+//        }
+//        
+//        captureSession.addInput(captureDeviceInput)
+//        
+//        // Checking recording permission
+//        if ((recordingSession.recordPermission() == AVAudioSessionRecordPermission.denied)) {
+//            print("PhoneView > setupAVRecorder > Permission to record denied. Exiting.")
+//            //TODO: Notify user that we do not have permission
+//            
+//            endCallButtonIsClicked(endCallButton)
+//        }
+        
+        //-------------------------------------------------------------------------------
+        // Calling peer
         
         sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: peerID!)
         
         // sessionIndex is -1 then we are not connected to peer, so send invite
         if (sessionIndex == -1) {
+            print("PhoneView > viewDidLoad > Calling peer.")
             sessionIndex = self.appDelegate.connectionManager.createNewSession()
             
             let isPhoneCall: Bool = true
@@ -47,6 +94,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
             self.appDelegate.connectionManager.browser.invitePeer(self.peerID!, to: self.appDelegate.connectionManager.sessions[sessionIndex!], withContext: dataToSend, timeout: 20)
         }
         else {
+            print("PhoneView > viewDidLoad > Sending message to peer.")
+            
             let phoneMessage = MessageObject.init(peerID: self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers[0], messageFrom: [1], messages: [incomingCall])
             
             // Attempt to send phone message
@@ -59,10 +108,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
                 
                 // Wait 2 seconds and then end call
                 sleep(2)
-                
                 endCallButtonIsClicked(endCallButton)
             }
         }
+        
+        //-------------------------------------------------------------------------------
+        // Attempting to create outputStream. This will only succeed if the user was already connected to.
         
         do {
             outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
@@ -70,6 +121,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
         }
         catch let error as NSError {
             print("PhoneView > viewDidLoad > Failed to create outputStream: \(error.localizedDescription)")
+            outputStreamIsSet = false
         }
         
         print("PhoneView > viewDidLoad > sessionIndex = \(sessionIndex)")
@@ -84,11 +136,52 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     }
     
     
+    // A function which checks permission of recording and initializes recorder
     func setupAVRecorder() {
-        recordingSession = AVAudioSession.sharedInstance()
+        
+        captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
         
         do {
-            try recordingSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
+            try captureDeviceInput = AVCaptureDeviceInput.init(device: captureDevice)
+        }
+        catch let error as NSError {
+            print("PhoneView > viewDidLoad > error: \(error.localizedDescription)")
+            
+            // End the call
+            endCallButtonIsClicked(endCallButton)
+        }
+        
+        captureSession.addInput(captureDeviceInput)
+        
+        let output = AVCaptureAudioDataOutput()
+        let queue = DispatchQueue(label: "streamData")
+        
+        output.setSampleBufferDelegate(self, queue: queue)
+        captureSession.addOutput(output)
+        
+        // Checking recording permission
+        if ((recordingSession.recordPermission() == AVAudioSessionRecordPermission.denied)) {
+            print("PhoneView > setupAVRecorder > Permission to record denied. Exiting.")
+            //TODO: Notify user that we do not have permission
+            
+            endCallButtonIsClicked(endCallButton)
+        }
+        
+        
+        // Attempting to set the mode to a voice chat
+        do {
+            try recordingSession.setMode(AVAudioSessionModeVoiceChat)
+        }
+        catch let error as NSError {
+            print("PhoneView > viewDidLoad > Error setting recording mode: \(error.localizedDescription)")
+            //TODO: Notify user there was an error setting voice mode
+            
+            endCallButtonIsClicked(endCallButton)
+        }
+        
+        
+        do {
+//            try recordingSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
             try recordingSession.setActive(true)
             
             recordingSession.requestRecordPermission() { [unowned self] allowed in
@@ -105,10 +198,27 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
                 }
                 
             }
+            
+            
+            // If output stream is not set, then create output stream
+            if (!outputStreamIsSet) {
+                
+                do {
+                    outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
+                    outputStreamIsSet = true
+                }
+                catch let error as NSError {
+                    print("PhoneView > viewDidLoad > Failed to create outputStream: \(error.localizedDescription)")
+                    outputStreamIsSet = false
+                }
+            }
+            
         }
         catch let error as NSError {
             // TODO: Figure out what to do when recording fails
-            print("PhoneView > viewDidLoad > Failed to begin recording: \(error.localizedDescription)")
+            print("PhoneView > setupAVRecorder > Failed to begin recording: \(error.localizedDescription)")
+            
+            endCallButtonIsClicked(endCallButton)
         }
     }
     
@@ -126,39 +236,55 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     }
     
     
+    // MARK: AVCaptureAudioDataOutputSampleBufferDelegate
+    
+    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
+        
+    }
+    
+    
     // MARK: Actions
     func startRecording() {
-        print("PhoneView > startRecording > Entry")
-        let audioFilename = getDocumentsDirectory().appendingPathComponent("recording.m4a")
-        
-        let settings = [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 12000,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-        ]
-        
-        do {
-            audioRecorder = try AVAudioRecorder.init(url: audioFilename, settings: settings)
-            audioRecorder.delegate = self
-            audioRecorder.record()
-            
-        } catch {
-            print("PhoneView > startRecording > Failed to start recording")
-            // Failed to record
-        }
-        print("PhoneView > startRecording > Exit")
+        print("PhoneView > startRecording > Started recording")
+        captureSession.startRunning()
+//        print("PhoneView > startRecording > Entry")
+//        let audioFilename = getDocumentsDirectory().appendingPathComponent("recording.m4a")
+//        
+//        let settings = [
+//            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+//            AVSampleRateKey: 12000,
+//            AVNumberOfChannelsKey: 1,
+//            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+//        ]
+//        
+//        do {
+//            audioRecorder = try AVAudioRecorder.init(url: audioFilename, settings: settings)
+//            audioRecorder.delegate = self
+//            audioRecorder.record()
+//            
+//        } catch let error as NSError {
+//            print("PhoneView > startRecording > Failed to start recording: \(error.localizedDescription)")
+//            // Failed to record
+//        }
+//        print("PhoneView > startRecording > Exit")
     }
     
     func finishRecording(success: Bool) {
         print("PhoneView > finishRecording > Stopping audio recording")
         // TODO: Stop the updateTime() method from working
-        if audioRecorder != nil {
-            audioRecorder.stop()
-            audioRecorder = nil
-        }
+//        if audioRecorder != nil {
+//            audioRecorder.stop()
+//            audioRecorder = nil
+//        }
     }
     
+    
+    func errorReceivedWhileRecording() {
+        
+    }
+    
+    
+    // Used to display how long the call has been going on for
     func updateTime() {
         let currentTime = NSDate.timeIntervalSinceReferenceDate
         
@@ -174,6 +300,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
         
         timerLabel.text = "\(minuteString):\(secondString)"
     }
+    
     
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
@@ -198,7 +325,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     
     // MARK: ConnectionManagerDelegate
     func foundPeer(_ newPeer : MCPeerID) {
-        //TODO: implement
         // nothing to do
     }
     
@@ -233,6 +359,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
+        print("PhoneView > disconnectedWithPeer > Disconnected from peer \(peerID.displayName)")
+        
         if (peerID == self.peerID!) {
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(self.peerID!.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             
@@ -255,6 +383,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, Connection
     func connectingWithPeer(_ peerID: MCPeerID) {
         timerLabel.text = "Connecting..."
     }
+    
     
     /*
     // MARK: - Navigation

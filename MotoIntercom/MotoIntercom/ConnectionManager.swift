@@ -29,14 +29,12 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Creating service types, session, peerID, browser and advertiser
     var sessions : [MCSession] = []
-//    var session : MCSession!
     var peer : MCPeerID!
     var browser : MCNearbyServiceBrowser!
     var advertiser : MCNearbyServiceAdvertiser
     
     //Array of peers
     var foundPeers = [MCPeerID]()
-//    var connectedPeers = [MCPeerID]()
     
     //invitation handler
     var invitationHandler: ((Bool, MCSession) -> Void)?

@@ -33,6 +33,9 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         print("ChatView > viewDidLoad > Entry")
         super.viewDidLoad()
         
+        // Setting the connectionManager delegate to self
+        appDelegate.connectionManager.delegate = self
+        
         print("ChatView > viewDidLoad > Stopped browsing for peers")
         appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
@@ -69,7 +72,6 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         print("ChatView > viewWillDisappear > Starting to browse for peers")
         appDelegate.connectionManager.browser.startBrowsingForPeers()
     }
-    
     
     // When the send button is clicked send the message
     // TODO: When a message fails to send, we should notify the user somehow.

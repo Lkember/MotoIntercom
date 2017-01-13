@@ -6,7 +6,6 @@
 //  Copyright © 2016 Logan Kember. All rights reserved.
 //
 //  Useful link for InputStream and OutputStream https://robots.thoughtbot.com/streaming-audio-to-multiple-listeners-via-ios-multipeer-connectivity
-//  Useful link for audio http://www.stefanpopp.de/capture-iphone-microphone/
 
 import UIKit
 import MultipeerConnectivity
@@ -31,16 +30,94 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     var destinationPeerID: MCPeerID?
     var isDestPeerIDSet = false
+//    var didAcceptCall = false
+    
+    
+    //MARK: View Functions
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        if let loadedData = load() {
+            messages = loadedData
+        }
+        
+        // Setting the connectionManager delegate to self
+        appDelegate.connectionManager.delegate = self
+        
+        print("\(#file) > \(#function) > Resetting peer array.")
+        appDelegate.connectionManager.resetPeerArray()
+        navigationItem.leftBarButtonItem?.title = "Back"
+        
+        peersTable.delegate = self
+        peersTable.dataSource = self
+        
+        refreshControl = UIRefreshControl()
+//        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
+        
+        peersTable.addSubview(refreshControl)
+        
+        //set the delegate to self, and start browsing for peers
+        appDelegate.connectionManager.delegate = self
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
+        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
+        
+        //Adding an observer for when data is received
+        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        
+        isDestPeerIDSet = false
+        viewSwitch.isOn = true
+        print("\(#file) > \(#function) > Advertising and browsing for peers. Thread: \(Thread.current)")
+    }
+    
+    
+    // If the view disappears than stop advertising and browsing for peers.
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        if self.isMovingFromParentViewController {
+            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
+            appDelegate.connectionManager.browser.stopBrowsingForPeers()
+            print("\(#file) > \(#function) > Stopped advertising and browsing.")
+        }
+        
+        //        appDelegate.connectionManager.resetPeerArray()
+        //        print("\(#file) > \(#function) viewWillDisappear > Resetting table")
+    }
+    
+    
+    override func viewDidAppear(_ animated: Bool) {
+        print("\(#file) > \(#function) > Entry")
+        
+        // Setting the connectionManager delegate to self
+        appDelegate.connectionManager.delegate = self
+        
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
+        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
+        
+        self.switchView(viewSwitch)
+        
+        DispatchQueue.main.async {
+            self.peersTable.reloadData()
+        }
+        
+        isDestPeerIDSet = false
+        destinationPeerID = nil
+        
+        print("\(#file) > \(#function) > Exit: Advertising and browsing for peers.")
+    }
+    
     
     // MARK: Actions
     @IBAction func switchView(_ sender: UISwitch) {
         if viewSwitch.isOn {
             appDelegate.connectionManager.advertiser.startAdvertisingPeer()
-            print("PeerView > switchView > Advertising to peers...")
+            print("\(#file) > \(#function) > Advertising to peers...")
         }
         else {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-            print("PeerView > switchView > Stopped advertising to peers.")
+            print("\(#file) > \(#function) > Stopped advertising to peers.")
         }
     }
     
@@ -77,74 +154,24 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         return count
     }
     
-    //MARK: View Functions
-    // If the view disappears than stop advertising and browsing for peers.
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+    
+    // Function used when the user accepts a call
+    func acceptCall() {
+        print("\(#file) > \(#function) > Entry: Call accepted")
         
-        if self.isMovingFromParentViewController {
-            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-            appDelegate.connectionManager.browser.stopBrowsingForPeers()
-            print("peerView > viewWillDisappear > Stopped advertising and browsing.")
+        // If a call has been accepted
+        OperationQueue.main.addOperation { () -> Void in
+            print("\(#file) > \(#function) > Performing callSegue")
+            super.performSegue(withIdentifier: "callSegue", sender: self)
         }
         
-//        appDelegate.connectionManager.resetPeerArray()
-//        print("PeerView > viewWillDisappear > Resetting table")
+        print("\(#file) > \(#function) > Exit")
     }
     
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        if let loadedData = load() {
-            messages = loadedData
-        }
-        
-        print("PeerView > viewDidLoad > Resetting peer array.")
-        appDelegate.connectionManager.resetPeerArray()
-        navigationItem.leftBarButtonItem?.title = "Back"
-        
-        peersTable.delegate = self
-        peersTable.dataSource = self
-        
-        refreshControl = UIRefreshControl()
-//        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
-        refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
-        
-        peersTable.addSubview(refreshControl)
-        
-        //set the delegate to self, and start browsing for peers
-        appDelegate.connectionManager.delegate = self
-        appDelegate.connectionManager.browser.startBrowsingForPeers()
-        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
-        
-        //Adding an observer for when data is received
-        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
-        
-        isDestPeerIDSet = false
-        viewSwitch.isOn = true
-        print("PeerView > viewDidLoad > Advertising and browsing for peers.")
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        appDelegate.connectionManager.browser.startBrowsingForPeers()
-        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
-        
-        isDestPeerIDSet = false
-        
-        self.switchView(viewSwitch)
-        
-        DispatchQueue.main.async {
-            self.peersTable.reloadData()
-        }
-        
-        print("PeerView > viewDidAppear > Advertising and browsing for peers.")
-    }
     
     //Called to refresh the table
     func refresh(sender: AnyObject) {
-        print("PeerView > refresh > Refreshing table")
+        print("\(#file) > \(#function) > Refreshing table")
         
         DispatchQueue.main.async {
             self.peersTable.reloadData()
@@ -155,7 +182,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func handleMPCReceivedDataWithNotification(_ notification: Notification) {
-        print("PeerView > handleMPCReceivedDataWithNotification > Entry")
+        print("\(#file) > \(#function) > Entry")
         
         if let _ = navigationController?.visibleViewController as? PeerViewController {
             let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
@@ -167,7 +194,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             // If the message is an end chat message
             if (newMessage.messages[0] == endChat) {
                 //TODO: Need to close connection
-                print("PeerView > handleMPCReceivedDataNotification > endChat message received")
+                print("\(#file) > \(#function) > endChat message received")
                 
                 let peer = messages[peerIndex].peerID
                 let sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: peer!)
@@ -179,30 +206,30 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     
                     peersTable.reloadData()
                     
-                    print("PeerView > handleMPCReceivedDataNotification > disconnected from session")
+                    print("\(#file) > \(#function) > disconnected from session")
                 }
             }
                 
             // If the message is an incoming call message
             else if (newMessage.messages[0] == incomingCall) {
                 //TODO: Need to let the user know there is an incoming call
-                print("PeerView > handleMPCReceivedDataNotification > incomingCall message received")
+                print("\(#file) > \(#function) > incomingCall message received")
             }
                 
             // If the message is a chat message
             else {
-                print("PeerView > handleMPCReceivedDataWithNotification > message: \(newMessage.messages[0]) from \(fromPeer.displayName)")
+                print("\(#file) > \(#function) > message: \(newMessage.messages[0]) from \(fromPeer.displayName)")
                 
                 messages[peerIndex].messages.append(newMessage.messages[0])
                 messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
-                print("PeerView > handleMPCReceivedDataWithNotification > Adding new message to transcript for peer \(messages[peerIndex].peerID.displayName)")
+                print("\(#file) > \(#function) > Adding new message to transcript for peer \(messages[peerIndex].peerID.displayName)")
                 
                 save()
                 
                 //Vibrate
                 //TODO: Make a noise notification as well
                 AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
-                print("PeerView > handleMPCReceivedDataWithNotification > Sending vibration notification to device")
+                print("\(#file) > \(#function) > Sending vibration notification to device")
                 
 //                let currCell = peersTable.cellForRow(at: IndexPath.init(row: peerIndex, section: 0)) as! PeerTableViewCell
 //                currCell.newMessageArrived()
@@ -216,7 +243,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
         }
-        print("PeerView > handleMPCReceivedDataWithNotification > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -230,7 +257,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //Getting the number of rows/peers to display
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print("PeerView > numberOfRowsInSection > Entry \(section)")
+        print("\(#file) > \(#function) > Entry \(section)")
         
         // Section 0 holds all available peers
         if (section == 0) {
@@ -242,7 +269,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
             
-            print("PeerView > numberOfRowsInSection > Exit \(count)")
+            print("\(#file) > \(#function) > Exit \(count)")
 //            return appDelegate.connectionManager.foundPeers.count
             
             if (count == 0) {
@@ -264,7 +291,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
             
-            print("PeerView > numberOfRowsInSection > Exit - \(count)")
+            print("\(#file) > \(#function) > Exit - \(count)")
             return count
         }
     }
@@ -294,11 +321,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    // TODO: There is likely a more efficent way to execute this method
     //Displaying the peers
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        print("PeerView > cellForRowAt > Entry - row \(indexPath.row), section \(indexPath.section)")
+        print("\(#file) > \(#function) > Entry - row \(indexPath.row), section \(indexPath.section)")
         let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
         var availablePeers : [MessageObject] = []
@@ -316,7 +342,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if indexPath.section == 0 {
             ///////////////// IF NO PEERS ARE NEARBY
             if (availablePeers.count == 0) {
-                print("PeerView > cellForRowAt > Currently no peers available")
+                print("\(#file) > \(#function) > Currently no peers available")
                 
                 let cellIdentifier = "PeerTableViewCell"
                 let tempCell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
@@ -324,12 +350,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 tempCell.textLabel?.text = "Searching for peers..."
                 tempCell.selectionStyle = UITableViewCellSelectionStyle.none
                 
-                print("PeerView > cellForRowAt > Exit")
+                print("\(#file) > \(#function) > Exit")
                 return tempCell
             }
             //////////////// END
             
-            print("PeerView > cellForRowAt > There are \(availablePeers.count) peer(s) available")
+            print("\(#file) > \(#function) > There are \(availablePeers.count) peer(s) available")
             
             // If peers are nearby:
             let currPeer = availablePeers[indexPath.row]
@@ -353,16 +379,14 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             if (currPeer.messages.count > 0) {
-                print("PeerView > cellForRowAt > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
+                print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
                 cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1])
             }
             else {
                 cell.setLatestMessage(latestMessage: "No history")
             }
             
-            //TODO: Add tap gesture recognizer
-            
-            print("PeerView > cellForRowAt > Exit")
+            print("\(#file) > \(#function) > Exit")
             return cell
         }
         else {      //For section 1 (unavailable peers)
@@ -383,95 +407,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.setLatestMessage(latestMessage: "No history")
             }
             
-            print("PeerView > cellForRowAt > Exit")
+            print("\(#file) > \(#function) > Exit")
             return cell
         }
     }
     
-    
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        
-//        print("PeerView > cellForRowAt > Entry")
-//        
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
-//        
-//        print("PeerView > cellForRowAt > Found \(appDelegate.connectionManager.foundPeers.count) peer(s), # of sessions \(appDelegate.connectionManager.sessions.count)")
-//        
-//        if (indexPath.section == 1) {   // Then the peer is available but is not connected to
-//            // TODO: Must change if multiple peers can be connected under 1 session
-//            
-//            if (appDelegate.connectionManager.foundPeers.count != 0) {
-//                print("PeerView > cellForRowAt > Set text label as: \(appDelegate.connectionManager.foundPeers[indexPath.row].displayName)");
-//                cell.setPeerDisplayName(displayName: appDelegate.connectionManager.foundPeers[indexPath.row].displayName)
-//                cell.selectionStyle = UITableViewCellSelectionStyle.blue
-//                cell.peerIsAvailable()
-//                
-//                var isHistory = false
-//                for message in messages {
-//                    if message.peerID == appDelegate.connectionManager.foundPeers[indexPath.row] {
-//                        
-//                        isHistory = true
-//                        
-//                        if (message.messages.count != 0) {
-//                            cell.setLatestMessage(latestMessage: message.messages[message.messages.count-1])
-//                            break
-//                        }
-//                        else {
-//                            cell.setLatestMessage(latestMessage: "No history")
-//                            break
-//                        }
-//                    }
-//                }
-//                
-//                if (!isHistory) {
-//                    cell.setLatestMessage(latestMessage: "No history")
-//                }
-//                
-//                //TODO: Add tap gesture recognizer
-//                
-//                print("PeerView > cellForRowAt > Exit")
-//                return cell
-//            }
-//            else {
-//                let cellIdentifier = "PeerTableViewCell"
-//                let tempCell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
-//                
-//                tempCell.textLabel?.text = "Searching for peers..."
-//                tempCell.selectionStyle = UITableViewCellSelectionStyle.none
-//                
-//                print("PeerView > cellForRowAt > Exit")
-//                return tempCell
-//            }
-//        }
-//        else {  // The peer is currently connected to
-//            //TODO: Must change if allowed to connect to multiple users in one chat
-//            print("PeerView > cellForRowAt > # of connectedPeers in session = \(appDelegate.connectionManager.sessions[indexPath.row].connectedPeers.count)")
-//            cell.setPeerDisplayName(displayName: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0].displayName)
-//            
-//            let index = getIndexForPeer(peer: appDelegate.connectionManager.sessions[indexPath.row].connectedPeers[0])
-//            
-//            // Check if messages exist, if so show the last message
-//            if (messages[index].messages.count != 0) {
-//                let messagesIndex = messages[index].messages.count-1
-//                cell.setLatestMessage(latestMessage: messages[index].messages[messagesIndex])
-//                print("PeerView > cellForRowAt > Latest message to \(messages[index].messages[messagesIndex])")
-//            }
-//            else {
-//                print("PeerView > cellForRowAt > No history.")
-//                cell.setLatestMessage(latestMessage: "No history.")
-//            }
-//            
-//            print("PeerView > cellForRowAt > Set text label as: \(cell.peerDisplayNameLabel?.text)")
-//            cell.peerIsAvailable()
-//            
-//            // TODO: Add tap gesture recognizer
-//            
-//            cell.selectionStyle = UITableViewCellSelectionStyle.blue
-//            
-//            print("PeerView > cellForRowAt > Exit")
-//            return cell
-//        }
-//    }
     
     //Setting the height of each row
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -490,10 +430,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     //TODO: Need to change to automatically connect with peer
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("PeerView > didSelectRowAt > Entry")
+        print("\(#file) > \(#function) > Entry")
         
         if let currCell = peersTable.cellForRow(at: indexPath) as? PeerTableViewCell {
-            print("PeerView > didSelectRowAt > Current cell is PeerTableViewCell")
+            print("\(#file) > \(#function) > Current cell is PeerTableViewCell")
             
             // if the peer selected is available
             if indexPath.section == 0 {
@@ -519,13 +459,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
                         
 //                            let outputStream = try self.appDelegate.connectionManager.sessions[index].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
-//                            print("PeerView > didSelectRowAt > Successfully created stream")
+//                            print("\(#file) > \(#function) didSelectRowAt > Successfully created stream")
                             
                         self.destinationPeerID = currCell.peerID!
                         self.isDestPeerIDSet = true
                         
                         OperationQueue.main.addOperation { () -> Void in
-                            print("PeerView > didSelectRowAt > Performing segue")
+                            print("\(#file) > \(#function) > Performing segue")
                             self.performSegue(withIdentifier: "callSegue", sender: self)
                         }
                     }
@@ -533,9 +473,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         
                         self.destinationPeerID = currCell.peerID
                         self.isDestPeerIDSet = true
-                        
-//                        let outputStream = try self.appDelegate.connectionManager.sessions[check].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
-//                        print("PeerView > didSelectRowAt > Successfully created stream.")
                         
                         // Perform segue to phone view
                         OperationQueue.main.addOperation { () -> Void in
@@ -547,7 +484,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let chatOption = UIAlertAction(title: "Message", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
                     currCell.removeNewMessageIcon()
-                    print("PeerView > didSelectRowAt > Checking if connected to \(currCell.peerID?.displayName)")
+                    print("\(#file) > \(#function) > Checking if connected to \(currCell.peerID?.displayName)")
                     
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     
@@ -558,7 +495,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
                         self.messages[peerIndex].setConnectionTypeToMessage()
                         
-                        print("PeerView > didSelectRowAt > Creating a new session")
+                        print("\(#file) > \(#function) > Creating a new session")
                         
                         //Create a new session
                         let index = self.appDelegate.connectionManager.createNewSession()
@@ -567,7 +504,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         let isPhoneCall = false
                         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
                         
-                        print("PeerView > didSelectRowAt > Setting isPhoneCall=\(isPhoneCall)")
+                        print("\(#file) > \(#function) > Setting isPhoneCall=\(isPhoneCall)")
                         
                         // Invite the peer to communicate
                         self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
@@ -575,7 +512,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         // TODO: If the user declines the invitation, then delete the session
                     }
                     else {  //Session already exists, then perform segue
-                        print("PeerView > didSelectRowAt > Session exists")
+                        print("\(#file) > \(#function) > Session exists")
                         
                         self.destinationPeerID = currCell.peerID
                         self.isDestPeerIDSet = true
@@ -597,7 +534,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 optionMenu.addAction(chatOption)
                 optionMenu.addAction(cancelOption)
                 
-                print("PeerView > didSelectRowAt > Presenting option menu")
+                print("\(#file) > \(#function) > Presenting option menu")
                 
                 OperationQueue.main.addOperation { () -> Void in
                     self.present(optionMenu, animated: true, completion: nil)
@@ -605,7 +542,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             else {  //The peer selected is not available so segue to the conversation
                 
-                print("PeerView > didSelectRowAt > Performing segue...")
+                print("\(#file) > \(#function) > Performing segue...")
                 
                 self.isDestPeerIDSet = false
                 self.destinationPeerID = currCell.peerID
@@ -615,50 +552,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
         }
-        print("PeerView > didSelectRowAt > Exit")
+        print("\(#file) > \(#function) > Exit")
         // Else do nothing
     }
-    
-    
-//    //When a cell is selected
-//    //TODO
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        print("PeerView > didSelectRowAt > A peer has been selected")
-//        if (indexPath.section == 0) {
-//            print("PeerView > didSelectRowAt > Performing segue...")
-//            OperationQueue.main.addOperation { () -> Void in
-//                self.performSegue(withIdentifier: "idChatSegue", sender: self)
-//            }
-//        }
-//        else {
-//            if (appDelegate.connectionManager.foundPeers.count != 0) {
-//                // get selected peer
-//                let selectedPeer = appDelegate.connectionManager.foundPeers[indexPath.row] as MCPeerID
-//                
-//                print("PeerView > didSelectRowAt > attempting to connect to peer \(selectedPeer.displayName)")
-//                
-//                //TODO: Create new session first
-//                let index = appDelegate.connectionManager.createNewSession()
-//                
-//                //Send invite to peer
-//                appDelegate.connectionManager.browser.invitePeer(selectedPeer, to: appDelegate.connectionManager.sessions[index], withContext: nil, timeout: 20)
-//                
-//                //TODO: If the peer declines the invitation then delete the session.
-//                tableView.reloadData()
-//            }
-//            else {
-//                tableView.reloadData()
-//            }
-//        }
-//    }
-    
     
     
     //MARK: Connection Manager
     
     // If a peer was found, then reload data
     func foundPeer(_ newPeer: MCPeerID) {
-        print("PeerView > foundPeer > Entry")
+        print("\(#file) > \(#function) foundPeer > Entry")
         
         let index = doesMessageObjectExist(forPeer: newPeer)
         
@@ -679,12 +582,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            self.peersTable.insertRows(at: [IndexPath.init(row: self.getNumberOfAvailablePeers(), section: 0)], with: .fade)
             self.peersTable.reloadData()
         }
-        print("PeerView > foundPeer > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     // If a peer was lost, then reload data
     func lostPeer(_ lostPeer: MCPeerID) {
-        print("PeerView > lostPeer > Entry")
+        print("\(#file) > \(#function) lostPeer > Entry")
         
         let index = doesMessageObjectExist(forPeer: lostPeer)
         
@@ -699,12 +602,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         DispatchQueue.main.async {
             self.peersTable.reloadData()
         }
-        print("PeerView > lostPeer > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     // When an invite is received
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
-        print("PeerView > inviteWasReceived > Entry: isPhoneCall=\(isPhoneCall)")
+        print("\(#file) > \(#function) > Entry: isPhoneCall=\(isPhoneCall)")
         
         if (!isPhoneCall) {
             
@@ -718,7 +621,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 let index = self.appDelegate.connectionManager.createNewSession()
                     
-                print("PeerView > inviteWasReceived > Accepted invitation handler")
+                print("\(#file) > \(#function) > Accepted invitation handler")
                 
                 if self.appDelegate.connectionManager.invitationHandler != nil {
                     self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
@@ -727,19 +630,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     self.isDestPeerIDSet = true
                 }
                 
-//                OperationQueue.main.addOperation { () -> Void in
-//                    self.performSegue(withIdentifier: "idChatSegue", sender: self)
-//                }
             }
             
             let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
-                print("PeerView > inviteWasReceived > Declined invitation")
+                print("\(#file) > \(#function) > Declined invitation")
                 
                 var sess : MCSession?
                 var sessIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: fromPeer)
                 
                 if sessIndex == -1 {
-                    print("PeerView > inviteWasReceived > Session could not be found...")
+                    print("\(#file) > \(#function) > Session could not be found...")
                     sessIndex = self.appDelegate.connectionManager.createNewSession()
                 }
                 
@@ -749,7 +649,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     self.appDelegate.connectionManager.invitationHandler!(false, sess!)
                 }
                 else {
-                    print("PeerView > inviteWasReceived > invitationHandler or session is nil")
+                    print("\(#file) > \(#function) > invitationHandler or session is nil")
                 }
             }
             
@@ -761,19 +661,27 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         else {
-            // TODO: Need to make an incoming call overlay
+            print("\(#file) > \(#function) > Incoming call!")
+            
+            let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
+            self.addChildViewController(popOverView)
+            
+            popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
+            popOverView.messages = self.messages
+            
+            popOverView.view.frame = self.view.frame
+            self.view.addSubview(popOverView.view)
+            popOverView.didMove(toParentViewController: self)
             
             // TODO: Only do the following if the user accepts the call
-            let peerIndex = getIndexForPeer(peer: fromPeer)
-            messages[peerIndex].setConnectionTypeToVoice()
-            
-            print("PeerView > foundPeer > Incoming call!")
+//            let peerIndex = getIndexForPeer(peer: fromPeer)
+//            messages[peerIndex].setConnectionTypeToVoice()
         }
-        print("PeerView > foundPeer > Exit")
+        print("\(#file) > \(#function) > Exit \(Thread.current)")
     }
     
     func connectedWithPeer(_ peerID : MCPeerID) {
-        print("PeerView > connectedWithPeer > Connected to peer \(peerID)")
+        print("\(#file) > \(#function) > \(#line) > Connected to peer \(peerID)")
         
         // Remove the peer from foundPeers
         appDelegate.connectionManager.removeFoundPeer(peerID: peerID)
@@ -786,33 +694,33 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         
         if (connType == MESSAGE_CONNECTION_TYPE) {
-            print("PeerView > connectedWithPeer > Connection type is MESSAGE_CONNECTION_TYPE)")
+            print("\(#file) > \(#function) > Connection type is MESSAGE_CONNECTION_TYPE)")
             OperationQueue.main.addOperation {
                 self.performSegue(withIdentifier: "idChatSegue", sender: self)
             }
         }
         else if (connType == PHONE_CONNECTION_TYPE) {
-            print("PeerView > connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
+            print("\(#file) > \(#function) connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
             OperationQueue.main.addOperation {
                 self.performSegue(withIdentifier: "callSegue", sender: self)
             }
         }
         else {
-            print("PeerView > connectedWithPeer > Could NOT recognize a connection type. Cannot perform segue.")
+            print("\(#file) > \(#function) > Could NOT recognize a connection type. Cannot perform segue.")
         }
         
     }
     
     // Called when a peer is disconnected from
     func disconnectedFromPeer(_ peerID: MCPeerID) {
-        print("PeerView > disconnectedFromPeer > Entry: Disconnected from peer \(peerID)")
+        print("\(#file) > \(#function) > Entry: Disconnected from peer \(peerID)")
         
         // Resetting the peers connected type
         let peerIndex = getIndexForPeer(peer: peerID)
         messages[peerIndex].resetConnectionType()
         
         if let currView = navigationController?.topViewController as? ChatViewController {
-            print("PeerView > disconnectedFromPeeer > topViewController is ChatView. ")
+            print("\(#file) > \(#function) > topViewController is ChatView. ")
             if (peerID == currView.messages.peerID) {
                 let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
 
@@ -832,13 +740,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         else {
-            print("PeerView > disconnectedFromPeer > Reloading peer table.")
+            print("\(#file) > \(#function) > Reloading peer table.")
             
             DispatchQueue.main.async {
                 self.peersTable.reloadData()
             }
         }
-        print("PeerView > disconnectedFromPeer > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -851,19 +759,19 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // This function is run before a segue is performed
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("PeerView > prepare > Entry: \(isDestPeerIDSet) destinationPeerID = \(destinationPeerID?.displayName)")
+        print("\(#file) > \(#function) > Entry: \(isDestPeerIDSet) destinationPeerID = \(destinationPeerID?.displayName)")
         
         if (segue.identifier == "idChatSegue" && isDestPeerIDSet) {
             let dest = segue.destination as? ChatViewController
             var messageIsSet = false
             
             for message in messages {
-                print("PeerView > prepare > Currently looking at messages from peer \(message.peerID)")
+                print("\(#file) > \(#function) > Currently looking at messages from peer \(message.peerID)")
                 if (message.peerID == destinationPeerID) {
                     dest?.messages = message
                     messageIsSet = true
                     
-                    print("PeerView > prepare > # of messages \(message.messages.count)")
+                    print("\(#file) > \(#function) > # of messages \(message.messages.count)")
                     break
                 }
             }
@@ -874,7 +782,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 save()
                 
-                print("PeerView > prepare > Could not find message object. Creating a new message object.")
+                print("\(#file) > \(#function) > Could not find message object. Creating a new message object.")
                 
                 dest!.messages = self.messages[messages.count-1]
             }
@@ -893,7 +801,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             if (!messageIsSet) {
-                print("PeerView > prepare > ERROR: THIS SHOULD NEVER BE PRINTED.")
+                print("\(#file) > \(#function) > ERROR: THIS SHOULD NEVER BE PRINTED.")
             }
             
 //            dest?.messageField.isEditable = false
@@ -901,29 +809,30 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            dest?.messageField.isUserInteractionEnabled = false
         }
         else if (segue.identifier == "callSegue" && isDestPeerIDSet) {
-            print("PeerView > prepare > current segue is callSegue")
+            print("\(#file) > \(#function) > current segue is callSegue")
             
             let dest = segue.destination as? PhoneViewController
             dest?.peerID = destinationPeerID
             
-            // TODO: Need to finish
+            dest?.isConnecting = true
             
+            // TODO: Need to finish
         }
         
-        print("PeerView > prepare > Exit")
+        print("\(#file) > \(#function) > Exit")
     }
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if (isDestPeerIDSet == true) {
-            print("PeerView > shouldPerformSegue > Return true - 1")
+            print("\(#file) > \(#function) > Return true - 1")
             return true
         }
         else if (isDestPeerIDSet == false && destinationPeerID != nil) {
-            print("PeerView > shouldPerformSegue > Return true - 2")
+            print("\(#file) > \(#function) > Return true - 2")
             return true
         }
         
-        print("PeerView > shouldPerformSegue > Return false")
+        print("\(#file) > \(#function) > Return false")
         return false
     }
     
@@ -932,7 +841,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Save user information
     func save() {
-        print("PeerView > save > Saving messages")
+        print("\(#file) > \(#function) > Saving messages")
         if (!NSKeyedArchiver.archiveRootObject(self.messages, toFile: MessageObject.ArchiveURL.path)) {
             print("CourseTable: save: Failed to save courses and groups.")
         }
@@ -940,7 +849,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Load user information
     func load() -> [MessageObject]? {
-        print("PeerView > load > Loading messages")
+        print("\(#file) > \(#function) > Loading messages")
         return (NSKeyedUnarchiver.unarchiveObject(withFile: MessageObject.ArchiveURL.path) as! [MessageObject]?)
     }
 }
