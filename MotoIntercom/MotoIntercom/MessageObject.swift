@@ -23,7 +23,7 @@ class MessageObject: NSObject, NSCoding {
     
     // MARK: init
     override init() {
-        print("MessageObject > init > new message object is being created with display name \(UIDevice.current.name).")
+        print("\(#file) > \(#function) > new message object is being created with display name \(UIDevice.current.name).")
         peerID = MCPeerID.init(displayName: UIDevice.current.name)
         selfID = MCPeerID.init(displayName: UIDevice.current.name)
         messageIsFrom = [Int]()
@@ -31,7 +31,7 @@ class MessageObject: NSObject, NSCoding {
     }
     
     init(peerID: MCPeerID, messageFrom: [Int], messages: [String]) {
-        print("MessageObject > init > Correctly initializing message object for peer \(peerID.displayName)")
+        print("\(#file) > \(#function) > Correctly initializing message object for peer \(peerID.displayName)")
         self.peerID = peerID
         self.selfID = MCPeerID.init(displayName: UIDevice.current.name)
         self.messageIsFrom = messageFrom
@@ -39,7 +39,7 @@ class MessageObject: NSObject, NSCoding {
     }
     
     init(peerID: MCPeerID, selfID: MCPeerID, messageFrom: [Int], messages: [String]) {
-        print("MessageObject > init > Initializing message object as received.")
+        print("\(#file) > \(#function) > Initializing message object as received.")
         self.peerID = peerID
         self.selfID = selfID
         self.messageIsFrom = messageFrom
@@ -48,22 +48,22 @@ class MessageObject: NSObject, NSCoding {
     
     // MARK: Functions
     func resetConnectionType() {
-        print("MessageObject > resetConnectionType > forPeer \(self.peerID.displayName)")
+        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 0
     }
     
     func setConnectionTypeToMessage() {
-        print("MessageObject > setConnectionTypeToMessage > forPeer \(self.peerID.displayName)")
+        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 1
     }
     
     func setConnectionTypeToVoice() {
-        print("MessageObject > setConnectionTypeToVoice > forPeer \(self.peerID.displayName)")
+        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 2
     }
     
     func getConnectionType() -> Int {
-        print("MessageObject > getConnectionType > RETURN \(connectionType) forPeer \(self.peerID.displayName)")
+        print("\(#file) > \(#function) > RETURN \(connectionType) forPeer \(self.peerID.displayName)")
         return connectionType
     }
     
