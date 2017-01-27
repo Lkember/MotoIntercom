@@ -30,7 +30,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     var destinationPeerID: MCPeerID?
     var isDestPeerIDSet = false
-//    var didAcceptCall = false
+    var didAcceptCall = false
     
     
     //MARK: View Functions
@@ -67,6 +67,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
         
         isDestPeerIDSet = false
+        didAcceptCall = false
         viewSwitch.isOn = true
         print("\(#file) > \(#function) > Advertising and browsing for peers. Thread: \(Thread.current)")
     }
@@ -103,6 +104,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         isDestPeerIDSet = false
+        didAcceptCall = false
         destinationPeerID = nil
         
         print("\(#file) > \(#function) > Exit: Advertising and browsing for peers.")
@@ -672,10 +674,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
             popOverView.didMove(toParentViewController: self)
-            
-            // TODO: Only do the following if the user accepts the call
-//            let peerIndex = getIndexForPeer(peer: fromPeer)
-//            messages[peerIndex].setConnectionTypeToVoice()
         }
         print("\(#file) > \(#function) > Exit \(Thread.current)")
     }
@@ -754,6 +752,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // TODO: Need to decide what to do when connecting to peer
     }
     
+    func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
+        print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
+        // Nothing to do here
+    }
+    
     
     //MARK: Segue
     
@@ -814,7 +817,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let dest = segue.destination as? PhoneViewController
             dest?.peerID = destinationPeerID
             
-            dest?.isConnecting = true
+            if (didAcceptCall) {
+                dest?.isConnecting = true
+            }
             
             // TODO: Need to finish
         }

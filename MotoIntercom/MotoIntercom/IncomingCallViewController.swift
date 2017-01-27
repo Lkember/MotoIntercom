@@ -68,14 +68,14 @@ class IncomingCallViewController: UIViewController {
             
             if self.appDelegate.connectionManager.invitationHandler != nil {
                 self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
-            
-    //            superview!.didAcceptCall = true
+                
                 superview!.destinationPeerID = messages?[peerIndex!].peerID
                 superview!.isDestPeerIDSet = true
                 superview!.messages[peerIndex!].setConnectionTypeToVoice()
-            
+                superview!.didAcceptCall = true
+                
                 dismissAnimate()
-            
+                
                 print("\(#file) > \(#function) > Accepting Call")
                 superview!.acceptCall()
             }
@@ -89,7 +89,8 @@ class IncomingCallViewController: UIViewController {
     }
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
-        print("\(#file) > \(#function) > Setting didAcceptCall to false")
+        print("\(#file) > \(#function)")
+        
         dismissAnimate()
     }
     

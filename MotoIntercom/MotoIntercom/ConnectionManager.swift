@@ -18,6 +18,7 @@ protocol ConnectionManagerDelegate {
     func connectingWithPeer(_ peerID: MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
+    func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream)
 }
 
 
@@ -338,6 +339,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
         print("\(#file) > \(#function) > from peer \(peerID.displayName) with streamName \(streamName)")
+        delegate?.startedStreamWithPeer(peerID, inputStream: stream)
     }
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {

@@ -336,5 +336,10 @@ class ChatViewController : UIViewController, UITextViewDelegate, UITableViewDele
         //TODO: Need to decide what to do if invite is received.
         
     }
+    
+    func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
+        // Nothing to do here
+        print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
+    }
 }
 
