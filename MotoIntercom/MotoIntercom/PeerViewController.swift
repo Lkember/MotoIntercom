@@ -17,8 +17,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     let endChat = "_end_chat_"
     let incomingCall = "_incoming_call_"
     
-    // MARK: Properties
-    @IBOutlet weak var viewSwitch: UISwitch!
+    // MARK: - Properties
     @IBOutlet weak var peersTable: UITableView!
     var refreshControl: UIRefreshControl!
     var messages = [MessageObject]()
@@ -33,7 +32,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     var didAcceptCall = false
     
     
-    //MARK: View Functions
+    //MARK: - View Functions
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +51,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         peersTable.delegate = self
         peersTable.dataSource = self
         
+        self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
         refreshControl = UIRefreshControl()
 //        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
         refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
@@ -68,7 +69,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         isDestPeerIDSet = false
         didAcceptCall = false
-        viewSwitch.isOn = true
         print("\(#file) > \(#function) > Advertising and browsing for peers. Thread: \(Thread.current)")
     }
     
@@ -97,8 +97,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         appDelegate.connectionManager.browser.startBrowsingForPeers()
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
-        self.switchView(viewSwitch)
-        
         DispatchQueue.main.async {
             self.peersTable.reloadData()
         }
@@ -111,17 +109,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    // MARK: Actions
-    @IBAction func switchView(_ sender: UISwitch) {
-        if viewSwitch.isOn {
-            appDelegate.connectionManager.advertiser.startAdvertisingPeer()
-            print("\(#file) > \(#function) > Advertising to peers...")
-        }
-        else {
-            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-            print("\(#file) > \(#function) > Stopped advertising to peers.")
-        }
-    }
+    // MARK: - Actions
     
     
     // A function which returns the index for a given peer
@@ -168,6 +156,27 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         print("\(#file) > \(#function) > Exit")
+    }
+    
+    
+    // A function which returns an array of all available peers and all unavailable peers
+    
+    func getAllPeers() -> [[MessageObject]] {
+        var availablePeers : [MessageObject] = []
+        var unavailablePeers : [MessageObject] = []
+        
+        for message in messages {
+            if (message.isAvailable) {
+                availablePeers.append(message)
+            }
+            else {
+                unavailablePeers.append(message)
+            }
+        }
+        
+        let allPeers: [[MessageObject]] = [availablePeers, unavailablePeers]
+        
+        return allPeers
     }
     
     
@@ -250,7 +259,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     
-    // MARK: TableDelegate Methods
+    // MARK: - TableDelegate Methods
     
     // returns the number of sections in the table view
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -329,17 +338,21 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(#file) > \(#function) > Entry - row \(indexPath.row), section \(indexPath.section)")
         let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
-        var availablePeers : [MessageObject] = []
-        var unavailablePeers : [MessageObject] = []
+//        var availablePeers : [MessageObject] = []
+//        var unavailablePeers : [MessageObject] = []
+//        
+//        for message in messages {
+//            if (message.isAvailable) {
+//                availablePeers.append(message)
+//            }
+//            else {
+//                unavailablePeers.append(message)
+//            }
+//        }
         
-        for message in messages {
-            if (message.isAvailable) {
-                availablePeers.append(message)
-            }
-            else {
-                unavailablePeers.append(message)
-            }
-        }
+        let peers = getAllPeers()
+        var availablePeers = peers[0]
+        var unavailablePeers = peers[1]
         
         if indexPath.section == 0 {
             ///////////////// IF NO PEERS ARE NEARBY
@@ -559,7 +572,101 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    //MARK: Connection Manager
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        peersTable.setEditing(editing, animated: animated)
+    }
+    
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        if (indexPath.section == 0) {
+            let peers = self.getAllPeers()
+            let availablePeers = peers[0]
+            
+            if (availablePeers.count == 0) {
+                return false
+            }
+            else {
+                return true
+            }
+        }
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+        return UITableViewCellEditingStyle.delete
+    }
+    
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        print("\(#file) > \(#function) > Setting buttons")
+        
+        let clearHistoryAction = UITableViewRowAction(style: UITableViewRowActionStyle.normal, title: "Clear", handler:{action, indexPath in
+            
+            let peers = self.getAllPeers()
+            let availablePeers = peers[0]
+            let unavailablePeers = peers[1]
+            
+            if (indexPath.section == 0) {
+                let currPeer = availablePeers[indexPath.row].peerID
+                
+                for i in 0..<self.messages.count {
+                    if (self.messages[i].peerID == currPeer) {
+                        self.messages[i].messageIsFrom.removeAll()
+                        self.messages[i].messages.removeAll()
+                        break
+                    }
+                }
+            }
+            else {
+                let currPeer = unavailablePeers[indexPath.row].peerID
+                
+                for i in 0..<self.messages.count {
+                    if (self.messages[i].peerID == currPeer) {
+                        self.messages[i].messages.removeAll()
+                        self.messages[i].messageIsFrom.removeAll()
+                        
+                        break
+                    }
+                }
+            }
+            
+            self.peersTable.reloadData()
+            
+            self.save()
+        });
+        
+        if (indexPath.section == 0) {
+            
+            return [clearHistoryAction]
+        }
+        else {
+            let removePeerAction = UITableViewRowAction(style: UITableViewRowActionStyle.destructive, title: "Delete", handler: {action, indexPath in
+                
+                let peers = self.getAllPeers()
+                let unavailablePeers = peers[1]
+                
+                let currPeer = unavailablePeers[indexPath.row].peerID
+                
+                for i in 0..<self.messages.count {
+                    if (self.messages[i].peerID == currPeer) {
+                        self.messages.remove(at: i)
+                        
+                        self.peersTable.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+                        
+                        break
+                    }
+                }
+                
+                self.save()
+            });
+            
+            return [removePeerAction, clearHistoryAction]
+        }
+    }
+    
+    
+    //MARK: - Connection Manager
     
     // If a peer was found, then reload data
     func foundPeer(_ newPeer: MCPeerID) {
@@ -758,7 +865,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    //MARK: Segue
+    //MARK: - Segue
     
     // This function is run before a segue is performed
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -806,10 +913,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             if (!messageIsSet) {
                 print("\(#file) > \(#function) > ERROR: THIS SHOULD NEVER BE PRINTED.")
             }
-            
-//            dest?.messageField.isEditable = false
-//            dest?.messageField.isSelectable = false
-//            dest?.messageField.isUserInteractionEnabled = false
         }
         else if (segue.identifier == "callSegue" && isDestPeerIDSet) {
             print("\(#file) > \(#function) > current segue is callSegue")
@@ -842,7 +945,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    //MARK: Save and Load
+    //MARK: - Save and Load
     
     // Save user information
     func save() {

@@ -18,7 +18,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let incomingCall = "_incoming_call_"
     
-    // MARK: Properties
+    // MARK: - Properties
     @IBOutlet weak var timerLabel: UILabel!
     @IBOutlet weak var endCallButton: UIButton!
     
@@ -29,6 +29,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var outputStream: OutputStream?
     var outputStreamIsSet: Bool = false
     var inputStream: InputStream?
+    var inputStreamIsSet: Bool = false
     
     var streamingThread: Thread?
     var startTime = NSDate.timeIntervalSinceReferenceDate
@@ -39,6 +40,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var captureDevice: AVCaptureDevice!
     var captureDeviceInput: AVCaptureDeviceInput!
     var outputDevice: AVCaptureAudioDataOutput?
+    var audioQueue: AudioQueueRef?
+    var audioPlayer: AVAudioPlayerNode?
+    
+    // MARK: - View Methods
     
     override func viewDidLoad() {
         print("\(#file) > \(#function) > Entry")
@@ -118,6 +123,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Exit")
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        self.navigationController?.navigationBar.isHidden = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        self.navigationController?.navigationBar.isHidden = false
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: - Recorder
     
     // A function which checks permission of recording and initializes recorder
     func setupAVRecorder() {
@@ -134,7 +153,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             try recordingSession.setPreferredSampleRate(44000.00)
             
             print("\(#file) > \(#function) > setting preferred IO buffer duration")
-            try recordingSession.setPreferredIOBufferDuration(0.1)
+            try recordingSession.setPreferredIOBufferDuration(0.2)
             
             print("\(#file) > \(#function) > setting active")
             try recordingSession.setActive(true)
@@ -152,9 +171,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                             self.captureSession = AVCaptureSession()
                             self.captureSession.addInput(self.captureDeviceInput)
                             self.captureSession.addOutput(self.outputDevice)
-//                            self.captureSession.startRunning()
                             
-//                            self.startRecording()
                             self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateTime), userInfo: nil, repeats: true)
                         }
                         catch let error {
@@ -187,145 +204,47 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         print("\(#file) > \(#function) > Exit")
-        
-//        captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
-//        
-//        do {
-//            try captureDeviceInput = AVCaptureDeviceInput.init(device: captureDevice)
-//        }
-//        catch let error as NSError {
-//            print("\(#file) > \(#function) > ERROR: \(error.localizedDescription)")
-//            
-//            // End the call
-////            endCallButtonIsClicked(endCallButton)
-////            return
-//        }
-//        
-//        if (captureDeviceInput != nil && captureSession.canAddInput(captureDeviceInput)) {
-//            captureSession.addInput(captureDeviceInput)
-//        }
-//        else {
-//            print("\(#file) > \(#function) > This capture device can not be added as input.")
-//        }
-//        
-//        let output = AVCaptureAudioDataOutput()
-//        let queue = DispatchQueue(label: "streamData")
-//        
-//        output.setSampleBufferDelegate(self, queue: queue)
-//        captureSession.addOutput(output)
-//        
-//        print("\(#file) > \(#function) > Current Permission for recording \(recordingSession.recordPermission())")
-//        
-////        // Checking recording permission
-////        if ((recordingSession.recordPermission() == AVAudioSessionRecordPermission.denied)) {
-////            //TODO: Notify user that we do not have permission
-////            
-////            endCallButtonIsClicked(endCallButton)
-////            
-////            return
-////        }
-//        
-//        
-//        // Attempting to set the mode to a voice chat
-//        do {
-//            try recordingSession.setMode(AVAudioSessionModeVoiceChat)
-//        }
-//        catch let error as NSError {
-//            print("\(#file) > \(#function) > Error setting recording mode: \(error.localizedDescription)")
-//            //TODO: Notify user there was an error setting voice mode
-//            
-//            endCallButtonIsClicked(endCallButton)
-//            
-//            return
-//        }
-//        
-//        
-//        do {
-////            try recordingSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
-//            try recordingSession.setActive(true)
-//            
-//            recordingSession.requestRecordPermission() { [unowned self] allowed in
-//                DispatchQueue.main.async {
-//                    if allowed {
-//                        print("\(#file) > \(#function) > Began recording")
-//                        self.startRecording()
-//                        self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateTime), userInfo: nil, repeats: true)
-//                    }
-//                    else {
-//                        // failed to record
-//                        print("\(#file) > \(#function) > Failed to begin recording 1")
-//                    }
-//                }
-//                
-//            }
-//            
-//            
-//            // If output stream is not set, then create output stream
-//            if (!outputStreamIsSet) {
-//                
-//                do {
-//                    outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
-//                    outputStreamIsSet = true
-//                }
-//                catch let error as NSError {
-//                    print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
-//                    outputStreamIsSet = false
-//                }
-//            }
-//            
-//        }
-//        catch let error as NSError {
-//            // TODO: Figure out what to do when recording fails
-//            print("\(#file) > \(#function) > Failed to begin recording: \(error.localizedDescription)")
-//            
-//            endCallButtonIsClicked(endCallButton)
-//        }
-//        
-//        // Can change this value if necessary
-//        captureSession.sessionPreset = AVCaptureSessionPresetMedium
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        self.navigationController?.navigationBar.isHidden = true
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        self.navigationController?.navigationBar.isHidden = false
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    
-    // MARK: AVCaptureAudioDataOutputSampleBufferDelegate
+    // MARK: - AVCaptureAudioDataOutputSampleBufferDelegate
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         //https://developer.apple.com/reference/avfoundation/avcaptureaudiodataoutputsamplebufferdelegate/1386039-captureoutput
+        
+        //-------------------------------------------------------
+        // Writing to output stream
         
         var blockBuffer: CMBlockBuffer?
         var audioBufferList: AudioBufferList = AudioBufferList.init()
         
         CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, nil, &audioBufferList, MemoryLayout<AudioBufferList>.size, nil, nil, kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment, &blockBuffer)
-        
         let buffers = UnsafeMutableAudioBufferListPointer(&audioBufferList)
         
         for buffer in buffers {
-            outputStream?.write((buffer.mData?.load(as: UnsafePointer<UInt8>.self))!, maxLength: Int(buffer.mDataByteSize))
+            let u8ptr = buffer.mData!.assumingMemoryBound(to: UInt8.self)
+            let output = outputStream!.write(u8ptr, maxLength: Int(buffer.mDataByteSize))
+            
+//            let output = outputStream?.write((buffer.mData?.load(as: UnsafePointer<UInt8>.self))!, maxLength: Int(buffer.mDataByteSize))
+            
+            if (output == -1) {
+                let error = outputStream?.streamError
+                print("\(#file) > \(#function) > Error on outputStream: \(error!.localizedDescription)")
+            }
+            else {
+                print("\(#file) > \(#function) > Number of audio buffers \(audioBufferList.mNumberBuffers), number of buffers \(buffers.count)")
+            }
         }
         
-        print("\(#file) > \(#function) > Number of buffers \(audioBufferList.mNumberBuffers)")
+//        audioPlayer?.scheduleBuffer(blockBuffer, completionHandler: nil)
         
 //        for i in 0..<audioBufferList.mNumberBuffers {
 //            var audioBuffer: AudioBuffer = audioBufferList.mBuffers.mData[i]
 //            outputStream?.write(audioBuffer.mData, maxLength: audioBuffer.mDataByteSize)
 //        }
-        
     }
     
     
-    // MARK: Recording
+    // MARK: - Recording
     func startRecording() {
         print("\(#file) > \(#function) > Started recording")
         captureSession.startRunning()
@@ -346,43 +265,75 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // Used to display how long the call has been going on for
     func updateTime() {
-        let currentTime = NSDate.timeIntervalSinceReferenceDate
-        
-        var elapsedTime = currentTime - startTime
-        
-        let minutes = UInt8(elapsedTime / 60)
-        elapsedTime -= (TimeInterval(minutes) * 60)
-        
-        let seconds = UInt8(elapsedTime)
-        
-        let minuteString = String(format: "%02d", minutes)
-        let secondString = String(format: "%02d", seconds)
-        
-        timerLabel.text = "\(minuteString):\(secondString)"
-        
-        let second = Int(secondString)
-        
-        if (second! % 10 == 0) {
-            print("\(#file) > \(#function) > Timer updated to \(minuteString):\(secondString)")
+        if (outputStreamIsSet && inputStreamIsSet) {
+            let currentTime = NSDate.timeIntervalSinceReferenceDate
+            
+            var elapsedTime = currentTime - startTime
+            
+            let minutes = UInt8(elapsedTime / 60)
+            elapsedTime -= (TimeInterval(minutes) * 60)
+            
+            let seconds = UInt8(elapsedTime)
+            
+            let minuteString = String(format: "%02d", minutes)
+            let secondString = String(format: "%02d", seconds)
+            
+            timerLabel.text = "\(minuteString):\(secondString)"
+            
+            let second = Int(secondString)
+            
+            if (second! % 10 == 0) {
+                print("\(#file) > \(#function) > Timer updated to \(minuteString):\(secondString)")
+            }
         }
     }
     
-    // MARK: InputStream
+    // MARK: - InputStream
     func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        print("\(#file) > \(#function) > stream incoming")
+        print("\(#file) > \(#function) > data received from stream")
+        
         switch (eventCode) {
         case Stream.Event.errorOccurred:
-            print("\(#file) > \(#function) > \(eventCode): Error has occurred on input stream")
+            print("\(#file) > \(#function) > Error has occurred on input stream")
+            
+            
         case Stream.Event.hasBytesAvailable:
-            print("\(#file) > \(#function) > \(eventCode): New data has arrived")
+            print("\(#file) > \(#function) > New data has arrived")
+            
+            
         case Stream.Event.hasSpaceAvailable:
-            print("\(#file) > \(#function) > \(eventCode): Space available")
+            print("\(#file) > \(#function) > Space available")
+            
+            
         case Stream.Event.endEncountered:
-            print("\(#file) > \(#function) > \(eventCode): End encountered")
+            print("\(#file) > \(#function) > End encountered")
             endCallButtonIsClicked(endCallButton)
+            
+            
+        case Stream.Event.openCompleted:
+            print("\(#file) > \(#function) > Open completed")
+        
+            
         default:
-            print("\(#file) > \(#function) > \(eventCode): Other")
+            print("\(#file) > \(#function) > Other")
         }
+    }
+    
+    // This function is called when bytes are available from the input stream.
+    // This will read from the input stream and play the audio.
+    func readFromStream() {
+        
+        
+        var status = inputStream!.read(<#T##buffer: UnsafeMutablePointer<UInt8>##UnsafeMutablePointer<UInt8>#>, maxLength: <#T##Int#>)
+        
+        if (status == -1) {
+            let error = inputStream!.streamError
+            print("\(#file) > \(#function) > Error at inputStream: \(error?.localizedDescription)")
+        }
+        else {
+            print("\(#file) > \(#function) > Successfully read inputStream data")
+        }
+        
     }
     
 //    func getDocumentsDirectory() -> URL {
@@ -394,7 +345,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //    }
     
     
-    //MARK: Button Actions
+    //MARK: - Button Actions
     @IBAction func endCallButtonIsClicked(_ sender: UIButton) {
         // TODO : need to stop timer from incrementing 
         print("\(#file) > \(#function) > Stopping recording")
@@ -412,10 +363,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Close the output stream
         outputStream?.close()
         inputStream?.close()
+        
+        // Disconnect from peer. This way the other user will be notified that the call has ended.
+        appDelegate.connectionManager.sessions[sessionIndex!].disconnect()
     }
     
     
-    // MARK: ConnectionManagerDelegate
+    // MARK: - ConnectionManagerDelegate
     func foundPeer(_ newPeer : MCPeerID) {
         // nothing to do
         print("\(#file) > \(#function) > \(newPeer.displayName)")
@@ -457,11 +411,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(self.peerID!.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             
             let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                
                 //Go back to PeerView
                 self.endCallButtonIsClicked(self.endCallButton)
-                
-//                _ = self.navigationController?.popViewController(animated: true)
             }
             
             alert.addAction(okAction)
@@ -485,8 +436,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
         print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
         if (peerID == self.peerID) {
+            
             self.inputStream = inputStream
-            self.inputStream?.delegate = self
+            
+            self.inputStreamIsSet = true
+            self.inputStream!.delegate = self
+            self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.inputStream!.open()
+            
+            self.outputStream!.delegate = self
+            self.outputStream!.schedule(in: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+            self.outputStream!.open()
+            
             startRecording()
         }
         else {
