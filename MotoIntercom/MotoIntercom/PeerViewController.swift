@@ -80,6 +80,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if self.isMovingFromParentViewController {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
             appDelegate.connectionManager.browser.stopBrowsingForPeers()
+            appDelegate.connectionManager.cleanSessions()
+            
             print("\(#file) > \(#function) > Stopped advertising and browsing.")
         }
         
@@ -777,12 +779,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
             popOverView.messages = self.messages
+            popOverView.peerDisplayName = fromPeer.displayName
+            
+            print("\(#file) > \(#function) > fromPeer=\(fromPeer.displayName)")
             
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
             popOverView.didMove(toParentViewController: self)
         }
-        print("\(#file) > \(#function) > Exit \(Thread.current)")
+        print("\(#file) > \(#function) > Exit")
     }
     
     func connectedWithPeer(_ peerID : MCPeerID) {

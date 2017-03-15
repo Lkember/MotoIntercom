@@ -15,8 +15,10 @@ class IncomingCallViewController: UIViewController {
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     @IBOutlet weak var callDisplayNameLabel: UILabel!
+    @IBOutlet weak var peerDisplayNameLabel: UILabel!
     var peerIndex: Int?
     var messages: [MessageObject]?
+    var peerDisplayName: String?
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var popUpView: UIView!
     
@@ -24,6 +26,7 @@ class IncomingCallViewController: UIViewController {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        peerDisplayNameLabel.text = peerDisplayName!
         
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {

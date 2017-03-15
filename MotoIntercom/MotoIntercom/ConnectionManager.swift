@@ -260,16 +260,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         }
     }
     
-    //Called when a peer needs to be removed
-//    func removeConnectedPeer(peerID: MCPeerID) {
-//        for i in 0..<session.connectedPeers.count {
-//            if session.connectedPeers[i] == peerID {
-////                session.connectedPeers.remove(at: i)
-//                return
-//            }
-//        }
-//    }
-    
     // Called to remove a peer that is no longer visible or is already connected
     func removeFoundPeer(peerID: MCPeerID) {
         for i in 0..<foundPeers.count {
