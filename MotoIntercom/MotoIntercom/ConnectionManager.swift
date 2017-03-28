@@ -78,9 +78,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func checkForReusableSession() -> Int {
         for i in 0..<sessions.count {
             if sessions[i].connectedPeers.count == 0 {
+                print("\(#file) > \(#function) > returning \(i)")
                 return i
             }
         }
+        print("\(#file) > \(#function) > No reusable sessions found")
         return -1
     }
     
@@ -88,9 +90,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func findSinglePeerSession(peer: MCPeerID) -> Int {
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.count == 1 && sessions[i].connectedPeers[0] == peer) {
+                print("\(#file) > \(#function) > returning \(i)")
                 return i
             }
         }
+        print("\(#file) > \(#function) > could not find single peer session")
         return -1
     }
     
@@ -245,14 +249,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func checkIfAlreadyConnected(peerID: MCPeerID) -> Bool {
         for session in sessions {
             if session.connectedPeers.contains(peerID) {
+                print("\(#file) > \(#function) > True")
                 return true
             }
         }
+        print("\(#file) > \(#function) > False")
         return false
     }
     
     //Called when a new connection with a peer is made.
     func connectedWithPeer(peerID: MCPeerID) {
+        print("\(#file) > \(#function) > Calling connected with peer.")
         if (checkIfAlreadyConnected(peerID: peerID)) {
 //            session.connectedPeers.append(peerID)
 //            session.connectPeer(peerID, withNearbyConnectionData: nil)
@@ -262,6 +269,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // Called to remove a peer that is no longer visible or is already connected
     func removeFoundPeer(peerID: MCPeerID) {
+        print("\(#file) > \(#function) > Removing peer \(peerID.displayName)")
         for i in 0..<foundPeers.count {
             if foundPeers[i] == peerID {
                 foundPeers.remove(at: i)

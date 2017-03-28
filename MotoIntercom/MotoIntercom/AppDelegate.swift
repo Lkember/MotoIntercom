@@ -53,7 +53,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        print("AppDelegate > applicationWillTerminate > disconnecting from session.")
+        print("\(#file) > \(#function) > disconnecting from session.")
         
         for session in connectionManager.sessions {
             session.disconnect()
@@ -67,7 +67,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: Saving
     
     func saveMCPeerID(peer : MCPeerID) {
-        print("AppDelegate > saveMCPeerID > peerID \(peer.displayName) is being saved permanently.")
+        print("\(#file) > \(#function) > peerID \(peer.displayName) is being saved permanently.")
         
         let data = NSKeyedArchiver.archivedData(withRootObject: peer)
         
@@ -81,13 +81,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let data = defaults.object(forKey: peerIDString) as? Data {
             if let peerID = NSKeyedUnarchiver.unarchiveObject(with: data) as? MCPeerID {
                 self.peer = peerID
-                print("AppDelegate > canLoadMCPeerID > true")
+                print("\(#file) > \(#function) > true")
                 return true
             }
-            print("AppDelegate > canLoadMCPeerID > false, could not unarchive data")
+            print("\(#file) > \(#function) > false, could not unarchive data")
             return false
         }
-        print("AppDelegate > canLoadMCPeerID > false, defaults object could not be found")
+        print("\(#file) > \(#function) > false, defaults object could not be found")
         return false
     }
     
