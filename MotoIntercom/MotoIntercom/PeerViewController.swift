@@ -501,7 +501,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let chatOption = UIAlertAction(title: "Message", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
                     currCell.removeNewMessageIcon()
-                    print("\(#file) > \(#function) > Checking if connected to \(currCell.peerID?.displayName)")
+                    print("\(#file) > \(#function) > Checking if connected to \(String(describing: currCell.peerID?.displayName))")
                     
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     
@@ -874,7 +874,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // This function is run before a segue is performed
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("\(#file) > \(#function) > Entry: \(isDestPeerIDSet) destinationPeerID = \(destinationPeerID?.displayName)")
+        print("\(#file) > \(#function) > Entry: \(isDestPeerIDSet) destinationPeerID = \(String(describing: destinationPeerID?.displayName))")
         
         if (segue.identifier == "idChatSegue" && isDestPeerIDSet) {
             let dest = segue.destination as? ChatViewController

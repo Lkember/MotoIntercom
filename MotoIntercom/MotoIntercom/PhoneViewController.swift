@@ -35,7 +35,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var inputStreamIsSet: Bool = false
     
     var testBufferCount = 0
-    var testBuffer: [UInt8] = .init(repeating: 0, count: 17640)
+    var testBuffer: [UInt8] = .init(repeating: 0, count: 0)
     
     // Timer
     var startTime = NSDate.timeIntervalSinceReferenceDate
@@ -233,33 +233,36 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func startRecording() {
         print("\(#file) > \(#function) > Entry")
         
-        localInput?.installTap(onBus: 1, bufferSize: 4096, format: localInputFormat) {
+        localInput?.installTap(onBus: 0, bufferSize: 4096, format: localInputFormat) {
             (buffer, when) -> Void in
+            
+            let sample = Array(UnsafeBufferPointer(start: buffer.floatChannelData![0], count: Int(buffer.frameLength)))
+            let volume = 20 * log10(sample.reduce(0){ $0 + $1} / Float(buffer.frameLength))
+            
+            if (!volume.isNaN) {
+                print("\(#file) > \(#function) > Current volume: \(volume)")
+            }
             
             // the audio being sent will be played locally as well
 //            self.localPlayerQueue.async {
 //                self.localAudioPlayer.scheduleBuffer(buffer)
 //            }
             
-//            let data = self.audioBufferToData(audioBuffer: buffer)
-//            let output = data.withUnsafeBytes { self.outputStream!.write($0, maxLength: data.count) }
-            
-            
             let data = self.audioBufferToNSData(PCMBuffer: buffer)
+            
+//            print("\(#file) > \(#function) > buffer frame length = \(buffer.frameLength), data.length = \(data.length)")
+//            let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
             let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
             
-//            let audioBuffer = self.audioBufferToBytes(audioBuffer: buffer)
-//            let output = self.outputStream!.write(audioBuffer, maxLength: Int(buffer.frameLength))
-            
             if output > 0 {
-                print("\(#file) > \(#function) > \(output) bytes written from queue \(self.currentQueueName())")
+//                print("\(#file) > \(#function) > \(output) bytes written from queue \(String(describing: self.currentQueueName()))")
             }
             else if output == -1 {
                 let error = self.outputStream!.streamError
-                print("\(#file) > \(#function) > Error writing to stream: \(error?.localizedDescription)")
+//                print("\(#file) > \(#function) > Error writing to stream: \(String(describing: error?.localizedDescription))")
             }
             else {
-                print("\(#file) > \(#function) > Cannot write to stream, stream is full")
+//                print("\(#file) > \(#function) > Cannot write to stream, stream is full")
             }
         }
         
@@ -279,50 +282,29 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     
-    func audioBufferToData(audioBuffer: AVAudioPCMBuffer) -> Data {
-        
-        let channelCount = 1
-        let bufferLength = (audioBuffer.frameCapacity * audioBuffer.format.streamDescription.pointee.mBytesPerFrame)
-        
-        let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: channelCount)
-        let data = Data(bytes: channels[0], count: Int(bufferLength))
-        
-        print("\(#file) > \(#function) > bufferLength \(bufferLength)")
-        
-        return data
-    }
+//    func audioBufferToData(audioBuffer: AVAudioPCMBuffer) -> Data {
+//        
+//        let channelCount = 1
+//        let bufferLength = (audioBuffer.frameCapacity * audioBuffer.format.streamDescription.pointee.mBytesPerFrame)
+//        
+//        let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: channelCount)
+//        let data = Data(bytes: channels[0], count: Int(bufferLength))
+//        
+//        print("\(#file) > \(#function) > bufferLength \(bufferLength)")
+//        return data
+//    }
     
     
     func audioBufferToNSData(PCMBuffer: AVAudioPCMBuffer) -> NSData {
         let channelCount = 1  // given PCMBuffer channel count is 1
         let channels = UnsafeBufferPointer(start: PCMBuffer.floatChannelData, count: channelCount)
-        let data = NSData(bytes: channels[0], length:Int(PCMBuffer.frameCapacity * PCMBuffer.format.streamDescription.pointee.mBytesPerFrame))
+//        let data = NSData(bytes: channels[0], length:Int(PCMBuffer.frameCapacity * PCMBuffer.frameLength))
+        let data = NSData(bytes: channels[0], length:Int(PCMBuffer.frameLength * PCMBuffer.format.streamDescription.pointee.mBytesPerFrame))
         
-        print("\(#file) > \(#function) > data: \(data.length)")
+//        print("\(#file) > \(#function) > data: \(data.length), frameLength: \(PCMBuffer.frameLength), frameCapacity: \(PCMBuffer.frameCapacity), bytes per frame: \(PCMBuffer.format.streamDescription.pointee.mBytesPerFrame)")
         
         return data
     }
-    
-    
-//    func audioBufferToBytes(audioBuffer: AVAudioPCMBuffer) -> [UInt8] {
-//        let srcLeft = audioBuffer.floatChannelData![0]
-//        print("\(#file) > \(#function) > audioBuffer description: \(audioBuffer.description) > format description: \(audioBuffer.format.formatDescription)")
-//        let bytesPerFrame = audioBuffer.format.streamDescription.pointee.mBytesPerFrame
-//        let numBytes = Int(bytesPerFrame * audioBuffer.frameLength)
-//        
-//        print("\(#file) > \(#function) > bytesPerFrame = \(bytesPerFrame) > numBytes = \(numBytes) > frame length = \(audioBuffer.frameLength) > frame capacity = \(audioBuffer.frameCapacity)")
-//        
-//        // initialize bytes by 0 
-//        var audioByteArray = [UInt8](repeating: 0, count: numBytes)
-//        
-//        srcLeft.withMemoryRebound(to: UInt8.self, capacity: numBytes) { srcByteData in
-//            audioByteArray.withUnsafeMutableBufferPointer {
-//                $0.baseAddress!.initialize(from: srcByteData, count: numBytes)
-//            }
-//        }
-//        
-//        return audioByteArray
-//    }
     
     
     // A function which starts the audio engine
@@ -404,25 +386,31 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             
         case Stream.Event.hasBytesAvailable:
-            DispatchQueue.global().async {
-                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount)")
-                if (self.testBufferCount < 17640) {
-                    var tempBuffer: [UInt8] = .init(repeating: 0, count: 17640)
-                    let length = self.inputStream!.read(&tempBuffer, maxLength: tempBuffer.count)
-                    
-                    self.testBufferCount += length
-                    self.testBuffer.append(contentsOf: tempBuffer)
-                    
-                    if (self.testBufferCount >= 17640) {
+            DispatchQueue.global().sync {
+                
+                let availableCount = 17640-self.testBufferCount
+                
+                var tempBuffer: [UInt8] = .init(repeating: 0, count: availableCount)
+                let length = self.inputStream!.read(&tempBuffer, maxLength: availableCount)
+                
+                if (tempBuffer.count != length) {
+                    tempBuffer = [UInt8](tempBuffer.dropLast(tempBuffer.count - length))
+                }
+                
+                self.testBufferCount += length
+                self.testBuffer.append(contentsOf: tempBuffer)
+                
+//                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(testBuffer.count)")
+            
+                if (self.testBufferCount >= 17640) {
+//                    print("\(#file) > \(#function) > Test buffer full, testBuffer.count = \(self.testBuffer.count), testBufferCount = \(self.testBufferCount)")
+                    let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
+                    let audioBuffer = self.dataToPCMBuffer(data: data)
                         
-                        let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
-                        let audioBuffer = self.dataToPCMBuffer(data: data)
-                            
-                        self.peerAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
-                        
-                        self.testBuffer.removeAll()
-                        self.testBufferCount = 0
-                    }
+                    self.peerAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
+                    
+                    self.testBuffer.removeAll()
+                    self.testBufferCount = 0
                 }
             }
         
@@ -432,7 +420,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
         case Stream.Event.endEncountered:
             print("\(#file) > \(#function) > End encountered")
-            endCallButtonIsClicked(nilButton)
+//            endCallButtonIsClicked(nilButton)
             
             
         case Stream.Event.openCompleted:
@@ -445,21 +433,24 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
 
-    func dataToAudioBuffer(data: Data) -> AVAudioPCMBuffer {
-        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: UInt32(data.count)/2)
-        audioBuffer.frameLength = audioBuffer.frameCapacity
-        for i in 0..<data.count/2 {
-            // transform two bytes into a float (-1.0 - 1.0), required by the audio buffer
-            audioBuffer.floatChannelData?.pointee[i] = Float(Int16(data[i*2+1]) << 8 | Int16(data[i*2]))/Float(INT16_MAX)
-        }
-        
-        return audioBuffer
-    }
+//    func dataToAudioBuffer(data: Data) -> AVAudioPCMBuffer {
+//        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)
+//        let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: UInt32(data.count)/2)
+//        audioBuffer.frameLength = audioBuffer.frameCapacity
+//        for i in 0..<data.count/2 {
+//            // transform two bytes into a float (-1.0 - 1.0), required by the audio buffer
+//            audioBuffer.floatChannelData?.pointee[i] = Float(Int16(data[i*2+1]) << 8 | Int16(data[i*2]))/Float(INT16_MAX)
+//        }
+//        
+//        return audioBuffer
+//    }
     
     func dataToPCMBuffer(data: NSData) -> AVAudioPCMBuffer {
         let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)  // given NSData audio format
         let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: UInt32(data.length) / audioFormat.streamDescription.pointee.mBytesPerFrame)
+        
+//        print("\(#file) > \(#function) > audioBuffer frameCapacity = \(audioBuffer.frameCapacity)")
+        
         audioBuffer.frameLength = audioBuffer.frameCapacity
         let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: Int(audioBuffer.format.channelCount))
         data.getBytes(UnsafeMutableRawPointer(channels[0]) , length: data.length)
@@ -542,6 +533,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Close the output stream
         outputStream?.close()
         inputStream?.close()
+        
+        inputStreamIsSet = false
+        outputStreamIsSet = false
         
         // Disconnect from peer. This way the other user will be notified that the call has ended.
         if (appDelegate.connectionManager.checkIfAlreadyConnected(peerID: self.peerID!)) {
@@ -643,7 +637,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
             
             self.outputStream!.delegate = self
-            self.outputStream!.schedule(in: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+            self.outputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.outputStream!.open()
             
             self.recordingQueue.sync {
@@ -655,6 +649,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.inputStream!.delegate = self
             self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.inputStream!.open()
+
         }
         else {
             print("\(#file) > \(#function) > Should not print.")
