@@ -14,6 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     var connectionManager : ConnectionManager!
+    var uniqueID: String!
+    var uniqueIDString = "uniqueIDString"
     var peer : MCPeerID!
     var peerIDString = "selfMCPeerID"
     
@@ -22,13 +24,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        if (!canLoadMCPeerID()) {
+        
+        let didLoad = loadIdentification()
+        
+        if (!didLoad) {
             connectionManager = ConnectionManager()
             
-            saveMCPeerID(peer: connectionManager.peer)
+            saveIdentification(peer: connectionManager.peer, uniqueID: connectionManager.uniqueID)
         }
         else {
-            connectionManager = ConnectionManager(peerID: peer)
+            connectionManager = ConnectionManager(peerID: peer, uniqueID: uniqueID)
         }
         return true
     }
@@ -66,29 +71,76 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     // MARK: Saving
     
-    func saveMCPeerID(peer : MCPeerID) {
-        print("\(#file) > \(#function) > peerID \(peer.displayName) is being saved permanently.")
+//    func saveUniqueID(uniqueID : String) {
+//        print("\(#file) > \(#function) > Saving uniqueID: \(uniqueID)")
+//        
+//        let data = NSKeyedArchiver.archivedData(withRootObject: uniqueID)
+//        
+//        let defaults = UserDefaults.standard
+//        defaults.set(data, forKey: uniqueIDString)
+//    }
+//    
+//    func loadUniqueID() -> Bool {
+//        print("\(#file) > \(#function) > Entry")
+//        let defaults = UserDefaults.standard
+//        
+//        if let data = defaults.object(forKey: uniqueIDString) as? Data {
+//            if let uniqueID = NSKeyedUnarchiver.unarchiveObject(with: data) as? String {
+//                self.uniqueID = uniqueID
+//                print("\(#file) > \(#function) > true")
+//                return true
+//            }
+//            print("\(#file) > \(#function) > false, could not unarchive data")
+//            return false
+//        }
+//        print("\(#file) > \(#function) > false, defaults object could not be found")
+//        return false
+//    }
+    
+    
+    func saveIdentification(peer : MCPeerID, uniqueID: String) {
+        print("\(#file) > \(#function) > peerID: \(peer.displayName) and uniqueID: \(uniqueID) are being saved")
         
-        let data = NSKeyedArchiver.archivedData(withRootObject: peer)
+        let peerIDData = NSKeyedArchiver.archivedData(withRootObject: peer)
+        let uniqueIDData = NSKeyedArchiver.archivedData(withRootObject: uniqueID)
         
         let defaults = UserDefaults.standard
-        defaults.set(data, forKey: peerIDString)
+        defaults.set(peerIDData, forKey: peerIDString)
+        defaults.set(uniqueIDData, forKey: uniqueIDString)
     }
     
-    func canLoadMCPeerID() -> Bool {
+    func loadIdentification() -> Bool {
+        print("\(#file) > \(#function) > Entry")
+        
+        var didLoadPeerID = false
+        var didLoadUniqueID = false
+        
         let defaults = UserDefaults.standard
         
-        if let data = defaults.object(forKey: peerIDString) as? Data {
-            if let peerID = NSKeyedUnarchiver.unarchiveObject(with: data) as? MCPeerID {
+        if let peerData = defaults.object(forKey: peerIDString) as? Data {
+            if let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerData) as? MCPeerID {
                 self.peer = peerID
-                print("\(#file) > \(#function) > true")
-                return true
+                print("\(#file) > \(#function) > Successful load of peerID")
+                didLoadPeerID = true
             }
-            print("\(#file) > \(#function) > false, could not unarchive data")
+        }
+        
+        if let uniqueData = defaults.object(forKey: uniqueIDString) as? Data {
+            if let uniqueID = NSKeyedUnarchiver.unarchiveObject(with: uniqueData) as? String {
+                self.uniqueID = uniqueID
+                print("\(#file) > \(#function) > Successful load of uniqueID")
+                didLoadUniqueID = true
+            }
+        }
+        
+        if (didLoadPeerID && didLoadUniqueID) {
+            return true
+        }
+        else {
+            print("\(#file) > \(#function) > false: didLoadPeerID=\(didLoadPeerID), didLoadUniqueID=\(didLoadUniqueID)")
             return false
         }
-        print("\(#file) > \(#function) > false, defaults object could not be found")
-        return false
+        
     }
     
 }

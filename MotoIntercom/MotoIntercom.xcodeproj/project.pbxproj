@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A514F77DDEEA7F6EB339DE3 /* Pods_MotoIntercom.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88FD76AEBD165040D167202A /* Pods_MotoIntercom.framework */; };
+		790A373051AEC11EF032A60C /* Pods_MotoIntercomTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72627F791098AFBFF6C0D2D1 /* Pods_MotoIntercomTests.framework */; };
+		93B162C881D3F672401945ED /* Pods_MotoIntercomUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A03C644934BE48D99517AAC6 /* Pods_MotoIntercomUITests.framework */; };
+		B200C0971E973E060046914B /* JSQChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200C0961E973E060046914B /* JSQChatViewController.swift */; };
 		B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */; };
 		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
 		B24248721E292BC200B4D260 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B24248711E292BC200B4D260 /* Assets.xcassets */; };
@@ -19,7 +23,10 @@
 		B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B262DE381DF9B97A00DA9931 /* MessageObject.swift */; };
 		B272670F1E1DA80800B86146 /* IncomingCallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */; };
 		B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B274AE821D464C9200E732FD /* StartupViewController.swift */; };
-		B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28EEA501D34185300AF5E5D /* ChatViewController.swift */; };
+		B27C39C31E9B36C300B3DF77 /* Mute-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C21E9B36C300B3DF77 /* Mute-50.png */; };
+		B27C39C51E9B36CC00B3DF77 /* Mute Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */; };
+		B27C39C71E9B36F400B3DF77 /* High Volume-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C61E9B36F400B3DF77 /* High Volume-50.png */; };
+		B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */; };
 		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +48,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		27B2A3C4CD15C2BAF8040E10 /* Pods-MotoIntercomTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercomTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercomTests/Pods-MotoIntercomTests.debug.xcconfig"; sourceTree = "<group>"; };
+		30C14742393A891AF4FCD50F /* Pods-MotoIntercomUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercomUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercomUITests/Pods-MotoIntercomUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		54045D3F8F2F231CF2BC8701 /* Pods-MotoIntercom.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercom.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercom/Pods-MotoIntercom.debug.xcconfig"; sourceTree = "<group>"; };
+		67242F1FBE3CAA558DBAE2BB /* Pods-MotoIntercomTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercomTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercomTests/Pods-MotoIntercomTests.release.xcconfig"; sourceTree = "<group>"; };
+		72627F791098AFBFF6C0D2D1 /* Pods_MotoIntercomTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotoIntercomTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		88FD76AEBD165040D167202A /* Pods_MotoIntercom.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotoIntercom.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9DF9E4347CDC1690E4832B71 /* Pods-MotoIntercom.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercom.release.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercom/Pods-MotoIntercom.release.xcconfig"; sourceTree = "<group>"; };
+		A03C644934BE48D99517AAC6 /* Pods_MotoIntercomUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MotoIntercomUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC2FB24C361649AF3FA3581B /* Pods-MotoIntercomUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MotoIntercomUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-MotoIntercomUITests/Pods-MotoIntercomUITests.release.xcconfig"; sourceTree = "<group>"; };
+		B200C0961E973E060046914B /* JSQChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSQChatViewController.swift; sourceTree = "<group>"; };
 		B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		B24248711E292BC200B4D260 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,7 +76,10 @@
 		B262DE381DF9B97A00DA9931 /* MessageObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageObject.swift; sourceTree = "<group>"; };
 		B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IncomingCallViewController.swift; sourceTree = "<group>"; };
 		B274AE821D464C9200E732FD /* StartupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupViewController.swift; sourceTree = "<group>"; };
-		B28EEA501D34185300AF5E5D /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		B27C39C21E9B36C300B3DF77 /* Mute-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Mute-50.png"; sourceTree = "<group>"; };
+		B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Mute Filled-50.png"; sourceTree = "<group>"; };
+		B27C39C61E9B36F400B3DF77 /* High Volume-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "High Volume-50.png"; sourceTree = "<group>"; };
+		B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "High Volume Filled-50.png"; sourceTree = "<group>"; };
 		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -68,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A514F77DDEEA7F6EB339DE3 /* Pods_MotoIntercom.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				790A373051AEC11EF032A60C /* Pods_MotoIntercomTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,19 +104,36 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93B162C881D3F672401945ED /* Pods_MotoIntercomUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6DF8C13DC4004088D13E325B /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				54045D3F8F2F231CF2BC8701 /* Pods-MotoIntercom.debug.xcconfig */,
+				9DF9E4347CDC1690E4832B71 /* Pods-MotoIntercom.release.xcconfig */,
+				27B2A3C4CD15C2BAF8040E10 /* Pods-MotoIntercomTests.debug.xcconfig */,
+				67242F1FBE3CAA558DBAE2BB /* Pods-MotoIntercomTests.release.xcconfig */,
+				30C14742393A891AF4FCD50F /* Pods-MotoIntercomUITests.debug.xcconfig */,
+				AC2FB24C361649AF3FA3581B /* Pods-MotoIntercomUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		B2515C3E1D2C7CCB00760DE0 = {
 			isa = PBXGroup;
 			children = (
+				B27C39C01E9B36A500B3DF77 /* Resources */,
 				B2515C491D2C7CCB00760DE0 /* MotoIntercom */,
 				B2515C601D2C7CCB00760DE0 /* MotoIntercomTests */,
 				B2515C6B1D2C7CCB00760DE0 /* MotoIntercomUITests */,
 				B2515C481D2C7CCB00760DE0 /* Products */,
+				6DF8C13DC4004088D13E325B /* Pods */,
+				CE69EDD78825B3C2A7276702 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -114,9 +153,9 @@
 				B24248711E292BC200B4D260 /* Assets.xcassets */,
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
-				B28EEA501D34185300AF5E5D /* ChatViewController.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
+				B200C0961E973E060046914B /* JSQChatViewController.swift */,
 				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
 				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
@@ -146,6 +185,35 @@
 			path = MotoIntercomUITests;
 			sourceTree = "<group>";
 		};
+		B27C39C01E9B36A500B3DF77 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B27C39C11E9B36B100B3DF77 /* Images */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		B27C39C11E9B36B100B3DF77 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				B27C39C21E9B36C300B3DF77 /* Mute-50.png */,
+				B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */,
+				B27C39C61E9B36F400B3DF77 /* High Volume-50.png */,
+				B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
+		CE69EDD78825B3C2A7276702 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				88FD76AEBD165040D167202A /* Pods_MotoIntercom.framework */,
+				72627F791098AFBFF6C0D2D1 /* Pods_MotoIntercomTests.framework */,
+				A03C644934BE48D99517AAC6 /* Pods_MotoIntercomUITests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -153,9 +221,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2515C711D2C7CCB00760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercom" */;
 			buildPhases = (
+				295EE371A3298D632D944849 /* [CP] Check Pods Manifest.lock */,
 				B2515C431D2C7CCB00760DE0 /* Sources */,
 				B2515C441D2C7CCB00760DE0 /* Frameworks */,
 				B2515C451D2C7CCB00760DE0 /* Resources */,
+				CEE302D5C66484830B129B5D /* [CP] Embed Pods Frameworks */,
+				AF8A5415A028E97ECB29BF21 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -170,9 +241,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2515C741D2C7CCB00760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomTests" */;
 			buildPhases = (
+				C6309D79AFB3DC578432BBA3 /* [CP] Check Pods Manifest.lock */,
 				B2515C591D2C7CCB00760DE0 /* Sources */,
 				B2515C5A1D2C7CCB00760DE0 /* Frameworks */,
 				B2515C5B1D2C7CCB00760DE0 /* Resources */,
+				F7D6961E825990211DE4AE2F /* [CP] Embed Pods Frameworks */,
+				C55BAE51A39A5073E132C63C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -188,9 +262,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2515C771D2C7CCB00760DE0 /* Build configuration list for PBXNativeTarget "MotoIntercomUITests" */;
 			buildPhases = (
+				1400A025536C28C79D21096C /* [CP] Check Pods Manifest.lock */,
 				B2515C641D2C7CCB00760DE0 /* Sources */,
 				B2515C651D2C7CCB00760DE0 /* Frameworks */,
 				B2515C661D2C7CCB00760DE0 /* Resources */,
+				008856F9003BAFC29623C451 /* [CP] Embed Pods Frameworks */,
+				7DCFFFB07EC37728454CE70C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -254,9 +331,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B27C39C51E9B36CC00B3DF77 /* Mute Filled-50.png in Resources */,
 				B2515C571D2C7CCB00760DE0 /* LaunchScreen.storyboard in Resources */,
 				B24248721E292BC200B4D260 /* Assets.xcassets in Resources */,
+				B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */,
 				B2515C521D2C7CCB00760DE0 /* Main.storyboard in Resources */,
+				B27C39C31E9B36C300B3DF77 /* Mute-50.png in Resources */,
+				B27C39C71E9B36F400B3DF77 /* High Volume-50.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +357,144 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		008856F9003BAFC29623C451 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercomUITests/Pods-MotoIntercomUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1400A025536C28C79D21096C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		295EE371A3298D632D944849 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		7DCFFFB07EC37728454CE70C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercomUITests/Pods-MotoIntercomUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AF8A5415A028E97ECB29BF21 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercom/Pods-MotoIntercom-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C55BAE51A39A5073E132C63C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercomTests/Pods-MotoIntercomTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C6309D79AFB3DC578432BBA3 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		CEE302D5C66484830B129B5D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercom/Pods-MotoIntercom-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F7D6961E825990211DE4AE2F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercomTests/Pods-MotoIntercomTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B2515C431D2C7CCB00760DE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -284,7 +503,7 @@
 				B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */,
 				B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */,
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
-				B28EEA511D34185300AF5E5D /* ChatViewController.swift in Sources */,
+				B200C0971E973E060046914B /* JSQChatViewController.swift in Sources */,
 				B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */,
 				B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */,
 				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
@@ -436,6 +655,7 @@
 		};
 		B2515C721D2C7CCB00760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 54045D3F8F2F231CF2BC8701 /* Pods-MotoIntercom.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -453,6 +673,7 @@
 		};
 		B2515C731D2C7CCB00760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9DF9E4347CDC1690E4832B71 /* Pods-MotoIntercom.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -470,6 +691,7 @@
 		};
 		B2515C751D2C7CCB00760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27B2A3C4CD15C2BAF8040E10 /* Pods-MotoIntercomTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = MotoIntercomTests/Info.plist;
@@ -483,6 +705,7 @@
 		};
 		B2515C761D2C7CCB00760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 67242F1FBE3CAA558DBAE2BB /* Pods-MotoIntercomTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = MotoIntercomTests/Info.plist;
@@ -496,6 +719,7 @@
 		};
 		B2515C781D2C7CCB00760DE0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 30C14742393A891AF4FCD50F /* Pods-MotoIntercomUITests.debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = MotoIntercomUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -508,6 +732,7 @@
 		};
 		B2515C791D2C7CCB00760DE0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AC2FB24C361649AF3FA3581B /* Pods-MotoIntercomUITests.release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = MotoIntercomUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

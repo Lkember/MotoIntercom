@@ -9,7 +9,7 @@
 
 import Foundation
 import MultipeerConnectivity
-
+import JSQMessagesViewController
 
 protocol ConnectionManagerDelegate {
     func foundPeer(_ newPeer : MCPeerID)
@@ -24,11 +24,12 @@ protocol ConnectionManagerDelegate {
 
 class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
     
-    // MARK: Properties
+    // MARK: - Properties
     
     var delegate : ConnectionManagerDelegate?
     
     //Creating service types, session, peerID, browser and advertiser
+    var uniqueID : String!
     var sessions : [MCSession] = []
     var peer : MCPeerID!
     var browser : MCNearbyServiceBrowser!
@@ -40,14 +41,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //invitation handler
     var invitationHandler: ((Bool, MCSession) -> Void)?
     
+    // MARK: - Initialization
+    
     override init() {
-        print("\(#file) > \(#function)init > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
+        print("\(#file) > \(#function) > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
         
-        peer = MCPeerID(displayName: UIDevice.current.name)        
+        self.peer = MCPeerID(displayName: UIDevice.current.name)
         let session = MCSession(peer: peer)
-        browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
-        advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
-
+        self.browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
+        self.advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
+        self.uniqueID = String(NSUUID().uuidString)
+        
         super.init()
         
         session.delegate = self
@@ -57,10 +61,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         sessions.append(session)
     }
     
-    init(peerID : MCPeerID) {
+    init(peerID : MCPeerID, uniqueID : String) {
         print("\(#file) > \(#function) > Initializing ConnectionManager with existing peerID: \(peerID.displayName)")
         
-        peer = peerID
+        self.peer = peerID
+        self.uniqueID = uniqueID
         let session = MCSession(peer: peer)
         browser = MCNearbyServiceBrowser(peer: peer, serviceType: "moto-intercom")
         advertiser = MCNearbyServiceAdvertiser(peer: peer, discoveryInfo: nil, serviceType: "moto-intercom")
@@ -73,6 +78,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         sessions.append(session)
     }
+    
     
     // a function which returns the index to an unused session
     func checkForReusableSession() -> Int {
@@ -101,6 +107,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // Creates a new session for a new peer, returns it's index
     func createNewSession() -> Int {
+        print("\(#file) > \(#function) > Entry")
         
         let reusableSession = checkForReusableSession()
         
@@ -109,11 +116,11 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             session.delegate = self
             sessions.append(session)
             
-            print("\(#file) > \(#function) > Creating a new session.")
+            print("\(#file) > \(#function) > Exit > Creating a new session.")
             return sessions.count - 1
         }
         else {
-            print("\(#file) > \(#function) > Found reusable session.")
+            print("\(#file) > \(#function) > Exit > Found reusable session.")
             return reusableSession
         }
     }
@@ -175,10 +182,39 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             if session.connectedPeers.contains(targetPeer) {
                 sess = session
             }
+            else {
+                // TODO: If message fails to send we need to connect to peer
+                print("\(#file) > \(#function) > Not connected to peer. Message couldn't be sent.")
+            }
         }
         
         do {
             try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            return false
+        }
+        return true
+    }
+    
+    //Send JSQMessage data to peer
+    func sendData(jsqMessage: JSQMessage, toPeer targetPeer: MCPeerID) -> Bool {
+        print("\(#file) > \(#function) > Sending message to peer.")
+        
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: jsqMessage)
+        let peerArray = NSArray(object: targetPeer)
+        var sess : MCSession = MCSession(peer: peer)
+        
+        for session in sessions {
+            //TODO: If we allow multi-peer connectivity this method must be modified
+            if session.connectedPeers.contains(targetPeer) {
+                sess = session
+            }
+        }
+        
+        do {
+            try sess.send(dataToSend, toPeers: peerArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
@@ -279,7 +315,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     
-    // MARK: ConnectionManager
+    // MARK: - ConnectionManager
     
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         print("\(#file) > \(#function) > \(error)")
@@ -290,8 +326,12 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         let isPhoneCall = NSKeyedUnarchiver.unarchiveObject(with: context!) as! Bool
         
-        print("\(#file) > \(#function) > \(peerID), isPhoneCall=\(isPhoneCall)")
         delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
+        
+        if (!isPhoneCall) {
+            let index = self.createNewSession()
+            invitationHandler(true, sessions[index])
+        }
     }
     
     
@@ -299,7 +339,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("\(#file) > \(#function) > \(error.localizedDescription)")
     }
     
-    //MARK: MCSession
+    //MARK: - MCSession
     
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch  state {

@@ -1,0 +1,21 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'MotoIntercom' do
+  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for MotoIntercom
+  pod 'JSQMessagesViewController'
+
+  target 'MotoIntercomTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  target 'MotoIntercomUITests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+end

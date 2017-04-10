@@ -8,17 +8,18 @@
 
 import UIKit
 import MultipeerConnectivity
+import JSQMessagesViewController
 
 class MessageObject: NSObject, NSCoding {
     
     // MARK: Properties
+    var senderID: String!
     var peerID: MCPeerID!
     var selfID: MCPeerID!
-    var messageIsFrom = [Int]()     // 0 means from user, 1 means from peer
-    var messages = [String]()       // An array of strings, where each string is a message.
+    var messages = [JSQMessage]()
     var isAvailable : Bool = false
     
-    var connectionType : Int = 0    // 0= not specified, 1 = message, 2 = voice
+    var connectionType : Int = 0    // 0 = not specified, 1 = message, 2 = voice
     
     
     // MARK: init
@@ -26,23 +27,20 @@ class MessageObject: NSObject, NSCoding {
         print("\(#file) > \(#function) > new message object is being created with display name \(UIDevice.current.name).")
         peerID = MCPeerID.init(displayName: UIDevice.current.name)
         selfID = MCPeerID.init(displayName: UIDevice.current.name)
-        messageIsFrom = [Int]()
-        messages = [String]()
+        messages = [JSQMessage]()
     }
     
-    init(peerID: MCPeerID, messageFrom: [Int], messages: [String]) {
+    init(peerID: MCPeerID, messages: [JSQMessage]) {
         print("\(#file) > \(#function) > Correctly initializing message object for peer \(peerID.displayName)")
         self.peerID = peerID
         self.selfID = MCPeerID.init(displayName: UIDevice.current.name)
-        self.messageIsFrom = messageFrom
         self.messages = messages
     }
     
-    init(peerID: MCPeerID, selfID: MCPeerID, messageFrom: [Int], messages: [String]) {
+    init(peerID: MCPeerID, selfID: MCPeerID, messages: [JSQMessage]) {
         print("\(#file) > \(#function) > Initializing message object as received.")
         self.peerID = peerID
         self.selfID = selfID
-        self.messageIsFrom = messageFrom
         self.messages = messages
     }
     
@@ -67,7 +65,34 @@ class MessageObject: NSObject, NSCoding {
         return connectionType
     }
     
-    // MARK: NSCoding
+//    // MARK: - JSQMessageData
+//    func senderId() -> String! {
+//        return self.senderID
+//    }
+//    
+//    func senderDisplayName() -> String! {
+//        return self.selfID.displayName
+//    }
+//    
+//    func date() -> Date! {
+//        let date = Date.init()
+//        return date
+//    }
+//    
+//    func isMediaMessage() -> Bool {
+//        return false
+//    }
+//    
+//    public func messageHash() -> UInt {
+//        return UInt(RAND_MAX)
+//    }
+//    
+//    public func text() -> String! {
+//        return messages[0]
+//    }
+    
+    
+    // MARK: - NSCoding
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
     static let ArchiveURL = DocumentsDirectory.appendingPathComponent("MessageObjects")
     
@@ -81,16 +106,16 @@ class MessageObject: NSObject, NSCoding {
     func encode(with aCoder: NSCoder) {
         aCoder.encode(peerID, forKey: PropertyKey.peerID)
         aCoder.encode(selfID, forKey: PropertyKey.selfID)
-        aCoder.encode(messageIsFrom, forKey: PropertyKey.messageIsFrom)
+//        aCoder.encode(messageIsFrom, forKey: PropertyKey.messageIsFrom)
         aCoder.encode(messages, forKey: PropertyKey.messages)
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
         let peerID = aDecoder.decodeObject(forKey: PropertyKey.peerID) as! MCPeerID
         let selfID = aDecoder.decodeObject(forKey: PropertyKey.selfID) as! MCPeerID
-        let messageIsFrom = aDecoder.decodeObject(forKey: PropertyKey.messageIsFrom) as! [Int]
-        let messages = aDecoder.decodeObject(forKey: PropertyKey.messages) as! [String]
+//        let messageIsFrom = aDecoder.decodeObject(forKey: PropertyKey.messageIsFrom) as! [Int]
+        let messages = aDecoder.decodeObject(forKey: PropertyKey.messages) as! [JSQMessage]
         
-        self.init(peerID: peerID, selfID: selfID, messageFrom: messageIsFrom, messages: messages)
+        self.init(peerID: peerID, selfID: selfID, messages: messages)
     }
 }

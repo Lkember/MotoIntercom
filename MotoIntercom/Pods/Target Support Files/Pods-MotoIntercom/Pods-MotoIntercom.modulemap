@@ -1,0 +1,6 @@
+framework module Pods_MotoIntercom {
+  umbrella header "Pods-MotoIntercom-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -10,6 +10,7 @@
 import UIKit
 import MultipeerConnectivity
 import AudioToolbox             // For sound and vibration
+import JSQMessagesViewController
 
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
@@ -198,6 +199,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(#file) > \(#function) > Entry")
         
         if let _ = navigationController?.visibleViewController as? PeerViewController {
+            print("\(#file) > \(#function) > PeerViewController is visible controller.")
+            
             let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
             let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
             let fromPeer = dictionary["peer"] as! MCPeerID
@@ -205,7 +208,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let peerIndex = getIndexForPeer(peer: fromPeer)
             
             // If the message is an end chat message
-            if (newMessage.messages[0] == endChat) {
+            if (newMessage.messages[0].text == endChat) {
                 //TODO: Need to close connection
                 print("\(#file) > \(#function) > endChat message received")
                 
@@ -224,17 +227,18 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
                 
             // If the message is an incoming call message
-            else if (newMessage.messages[0] == incomingCall) {
+            else if (newMessage.messages[0].text == incomingCall) {
                 //TODO: Need to let the user know there is an incoming call
                 print("\(#file) > \(#function) > incomingCall message received")
             }
                 
             // If the message is a chat message
             else {
-                print("\(#file) > \(#function) > message: \(newMessage.messages[0]) from \(fromPeer.displayName)")
-                
+                print("\(#file) > \(#function) > message: \(newMessage.messages[0].text), peerID \(newMessage.peerID.displayName), selfID \(newMessage.selfID.displayName)")
                 messages[peerIndex].messages.append(newMessage.messages[0])
-                messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
+                
+//                messages[peerIndex].messages.append(newMessage.messages[0])
+//                messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
                 print("\(#file) > \(#function) > Adding new message to transcript for peer \(messages[peerIndex].peerID.displayName)")
                 
                 save()
@@ -252,9 +256,18 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     if (!self.newMessage.contains(fromPeer)) {
                         self.newMessage.append(fromPeer)
                     }
-                    self.peersTable.reloadRows(at: [IndexPath.init(row: peerIndex, section: 0)], with: .fade)
+                    
+                    let numRows = self.peersTable.numberOfRows(inSection: 0)
+                    var indexPathsToUpdate: [IndexPath] = []
+                    
+                    for i in 0..<numRows {
+                        indexPathsToUpdate.append(IndexPath.init(row: i, section: 0))
+                    }
                 }
             }
+        }
+        else {
+            print("\(#file) > \(#function) > Not currently visible")
         }
         print("\(#file) > \(#function) > Exit")
     }
@@ -397,7 +410,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             if (currPeer.messages.count > 0) {
                 print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
-                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1])
+                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
             }
             else {
                 cell.setLatestMessage(latestMessage: "No history")
@@ -418,7 +431,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            cell.phoneButton.isHidden = true
             
             if (currPeer.messages.count > 0) {
-                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1])
+                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
             }
             else {
                 cell.setLatestMessage(latestMessage: "No history")
@@ -498,7 +511,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     }
                 })
                 
-                let chatOption = UIAlertAction(title: "Message", style: .default, handler: { (alert: UIAlertAction!) -> Void in
+                let chatOption = UIAlertAction(title: "Chat", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
                     currCell.removeNewMessageIcon()
                     print("\(#file) > \(#function) > Checking if connected to \(String(describing: currCell.peerID?.displayName))")
@@ -522,6 +535,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
                         
                         print("\(#file) > \(#function) > Setting isPhoneCall=\(isPhoneCall)")
+                        
+                        if (!isPhoneCall) {
+                            self.destinationPeerID = currCell.peerID!
+                            self.isDestPeerIDSet = true
+                        }
                         
                         // Invite the peer to communicate
                         self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
@@ -614,7 +632,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 for i in 0..<self.messages.count {
                     if (self.messages[i].peerID == currPeer) {
-                        self.messages[i].messageIsFrom.removeAll()
+//                        self.messages[i].messageIsFrom.removeAll()
                         self.messages[i].messages.removeAll()
                         break
                     }
@@ -626,7 +644,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 for i in 0..<self.messages.count {
                     if (self.messages[i].peerID == currPeer) {
                         self.messages[i].messages.removeAll()
-                        self.messages[i].messageIsFrom.removeAll()
+//                        self.messages[i].messageIsFrom.removeAll()
                         
                         break
                     }
@@ -678,7 +696,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // if message object does not exist, create it
         if index == -1 {
-            let messageObject = MessageObject.init(peerID: newPeer, messageFrom: [], messages: [])
+            let messageObject = MessageObject.init(peerID: newPeer, messages: [])
             messageObject.isAvailable = true
             messages.append(messageObject)
         }
@@ -721,55 +739,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(#file) > \(#function) > Entry: isPhoneCall=\(isPhoneCall)")
         
         if (!isPhoneCall) {
+            // Set the connection type to message
+            let peerIndex = self.getIndexForPeer(peer: fromPeer)
+            self.messages[peerIndex].setConnectionTypeToMessage()
             
-            let alert = UIAlertController(title: "", message: "\(fromPeer.displayName) wants to chat with you.", preferredStyle: UIAlertControllerStyle.alert)
-            
-            let acceptAction: UIAlertAction = UIAlertAction(title: "Accept", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                
-                // Set the connection type to message
-                let peerIndex = self.getIndexForPeer(peer: fromPeer)
-                self.messages[peerIndex].setConnectionTypeToMessage()
-                
-                let index = self.appDelegate.connectionManager.createNewSession()
-                    
-                print("\(#file) > \(#function) > Accepted invitation handler")
-                
-                if self.appDelegate.connectionManager.invitationHandler != nil {
-                    self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
-                    
-                    self.destinationPeerID = fromPeer
-                    self.isDestPeerIDSet = true
-                }
-                
-            }
-            
-            let declineAction: UIAlertAction = UIAlertAction(title: "Decline", style: UIAlertActionStyle.cancel) { (alertAction) -> Void in
-                print("\(#file) > \(#function) > Declined invitation")
-                
-                var sess : MCSession?
-                var sessIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: fromPeer)
-                
-                if sessIndex == -1 {
-                    print("\(#file) > \(#function) > Session could not be found...")
-                    sessIndex = self.appDelegate.connectionManager.createNewSession()
-                }
-                
-                sess = self.appDelegate.connectionManager.sessions[sessIndex]
-                
-                if self.appDelegate.connectionManager.invitationHandler != nil && sess != nil {
-                    self.appDelegate.connectionManager.invitationHandler!(false, sess!)
-                }
-                else {
-                    print("\(#file) > \(#function) > invitationHandler or session is nil")
-                }
-            }
-            
-            alert.addAction(acceptAction)
-            alert.addAction(declineAction)
-            
-            OperationQueue.main.addOperation { () -> Void in
-                self.present(alert, animated: true, completion: nil)
-            }
+//            self.destinationPeerID = fromPeer
+//            self.isDestPeerIDSet = true
         }
         else {
             print("\(#file) > \(#function) > Incoming call!")
@@ -796,27 +771,30 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Remove the peer from foundPeers
         appDelegate.connectionManager.removeFoundPeer(peerID: peerID)
         
-        destinationPeerID = peerID  // This is used so we know what peer was clicked on
-        isDestPeerIDSet = true
+//        destinationPeerID = peerID  // This is used so we know what peer was clicked on
+//        isDestPeerIDSet = true
         
-        let peerIndex = getIndexForPeer(peer: peerID)
-        let connType = messages[peerIndex].connectionType
+        if (isDestPeerIDSet) {
         
-        
-        if (connType == MESSAGE_CONNECTION_TYPE) {
-            print("\(#file) > \(#function) > Connection type is MESSAGE_CONNECTION_TYPE)")
-            OperationQueue.main.addOperation {
-                self.performSegue(withIdentifier: "idChatSegue", sender: self)
+            let peerIndex = getIndexForPeer(peer: peerID)
+            let connType = messages[peerIndex].connectionType
+            
+            
+            if (connType == MESSAGE_CONNECTION_TYPE) {
+                print("\(#file) > \(#function) > Connection type is MESSAGE_CONNECTION_TYPE)")
+                OperationQueue.main.addOperation {
+                    self.performSegue(withIdentifier: "idChatSegue", sender: self)
+                }
             }
-        }
-        else if (connType == PHONE_CONNECTION_TYPE) {
-            print("\(#file) > \(#function) connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
-            OperationQueue.main.addOperation {
-                self.performSegue(withIdentifier: "callSegue", sender: self)
+            else if (connType == PHONE_CONNECTION_TYPE) {
+                print("\(#file) > \(#function) connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
+                OperationQueue.main.addOperation {
+                    self.performSegue(withIdentifier: "callSegue", sender: self)
+                }
             }
-        }
-        else {
-            print("\(#file) > \(#function) > Could NOT recognize a connection type. Cannot perform segue.")
+            else {
+                print("\(#file) > \(#function) > Could NOT recognize a connection type. Cannot perform segue.")
+            }
         }
         
     }
@@ -829,10 +807,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         let peerIndex = getIndexForPeer(peer: peerID)
         messages[peerIndex].resetConnectionType()
         
-        if let currView = navigationController?.topViewController as? ChatViewController {
+        if let currView = navigationController?.topViewController as? JSQChatViewController {
             print("\(#file) > \(#function) > topViewController is ChatView. ")
-            if (peerID == currView.messages.peerID) {
-                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messages.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+            if (peerID == currView.messageObject.peerID) {
+                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
 
                 let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
 
@@ -877,13 +855,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(#file) > \(#function) > Entry: \(isDestPeerIDSet) destinationPeerID = \(String(describing: destinationPeerID?.displayName))")
         
         if (segue.identifier == "idChatSegue" && isDestPeerIDSet) {
-            let dest = segue.destination as? ChatViewController
+            let dest = segue.destination as? JSQChatViewController
             var messageIsSet = false
             
             for message in messages {
                 print("\(#file) > \(#function) > Currently looking at messages from peer \(message.peerID)")
                 if (message.peerID == destinationPeerID) {
-                    dest?.messages = message
+                    dest?.messageObject = message
                     messageIsSet = true
                     
                     print("\(#file) > \(#function) > # of messages \(message.messages.count)")
@@ -892,23 +870,23 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             if (messageIsSet == false) {
-                let newMessageObject = MessageObject.init(peerID: destinationPeerID!, messageFrom: [], messages: [])
+                let newMessageObject = MessageObject.init(peerID: destinationPeerID!, messages: [])
                 messages.append(newMessageObject)
                 
                 save()
                 
                 print("\(#file) > \(#function) > Could not find message object. Creating a new message object.")
                 
-                dest!.messages = self.messages[messages.count-1]
+                dest!.messageObject = self.messages[messages.count-1]
             }
         }
         else if (segue.identifier == "idChatSegue") {
-            let dest = segue.destination as? ChatViewController
+            let dest = segue.destination as? JSQChatViewController
             var messageIsSet = false
             
             for message in messages {
                 if message.peerID == destinationPeerID {
-                    dest?.messages = message
+                    dest?.messageObject = message
                     
                     messageIsSet = true
                     break
