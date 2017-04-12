@@ -30,6 +30,10 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MotoIntercom uses your photo library to allow you to send images to a peer</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MotoIntercom uses your camera to allow you to send photos to a peer</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>MotoIntercom requires your microphone to start a call with a peer</string>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -417,7 +417,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             if (currPeer.messages.count > 0) {
                 print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
-                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
+                if (!currPeer.messages[currPeer.messages.count-1].isMediaMessage) {
+                    cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
+                }
+                else {
+                    cell.setLatestMessage(latestMessage: "Media")
+                }
             }
             else {
                 cell.setLatestMessage(latestMessage: "No history")
@@ -438,7 +443,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            cell.phoneButton.isHidden = true
             
             if (currPeer.messages.count > 0) {
-                cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
+                print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
+                if (!currPeer.messages[currPeer.messages.count-1].isMediaMessage) {
+                    cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
+                }
+                else {
+                    cell.setLatestMessage(latestMessage: "Media")
+                }
             }
             else {
                 cell.setLatestMessage(latestMessage: "No history")
@@ -569,7 +580,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 let cancelOption = UIAlertAction(title: "Cancel", style: .cancel, handler: { (alert: UIAlertAction!) -> Void in
                     self.peersTable.deselectRow(at: indexPath, animated: true)
-                    // Do nothing
                 })
                 
                 optionMenu.addAction(phoneOption)
