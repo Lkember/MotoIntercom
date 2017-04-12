@@ -244,9 +244,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 save()
                 
                 //Vibrate
-                //TODO: Make a noise notification as well
-                AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
-                print("\(#file) > \(#function) > Sending vibration notification to device")
+                JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
                 
 //                let currCell = peersTable.cellForRow(at: IndexPath.init(row: peerIndex, section: 0)) as! PeerTableViewCell
 //                currCell.newMessageArrived()
@@ -262,7 +260,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     
                     for i in 0..<numRows {
                         indexPathsToUpdate.append(IndexPath.init(row: i, section: 0))
+                        
+                        let currIndexPath = IndexPath.init(row: i, section: 0)
+                        let currCell = self.peersTable.cellForRow(at: currIndexPath) as! PeerTableViewCell
+                        
+                        if currCell.peerID == newMessage.peerID {
+                            currCell.newMessageArrived()
+                        }
                     }
+                    
+                    self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
                 }
             }
         }
