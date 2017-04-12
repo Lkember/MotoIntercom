@@ -28,7 +28,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         
         // Setting the title to the display name
         self.navigationItem.title = messageObject.peerID.displayName
-//        self.navigationController?.title = messageObject.peerID.displayName
         
         appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
@@ -73,7 +72,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // Sets up the outgoing and incoming message bubbles
     private func setupOutgoingBubble() -> JSQMessagesBubbleImage {
         let bubbleImageFactory = JSQMessagesBubbleImageFactory()
-        return bubbleImageFactory!.outgoingMessagesBubbleImage(with: UIColor.jsq_messageBubbleBlue())
+        return bubbleImageFactory!.outgoingMessagesBubbleImage(with: UIColor.jsq_messageBubbleGreen())
     }
     
     private func setupIncomingBubble() -> JSQMessagesBubbleImage {
@@ -136,6 +135,16 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         JSQSystemSoundPlayer.jsq_playMessageSentAlert()
         finishSendingMessage()
     }
+    
+    override func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+        if appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messageObject.peerID) {
+            return false
+        }
+        else {
+            return true
+        }
+    }
+    
     
     //MARK: - Message Received
     

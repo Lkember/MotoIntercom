@@ -24,17 +24,17 @@
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DPf-ws-xVD">
                                 <rect key="frame" x="16" y="77" width="343" height="495"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" red="0.81753966970000003" green="0.81753966970000003" blue="0.81753966970000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <string key="text">To use this app you must be able to view other devices. To do so please be sure that your WiFi is enabled.
  To enable WiFi you can open control center and select the WiFi logo, or you can go into your phone's settings. </string>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rju-9P-hRx">
-                                <rect key="frame" x="16" y="580" width="343" height="67"/>
+                                <rect key="frame" x="0.0" y="580" width="375" height="87"/>
                                 <color key="backgroundColor" red="0.4334842230481924" green="0.83099902849740936" blue="0.48071033700332488" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="67" id="6mN-DV-gil"/>
+                                    <constraint firstAttribute="height" constant="87" id="1gI-jK-K5x"/>
                                 </constraints>
                                 <state key="normal" title="Start Searching for Peers"/>
                                 <connections>
@@ -43,15 +43,15 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.81753966970000003" green="0.81753966970000003" blue="0.81753966970000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="DPf-ws-xVD" firstAttribute="top" secondItem="4BF-se-8Ev" secondAttribute="bottom" constant="13" id="0Da-fc-UC8"/>
-                            <constraint firstItem="DPf-ws-xVD" firstAttribute="leading" secondItem="Rju-9P-hRx" secondAttribute="leading" id="Ilc-4R-VT3"/>
-                            <constraint firstItem="Rju-9P-hRx" firstAttribute="trailing" secondItem="XKG-NW-kHC" secondAttribute="trailingMargin" id="PCp-es-EzP"/>
-                            <constraint firstItem="DPf-ws-xVD" firstAttribute="trailing" secondItem="Rju-9P-hRx" secondAttribute="trailing" id="R4f-9e-fAD"/>
-                            <constraint firstItem="Rju-9P-hRx" firstAttribute="leading" secondItem="XKG-NW-kHC" secondAttribute="leadingMargin" id="hsn-sz-u6v"/>
-                            <constraint firstItem="Rju-9P-hRx" firstAttribute="top" secondItem="DPf-ws-xVD" secondAttribute="bottom" constant="8" symbolic="YES" id="tZh-aW-Dqs"/>
-                            <constraint firstItem="zmk-oI-rFy" firstAttribute="top" secondItem="Rju-9P-hRx" secondAttribute="bottom" constant="20" id="wgc-m4-b3Y"/>
+                            <constraint firstItem="Rju-9P-hRx" firstAttribute="bottom" secondItem="zmk-oI-rFy" secondAttribute="top" id="5Ze-Fq-Lau"/>
+                            <constraint firstItem="Rju-9P-hRx" firstAttribute="leading" secondItem="XKG-NW-kHC" secondAttribute="leading" id="IF4-vm-tmy"/>
+                            <constraint firstItem="Rju-9P-hRx" firstAttribute="centerX" secondItem="DPf-ws-xVD" secondAttribute="centerX" id="Zhd-Ab-spT"/>
+                            <constraint firstAttribute="trailing" secondItem="Rju-9P-hRx" secondAttribute="trailing" id="ehh-h6-gOB"/>
+                            <constraint firstItem="Rju-9P-hRx" firstAttribute="top" secondItem="DPf-ws-xVD" secondAttribute="bottom" constant="8" symbolic="YES" id="nF4-UG-SMS"/>
+                            <constraint firstItem="DPf-ws-xVD" firstAttribute="leading" secondItem="XKG-NW-kHC" secondAttribute="leadingMargin" id="wsJ-ak-jyR"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Getting Started" id="8I4-0G-Ugr">
