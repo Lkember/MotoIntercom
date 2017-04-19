@@ -259,10 +259,49 @@
             </objects>
             <point key="canvasLocation" x="2516" y="437.63118440779613"/>
         </scene>
+        <!--Show Media View Controller-->
+        <scene sceneID="Cfo-0o-3lY">
+            <objects>
+                <viewController automaticallyAdjustsScrollViewInsets="NO" id="kc8-Qc-Jeu" customClass="ShowMediaViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="BKX-LY-nZO"/>
+                        <viewControllerLayoutGuide type="bottom" id="wdE-AR-MmO"/>
+                    </layoutGuides>
+                    <scrollView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.5" maximumZoomScale="6" id="dH5-Ft-6Fr">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Rjd-qO-le5">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="wdE-AR-MmO" firstAttribute="top" secondItem="Rjd-qO-le5" secondAttribute="bottom" id="6AJ-Mf-OUm"/>
+                            <constraint firstItem="Rjd-qO-le5" firstAttribute="top" secondItem="dH5-Ft-6Fr" secondAttribute="top" id="8PY-2b-cme"/>
+                            <constraint firstAttribute="trailing" secondItem="Rjd-qO-le5" secondAttribute="trailing" id="I73-EZ-UpI"/>
+                            <constraint firstItem="Rjd-qO-le5" firstAttribute="centerX" secondItem="dH5-Ft-6Fr" secondAttribute="centerX" id="P00-ej-LBs"/>
+                            <constraint firstItem="Rjd-qO-le5" firstAttribute="centerY" secondItem="dH5-Ft-6Fr" secondAttribute="centerY" id="aRw-g8-paE"/>
+                            <constraint firstItem="Rjd-qO-le5" firstAttribute="leading" secondItem="dH5-Ft-6Fr" secondAttribute="leading" id="nhP-Bs-1Zi"/>
+                        </constraints>
+                    </scrollView>
+                    <connections>
+                        <outlet property="imageView" destination="Rjd-qO-le5" id="Ym4-fc-hfZ"/>
+                        <outlet property="scrollView" destination="dH5-Ft-6Fr" id="4ug-g1-IAf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1wP-J4-MQv" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3301.5999999999999" y="-463.71814092953525"/>
+        </scene>
         <!--Chat View Controller-->
         <scene sceneID="PtU-yq-FHp">
             <objects>
-                <viewController id="qAR-hF-vh5" userLabel="Chat View Controller" customClass="JSQChatViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController"/>
+                <viewController id="qAR-hF-vh5" userLabel="Chat View Controller" customClass="JSQChatViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
+                    <connections>
+                        <segue destination="kc8-Qc-Jeu" kind="show" identifier="showMedia" id="Z8f-y2-kwx"/>
+                    </connections>
+                </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="D2k-2V-1On" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2516" y="-462"/>

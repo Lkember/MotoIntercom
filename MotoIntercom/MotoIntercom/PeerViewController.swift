@@ -432,31 +432,38 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             return cell
         }
         else {      //For section 1 (unavailable peers)
-            let currPeer = unavailablePeers[indexPath.row]
-            
-            cell.peerID = currPeer.peerID
-            cell.setPeerDisplayName(displayName: currPeer.peerID.displayName)
-            cell.selectionStyle = UITableViewCellSelectionStyle.blue
-            cell.peerIsUnavailable()
-            
-//            cell.messageButton.isHidden = true
-//            cell.phoneButton.isHidden = true
-            
-            if (currPeer.messages.count > 0) {
-                print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
-                if (!currPeer.messages[currPeer.messages.count-1].isMediaMessage) {
-                    cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
-                }
-                else {
-                    cell.setLatestMessage(latestMessage: "Media")
-                }
+            if (indexPath.row > unavailablePeers.count) {
+                print("\(#file) > \(#function) > Could not find peer... Updating table...")
+                self.peersTable.reloadData()
+                return cell
             }
             else {
-                cell.setLatestMessage(latestMessage: "No history")
-            }
+                let currPeer = unavailablePeers[indexPath.row]
             
-            print("\(#file) > \(#function) > Exit")
-            return cell
+                cell.peerID = currPeer.peerID
+                cell.setPeerDisplayName(displayName: currPeer.peerID.displayName)
+                cell.selectionStyle = UITableViewCellSelectionStyle.blue
+                cell.peerIsUnavailable()
+                
+    //            cell.messageButton.isHidden = true
+    //            cell.phoneButton.isHidden = true
+                
+                if (currPeer.messages.count > 0) {
+                    print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")
+                    if (!currPeer.messages[currPeer.messages.count-1].isMediaMessage) {
+                        cell.setLatestMessage(latestMessage: currPeer.messages[currPeer.messages.count-1].text)
+                    }
+                    else {
+                        cell.setLatestMessage(latestMessage: "Media")
+                    }
+                }
+                else {
+                    cell.setLatestMessage(latestMessage: "No history")
+                }
+                
+                print("\(#file) > \(#function) > Exit")
+                return cell
+            }
         }
     }
     

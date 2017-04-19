@@ -17,6 +17,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // MARK: Properties
     var messageObject = MessageObject()
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    var selectedImage: UIImage?
     
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
@@ -59,15 +60,23 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
 
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        if (segue.identifier == "showMedia") {
+            let destVC = segue.destination as! ShowMediaViewController
+            destVC.image = self.selectedImage
+            
+            let backItem = UIBarButtonItem()
+            backItem.title = "Back"
+            
+            self.navigationItem.backBarButtonItem = backItem
+        }
     }
-    */
 
     // MARK: - JSQMessagesViewController
     
@@ -198,6 +207,23 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             OperationQueue.main.addOperation { () -> Void in
                 self.present(optionMenu, animated: true, completion: nil)
             }
+        }
+    }
+    
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, didTapMessageBubbleAt indexPath: IndexPath!) {
+        let message = messageObject.messages[indexPath.row]
+        
+        if (message.isMediaMessage) {
+            print("\(#file) > \(#function) > media item was touched")
+            //TODO: display photo
+            let mediaItem = message.media as! JSQPhotoMediaItem
+            if let test: UIImage = mediaItem.image {
+                self.selectedImage = test
+                self.performSegue(withIdentifier: "showMedia", sender: self)
+            }
+        }
+        else {   // Else if message is not a media item, do nothing
+            print("\(#file) > \(#function) > message was touched, nothing to do")
         }
     }
     
