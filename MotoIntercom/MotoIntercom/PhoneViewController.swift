@@ -331,18 +331,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             muteIsOn = true
             
             // Make the button look gray
-            DispatchQueue.main.sync {
+            DispatchQueue.global().sync {
                 self.muteButton.backgroundColor = UIColor.gray
                 self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+                self.peerAudioPlayer.volume = 0.0
             }
         }
         else {
             muteIsOn = false
             
             // Make button go back to black
-            DispatchQueue.main.sync {
+            DispatchQueue.global().sync {
                 self.muteButton.backgroundColor = UIColor.black
                 self.muteButton.backgroundColor?.withAlphaComponent(1)
+                self.peerAudioPlayer.volume = 1.0
             }
         }
         
@@ -354,7 +356,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             speakerIsOn = true
             
             // Make the button look gray
-            DispatchQueue.main.sync {
+            DispatchQueue.global().sync {
                 self.speakerButton.backgroundColor = UIColor.gray
                 self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
             }
@@ -363,7 +365,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             speakerIsOn = false
             
             // Make button go back to black
-            DispatchQueue.main.sync {
+            DispatchQueue.global().sync {
                 self.speakerButton.backgroundColor = UIColor.black
                 self.speakerButton.backgroundColor?.withAlphaComponent(1)
             }
