@@ -49,6 +49,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var audioPlayerQueue = DispatchQueue(label: "audioPlayerQueue", qos: DispatchQoS.userInteractive)
     
     // Audio Capture and Playing
+    var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+    
     var localAudioEngine: AVAudioEngine = AVAudioEngine()
     var localAudioPlayer: AVAudioPlayerNode = AVAudioPlayerNode()
     var localInput: AVAudioInputNode?
@@ -89,6 +91,22 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Stop advertising and browsing for peers when in a call
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
+        
+        // Setting up AVAudioSession
+        do {
+            try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
+            try audioSession.setPreferredIOBufferDuration(0.04)
+            try audioSession.setPreferredInputNumberOfChannels(1)
+            try audioSession.setPreferredSampleRate(44100)
+            try audioSession.setMode(AVAudioSessionModeVoiceChat)
+            try audioSession.setActive(true)
+            
+            print("\(#file) > \(#function) > audioSession \(audioSession)")
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > Error encountered: \(error)")
+        }
+        
         
         // Giving the background view a blur effect
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
@@ -224,7 +242,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.localInput = self.localAudioEngine.inputNode
             self.localAudioEngine.attach(self.localAudioPlayer)
             self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
-            self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)
+            self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
             self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
             
             print("\(#file) > \(#function) > localInputFormat = \(self.localInputFormat.debugDescription)")
@@ -234,7 +252,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.peerInput = self.peerAudioEngine.inputNode
             self.peerAudioEngine.attach(self.peerAudioPlayer)
             self.peerInputFormat = self.peerInput?.inputFormat(forBus: 1)
-            self.peerInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)
+            self.peerInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
             self.peerAudioEngine.connect(self.peerAudioPlayer, to: self.peerAudioEngine.mainMixerNode, format: self.peerInputFormat)
             
             print("\(#file) > \(#function) > peerInputFormat = \(self.peerInputFormat.debugDescription)")
@@ -252,7 +270,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             //            self.localAudioPlayer.volume = 0.75
             //            self.localAudioPlayer.play()
         }
-        
+    
         print("\(#file) > \(#function) > Setting up peerAudioEngine")
         if (!peerAudioEngine.isRunning) {
             do {
@@ -324,52 +342,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             recorder.record()
             // TODO: Resume timer
         }
-    }
-    
-    @IBAction func muteButtonIsTouched(_ sender: Any) {
-        if (!muteIsOn) {
-            muteIsOn = true
-            
-            // Make the button look gray
-            DispatchQueue.main.sync {
-                self.muteButton.backgroundColor = UIColor.gray
-                self.muteButton.backgroundColor?.withAlphaComponent(0.5)
-            }
-        }
-        else {
-            muteIsOn = false
-            
-            // Make button go back to black
-            DispatchQueue.main.sync {
-                self.muteButton.backgroundColor = UIColor.black
-                self.muteButton.backgroundColor?.withAlphaComponent(1)
-            }
-        }
-        
-        print("\(#file) > \(#function) > mute: \(muteIsOn)")
-    }
-    
-    @IBAction func speakerButtonIsTouched(_ sender: Any) {
-        if (!speakerIsOn) {
-            speakerIsOn = true
-            
-            // Make the button look gray
-            DispatchQueue.main.sync {
-                self.speakerButton.backgroundColor = UIColor.gray
-                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
-            }
-        }
-        else {
-            speakerIsOn = false
-            
-            // Make button go back to black
-            DispatchQueue.main.sync {
-                self.speakerButton.backgroundColor = UIColor.black
-                self.speakerButton.backgroundColor?.withAlphaComponent(1)
-            }
-        }
-        
-        print("\(#file) > \(#function) > speaker: \(speakerIsOn)")
     }
     
     
@@ -477,7 +449,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     func dataToPCMBuffer(data: NSData) -> AVAudioPCMBuffer {
-        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 1, interleaved: false)  // given NSData audio format
+        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)  // given NSData audio format
         let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: UInt32(data.length) / audioFormat.streamDescription.pointee.mBytesPerFrame)
         
 //        print("\(#file) > \(#function) > audioBuffer frameCapacity = \(audioBuffer.frameCapacity)")
@@ -490,6 +462,59 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     
     //MARK: - Button Actions
+    
+    @IBAction func muteButtonIsTouched(_ sender: Any) {
+        if (!muteIsOn) {
+            muteIsOn = true
+            
+            // Make the button look gray
+            DispatchQueue.main.sync {
+                self.muteButton.backgroundColor = UIColor.gray
+                self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+            }
+        }
+        else {
+            muteIsOn = false
+            
+            // Make button go back to black
+            DispatchQueue.main.sync {
+                self.muteButton.backgroundColor = UIColor.black
+                self.muteButton.backgroundColor?.withAlphaComponent(1)
+            }
+        }
+        
+        print("\(#file) > \(#function) > mute: \(muteIsOn)")
+    }
+    
+    @IBAction func speakerButtonIsTouched(_ sender: Any) {
+        if (!speakerIsOn) {
+            speakerIsOn = true
+            
+            // Make the button look gray
+            DispatchQueue.main.sync {
+                do {
+                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
+                }
+                catch let error as NSError {
+                    print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
+                }
+                self.speakerButton.backgroundColor = UIColor.gray
+                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
+            }
+        }
+        else {
+            speakerIsOn = false
+            
+            // Make button go back to black
+            DispatchQueue.main.sync {
+                self.speakerButton.backgroundColor = UIColor.black
+                self.speakerButton.backgroundColor?.withAlphaComponent(1)
+            }
+        }
+        
+        print("\(#file) > \(#function) > speaker: \(speakerIsOn)")
+    }
+    
     @IBAction func endCallButtonIsClicked(_ sender: UIButton) {
         if (sender == nilButton) {
             userEndedCall = false
