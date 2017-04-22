@@ -117,8 +117,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         view.insertSubview(blurEffectView, at: 0)
         
         // Making the buttons circular
-//        muteButton.buttonType = UIButtonType.roundedRect
-//        speakerButton.buttonType = UIButtonType.roundedRect
         let muteImage: UIImage = UIImage.init(named: "Mute-50.png")!
         muteButton.setImage(muteImage, for: UIControlState.normal)
         muteButton.layer.cornerRadius = muteButton.frame.width/2
@@ -130,8 +128,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.layer.cornerRadius = speakerButton.frame.width/2
         speakerButton.layer.borderWidth = 1
         speakerButton.layer.borderColor = UIColor.black.cgColor
-//        speakerButton.backgroundColor = UIColor.gray
-        
         
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
         
@@ -270,7 +266,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             //            self.localAudioPlayer.volume = 0.75
             //            self.localAudioPlayer.play()
         }
-    
+        
         print("\(#file) > \(#function) > Setting up peerAudioEngine")
         if (!peerAudioEngine.isRunning) {
             do {
@@ -296,10 +292,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 //            }
                 
                 let data = self.audioBufferToNSData(PCMBuffer: buffer)
+                let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+//                let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
                 
-                print("\(#file) > \(#function) > frameLength = \(buffer.frameLength), frameCapacity = \(buffer.frameCapacity), data.length = \(data.length)")
-                //            let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
-                let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
+                print("OUTPUT: \(output)")
                 
                 if output > 0 {
                     print("\(#file) > \(#function) > \(output) bytes written")
@@ -404,7 +400,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         case Stream.Event.hasBytesAvailable:
             DispatchQueue.global().sync {
                 
-                let availableCount = 8820-self.testBufferCount
+                let availableCount = 1024-self.testBufferCount
                 
                 var tempBuffer: [UInt8] = .init(repeating: 0, count: availableCount)
                 let length = self.inputStream!.read(&tempBuffer, maxLength: availableCount)
@@ -418,7 +414,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 
                 print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
             
-                if (self.testBufferCount >= 8820) {
+                if (self.testBufferCount >= 1024
+                    ) {
 //                    print("\(#file) > \(#function) > Test buffer full, testBuffer.count = \(self.testBuffer.count), testBufferCount = \(self.testBufferCount)")
                     let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
                     let audioBuffer = self.dataToPCMBuffer(data: data)
@@ -468,8 +465,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             muteIsOn = true
             
             // Make the button look gray
-            DispatchQueue.main.sync {
-                self.muteButton.backgroundColor = UIColor.gray
+            DispatchQueue.global().sync {
+                self.localInput?.removeTap(onBus: 0)
+                self.muteButton.backgroundColor = UIColor.darkGray
                 self.muteButton.backgroundColor?.withAlphaComponent(0.5)
             }
         }
@@ -477,8 +475,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             muteIsOn = false
             
             // Make button go back to black
-            DispatchQueue.main.sync {
-                self.muteButton.backgroundColor = UIColor.black
+            DispatchQueue.global().sync {
+                self.recordAudio()
+                self.muteButton.backgroundColor = UIColor.clear
                 self.muteButton.backgroundColor?.withAlphaComponent(1)
             }
         }
@@ -491,14 +490,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             speakerIsOn = true
             
             // Make the button look gray
-            DispatchQueue.main.sync {
+            DispatchQueue.global().sync {
                 do {
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
                 }
                 catch let error as NSError {
                     print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
                 }
-                self.speakerButton.backgroundColor = UIColor.gray
+                
+                self.speakerButton.backgroundColor = UIColor.darkGray
                 self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
             }
         }
@@ -506,8 +506,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             speakerIsOn = false
             
             // Make button go back to black
-            DispatchQueue.main.sync {
-                self.speakerButton.backgroundColor = UIColor.black
+            DispatchQueue.global().sync {
+                self.speakerButton.backgroundColor = UIColor.clear
                 self.speakerButton.backgroundColor?.withAlphaComponent(1)
             }
         }

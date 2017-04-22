@@ -956,9 +956,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Save user information
     func save() {
-        print("\(#file) > \(#function) > Saving messages")
-        if (!NSKeyedArchiver.archiveRootObject(self.messages, toFile: MessageObject.ArchiveURL.path)) {
-            print("CourseTable: save: Failed to save courses and groups.")
+        DispatchQueue.global().async {
+            print("\(#file) > \(#function) > Saving messages")
+            if (!NSKeyedArchiver.archiveRootObject(self.messages, toFile: MessageObject.ArchiveURL.path)) {
+                print("CourseTable: save: Failed to save courses and groups.")
+            }
         }
     }
     
