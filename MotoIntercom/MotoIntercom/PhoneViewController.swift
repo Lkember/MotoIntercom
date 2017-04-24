@@ -95,7 +95,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Setting up AVAudioSession
         do {
             try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
-            try audioSession.setPreferredIOBufferDuration(0.04)
+            try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setPreferredInputNumberOfChannels(1)
             try audioSession.setPreferredSampleRate(44100)
             try audioSession.setMode(AVAudioSessionModeVoiceChat)
@@ -287,18 +287,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 (buffer, when) -> Void in
                 
                 // the audio being sent will be played locally as well
-                //            self.localPlayerQueue.async {
-                //                self.localAudioPlayer.scheduleBuffer(buffer)
-                //            }
-                
+//                self.localPlayerQueue.async {
+//                   self.localAudioPlayer.scheduleBuffer(buffer)
+//                }
+            
                 let data = self.audioBufferToNSData(PCMBuffer: buffer)
                 let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
 //                let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
                 
-                print("OUTPUT: \(output)")
+//                print("OUTPUT: \(output)")
                 
                 if output > 0 {
-                    print("\(#file) > \(#function) > \(output) bytes written")
+//                    print("\(#file) > \(#function) > \(output) bytes written")
                 }
                 else if output == -1 {
                     let error = self.outputStream!.streamError
@@ -412,7 +412,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.testBufferCount += length
                 self.testBuffer.append(contentsOf: tempBuffer)
                 
-                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
+//                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
             
                 if (self.testBufferCount >= 1024
                     ) {
@@ -428,7 +428,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
         
         case Stream.Event.hasSpaceAvailable:
-            print("\(#file) > \(#function) > Space available")
+//            print("\(#file) > \(#function) > Space available")
+            break
             
             
         case Stream.Event.endEncountered:
@@ -620,27 +621,29 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Disconnected from peer: \(peerID.displayName), user ended call: \(userEndedCall)")
         
         if (!userEndedCall) {
-        
-            if (peerID == self.peerID!) {
-                inputStreamIsSet = false
-                outputStreamIsSet = false
             
-                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(self.peerID!.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+            if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: peerID)) {
+                if (peerID == self.peerID!) {
+                    inputStreamIsSet = false
+                    outputStreamIsSet = false
                 
-                let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                    //Go back to PeerView
-                    self.endCallButtonIsClicked(self.nilButton)
-                }
-                
-                alert.addAction(okAction)
-                
-                OperationQueue.main.addOperation { () -> Void in
-                    self.present(alert, animated: true, completion: nil)
-                }
-                
-                // Since the peer is already disconnected, than we need to close all resources immediately
-                OperationQueue.main.addOperation {
-                    self.closeAllResources()
+                    let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(self.peerID!.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+                    
+                    let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+                        //Go back to PeerView
+                        self.endCallButtonIsClicked(self.nilButton)
+                    }
+                    
+                    alert.addAction(okAction)
+                    
+                    OperationQueue.main.addOperation { () -> Void in
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                    
+                    // Since the peer is already disconnected, than we need to close all resources immediately
+                    OperationQueue.main.addOperation {
+                        self.closeAllResources()
+                    }
                 }
             }
         }
