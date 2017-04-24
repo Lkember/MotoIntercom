@@ -71,12 +71,19 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // User ended call
     var userEndedCall = false
     
-    // MARK: - View Methods
     
+    
+    // MARK: - View Methods
     override func viewDidLoad() {
         print("\(#file) > \(#function) > Entry")
         
         super.viewDidLoad()
+        
+        // Setting the connectionManager delegate to self
+        appDelegate.connectionManager.delegate = self
+    
+        // When the device is up to the ear, the screen will dim
+        UIDevice.current.isProximityMonitoringEnabled = true
         
         if (isConnecting) {
             timerLabel.text = "Connecting to \(peerID!.displayName)..."
@@ -85,28 +92,43 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             timerLabel.text = "Calling \(peerID!.displayName)..."
         }
         
-        // When the device is up to the ear, the screen will dim
-        UIDevice.current.isProximityMonitoringEnabled = true
-        
         // Stop advertising and browsing for peers when in a call
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
-        // Setting up AVAudioSession
-        do {
-            try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
-            try audioSession.setPreferredIOBufferDuration(0.005)
-            try audioSession.setPreferredInputNumberOfChannels(1)
-            try audioSession.setPreferredSampleRate(44100)
-            try audioSession.setMode(AVAudioSessionModeVoiceChat)
-            try audioSession.setActive(true)
-            
-            print("\(#file) > \(#function) > audioSession \(audioSession)")
-        }
-        catch let error as NSError {
-            print("\(#file) > \(#function) > Error encountered: \(error)")
+        
+        // Used to change button layouts, views, etc
+        self.updateUI()
+        
+        self.recordingQueue.sync {
+            self.prepareAudio()
+            self.callPeer()
         }
         
+        NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
+    
+        print("\(#file) > \(#function) > Exit")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        self.navigationController?.navigationBar.isHidden = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        self.navigationController?.navigationBar.isHidden = false
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    
+    
+    // MARK: - Startup
+    
+    func updateUI() {
+        self.navigationController?.navigationBar.isHidden = true
         
         // Giving the background view a blur effect
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
@@ -128,99 +150,64 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.layer.cornerRadius = speakerButton.frame.width/2
         speakerButton.layer.borderWidth = 1
         speakerButton.layer.borderColor = UIColor.black.cgColor
+    }
+    
+    func callPeer() {
+        self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
-        
-        // Setting the connectionManager delegate to self
-        appDelegate.connectionManager.delegate = self
-        
-        //-------------------------------------------------------------------------------
-        // Calling peer
-        
-        recordingQueue.sync {
-        
-            self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
+        // sessionIndex is -1 then we are not connected to peer, so send invite
+        if (self.sessionIndex == -1) {
+            print("\(#file) > \(#function) > Sending call invitation to peer.")
+            self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
             
-            // sessionIndex is -1 then we are not connected to peer, so send invite
-            if (self.sessionIndex == -1) {
-                print("\(#file) > \(#function) > Sending call invitation to peer.")
-                self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
-                
-                let isPhoneCall: Bool = true
-                let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-                
-                self.appDelegate.connectionManager.browser.invitePeer(self.peerID!,
-                                                                      to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
-                                                                      withContext: dataToSend,
-                                                                      timeout: 30)
-            }
-            else {
-                print("\(#file) > \(#function) > Sending message to peer.")
-                
-                let jsqMessage = JSQMessage.init(senderId: self.appDelegate.connectionManager.uniqueID,
-                                                 displayName: self.appDelegate.connectionManager.peer.displayName,
-                                                 text: self.incomingCall)
-                
-                let phoneMessage = MessageObject.init(peerID: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0],
-                                                      messages: [jsqMessage!])
-                
-                // Attempt to send phone message
-                if (!self.appDelegate.connectionManager.sendData(message: phoneMessage, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
-                    
-                    print("\(#file) > \(#function) > Failed to send call invitation to peer")
-                    self.timerLabel.text = "Call Failed"
-                    
-                    //TODO: Play a beeping sound to let the user know the call failed
-                    
-                    // Wait 2 seconds and then end call
-                    sleep(2)
-                    self.endCallButtonIsClicked(self.nilButton)
-                }
-            }
-        
-            //-------------------------------------------------------------------------------
-            // Attempting to create outputStream. This will only be called if the current peer is already connected to.
-            // This code is necessary since the user may already be connected to because of chat.
+            let isPhoneCall: Bool = true
+            let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
             
-            if (self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: self.peerID!)) {
-                do {
-                    self.outputStream = try self.appDelegate.connectionManager.sessions[self.sessionIndex!].startStream(withName: "motoIntercom", toPeer: self.peerID!)
-                    self.outputStreamIsSet = true
-                }
-                catch let error as NSError {
-                    print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
-                    self.outputStreamIsSet = false
-                }
+            self.appDelegate.connectionManager.browser.invitePeer(self.peerID!,
+                                                                  to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
+                                                                  withContext: dataToSend,
+                                                                  timeout: 30)
+        }
+        else {
+            print("\(#file) > \(#function) > Sending message to peer.")
+            
+            let jsqMessage = JSQMessage.init(senderId: self.appDelegate.connectionManager.uniqueID,
+                                             displayName: self.appDelegate.connectionManager.peer.displayName,
+                                             text: self.incomingCall)
+            
+            let phoneMessage = MessageObject.init(peerID: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0],
+                                                  messages: [jsqMessage!])
+            
+            // Attempt to send phone message
+            if (!self.appDelegate.connectionManager.sendData(message: phoneMessage, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
+                
+                print("\(#file) > \(#function) > Failed to send call invitation to peer")
+                self.timerLabel.text = "Call Failed"
+                
+                //TODO: Play a beeping sound to let the user know the call failed
+                
+                // Wait 2 seconds and then end call
+                sleep(2)
+                self.endCallButtonIsClicked(self.nilButton)
             }
         }
         
-        self.navigationController?.navigationBar.isHidden = true
+        //-------------------------------------------------------------------------------
+        // Attempting to create outputStream. This will only be called if the current peer is already connected to.
+        // This code is necessary since the user may already be connected to because of chat.
         
-        self.prepareAudio()
-        
-        // Setting up the AVRecorder (but not yet recording)
-//        recordingQueue.async {
-//            if (self.outputStreamIsSet) {
-//                print("\(#file) > \(#function) > Stetting up recorder")
-//                self.setupAVRecorder()
-//            }
-//        }
-    
-        print("\(#file) > \(#function) > Exit")
+        if (self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: self.peerID!)) {
+            do {
+                self.outputStream = try self.appDelegate.connectionManager.sessions[self.sessionIndex!].startStream(withName: "motoIntercom", toPeer: self.peerID!)
+                self.outputStreamIsSet = true
+            }
+            catch let error as NSError {
+                print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
+                self.outputStreamIsSet = false
+            }
+        }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        self.navigationController?.navigationBar.isHidden = true
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        self.navigationController?.navigationBar.isHidden = false
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     // MARK: - Dispatch Queue
     
@@ -263,8 +250,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 print("\(#file) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
             }
             
-            //            self.localAudioPlayer.volume = 0.75
-            //            self.localAudioPlayer.play()
+//            self.localAudioPlayer.volume = 0.75
+//            self.localAudioPlayer.play()
         }
         
         print("\(#file) > \(#function) > Setting up peerAudioEngine")
@@ -280,8 +267,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
     }
     
+    
     func recordAudio() {
-        
         localPlayerQueue.sync {
             localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
                 (buffer, when) -> Void in
@@ -294,8 +281,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 let data = self.audioBufferToNSData(PCMBuffer: buffer)
                 let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
 //                let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
-                
-//                print("OUTPUT: \(output)")
                 
                 if output > 0 {
 //                    print("\(#file) > \(#function) > \(output) bytes written")
@@ -311,13 +296,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
     }
     
+    
     func audioBufferToNSData(PCMBuffer: AVAudioPCMBuffer) -> NSData {
         let channelCount = 1  // given PCMBuffer channel count is 1
         let channels = UnsafeBufferPointer(start: PCMBuffer.floatChannelData, count: channelCount)
-//        let data = NSData(bytes: channels[0], length:Int(PCMBuffer.frameCapacity * PCMBuffer.frameLength))
         let data = NSData(bytes: channels[0], length:Int(PCMBuffer.frameLength * PCMBuffer.format.streamDescription.pointee.mBytesPerFrame))
-        
-//        print("\(#file) > \(#function) > data: \(data.length), frameLength: \(PCMBuffer.frameLength), frameCapacity: \(PCMBuffer.frameCapacity), bytes per frame: \(PCMBuffer.format.streamDescription.pointee.mBytesPerFrame)")
         
         return data
     }
@@ -586,10 +569,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func lostPeer(_ lostPeer: MCPeerID) {
         // Nothing to do, since disconnectedFromPeer will run if lostPeer is currently connected to peer
         print("\(#file) > \(#function) > \(lostPeer.displayName)")
-        
-//        if (lostPeer == self.peerID) {
-//            self.endCallButtonIsClicked(self.nilButton)
-//        }
     }
     
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
@@ -607,7 +586,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.timerLabel.text = "Connected to \(self.peerID!.displayName)"
             }
             
-//            setupAVRecorder()
             setupStream()
         }
         else {
