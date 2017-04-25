@@ -220,26 +220,38 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // MARK: - Recording/Playing
     
     func prepareAudio() {
-        // Setting up audio engine for local recording and sounds
-        recordingQueue.sync {
-            self.localInput = self.localAudioEngine.inputNode
-            self.localAudioEngine.attach(self.localAudioPlayer)
-            self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
-            self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
-            self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
+        
+        // Setting up AVAudioSession
+        do {
+            try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
+            try audioSession.setPreferredIOBufferDuration(0.001)
+            try audioSession.setPreferredInputNumberOfChannels(1)
+            try audioSession.setPreferredSampleRate(44100)
+            try audioSession.setMode(AVAudioSessionModeVoiceChat)
+            try audioSession.setActive(true)
             
-            print("\(#file) > \(#function) > localInputFormat = \(self.localInputFormat.debugDescription)")
+            print("\(#file) > \(#function) > audioSession \(audioSession)")
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > Error encountered: \(error)")
         }
         
-        self.audioPlayerQueue.sync {
-            self.peerInput = self.peerAudioEngine.inputNode
-            self.peerAudioEngine.attach(self.peerAudioPlayer)
-            self.peerInputFormat = self.peerInput?.inputFormat(forBus: 1)
-            self.peerInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
-            self.peerAudioEngine.connect(self.peerAudioPlayer, to: self.peerAudioEngine.mainMixerNode, format: self.peerInputFormat)
+        // Setting up audio engine for local recording and sounds
+        self.localInput = self.localAudioEngine.inputNode
+        self.localAudioEngine.attach(self.localAudioPlayer)
+        self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
+        self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
+        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
             
-            print("\(#file) > \(#function) > peerInputFormat = \(self.peerInputFormat.debugDescription)")
-        }
+        print("\(#file) > \(#function) > localInputFormat = \(self.localInputFormat.debugDescription)")
+        
+        self.peerInput = self.peerAudioEngine.inputNode
+        self.peerAudioEngine.attach(self.peerAudioPlayer)
+        self.peerInputFormat = self.peerInput?.inputFormat(forBus: 1)
+        self.peerInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
+        self.peerAudioEngine.connect(self.peerAudioPlayer, to: self.peerAudioEngine.mainMixerNode, format: self.peerInputFormat)
+        
+        print("\(#file) > \(#function) > peerInputFormat = \(self.peerInputFormat.debugDescription)")
         
         print("\(#file) > \(#function) > Starting localAudioEngine")
         localPlayerQueue.sync {
