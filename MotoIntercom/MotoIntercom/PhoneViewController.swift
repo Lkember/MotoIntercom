@@ -56,11 +56,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var localInput: AVAudioInputNode?
     var localInputFormat: AVAudioFormat?
     
-    var peerAudioEngine: AVAudioEngine = AVAudioEngine()
-    var peerAudioPlayer: AVAudioPlayerNode = AVAudioPlayerNode()
-    var peerInput: AVAudioInputNode?
-    var peerInputFormat: AVAudioFormat?
-    
     // Button Options
     @IBOutlet weak var muteButton: UIButton!
     @IBOutlet weak var speakerButton: UIButton!
@@ -76,7 +71,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // MARK: - View Methods
     override func viewDidLoad() {
         print("\(#file) > \(#function) > Entry")
-        
         super.viewDidLoad()
         
         // Setting the connectionManager delegate to self
@@ -139,7 +133,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         view.insertSubview(blurEffectView, at: 0)
         
         // Making the buttons circular
-        let muteImage: UIImage = UIImage.init(named: "Mute-50.png")!
+        let muteImage: UIImage = UIImage.init(named: "microphone.png")!
         muteButton.setImage(muteImage, for: UIControlState.normal)
         muteButton.layer.cornerRadius = muteButton.frame.width/2
         muteButton.layer.borderWidth = 1
@@ -242,41 +236,30 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
         self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
         self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
-            
+        
+        self.localAudioEngine.prepare()
+        
         print("\(#file) > \(#function) > localInputFormat = \(self.localInputFormat.debugDescription)")
-        
-        self.peerInput = self.peerAudioEngine.inputNode
-        self.peerAudioEngine.attach(self.peerAudioPlayer)
-        self.peerInputFormat = self.peerInput?.inputFormat(forBus: 1)
-        self.peerInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
-        self.peerAudioEngine.connect(self.peerAudioPlayer, to: self.peerAudioEngine.mainMixerNode, format: self.peerInputFormat)
-        
-        print("\(#file) > \(#function) > peerInputFormat = \(self.peerInputFormat.debugDescription)")
-        
         print("\(#file) > \(#function) > Starting localAudioEngine")
+        
         localPlayerQueue.sync {
             do {
                 try self.localAudioEngine.start()
+                self.localAudioPlayer.play()
             }
             catch let error as NSError {
                 print("\(#file) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
             }
-            
-//            self.localAudioPlayer.volume = 0.75
-//            self.localAudioPlayer.play()
         }
-        
-        print("\(#file) > \(#function) > Setting up peerAudioEngine")
-        if (!peerAudioEngine.isRunning) {
-            do {
-                try self.peerAudioEngine.start()
-                self.peerAudioPlayer.play()
-            }
-            catch let error as NSError {
-                print("\(#file) > \(#function) > error: \(error.localizedDescription)")
-            }
+        localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
+            (buffer, when) -> Void in
+            /* Calling this method so that there is no delay when the user starts speaking.
+             * I was having an issue where there was about a 100-300 ms delay, however I noticed
+             * if you clicked the mute button twice the delay was basically gone. 
+             * Instead of making the user click the button twice, it will start recording and then
+             * automatically remove the tap and reinstall the tap.
+            */
         }
-        
     }
     
     
@@ -285,14 +268,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
                 (buffer, when) -> Void in
                 
-                // the audio being sent will be played locally as well
-//                self.localPlayerQueue.async {
-//                   self.localAudioPlayer.scheduleBuffer(buffer)
+//                http://stackoverflow.com/questions/14349874/taking-absolute-value-of-cgfloat
+//                let arraySize = Int(buffer.frameLength)
+//                let samples = Array(UnsafeBufferPointer(start: buffer.floatChannelData![0], count:arraySize))
+//                
+//                //do something with samples
+//                let volume = fabs(20 * log10(samples.reduce(0){ $0 + $1} / Float(arraySize)))
+//                if(!volume.isNaN){
+//                    print("this is the current volume: \(volume)")
 //                }
-            
+                
                 let data = self.audioBufferToNSData(PCMBuffer: buffer)
                 let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
-//                let output = self.outputStream!.write(data.bytes.bindMemory(to: UInt8.self, capacity: data.length), maxLength: data.length)
                 
                 if output > 0 {
 //                    print("\(#file) > \(#function) > \(output) bytes written")
@@ -415,7 +402,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
                     let audioBuffer = self.dataToPCMBuffer(data: data)
                         
-                    self.peerAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
+                    self.localAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
                     
                     self.testBuffer.removeAll()
                     self.testBufferCount = 0
@@ -457,24 +444,26 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     //MARK: - Button Actions
     
     @IBAction func muteButtonIsTouched(_ sender: Any) {
-        if (!muteIsOn) {
-            muteIsOn = true
-            
-            // Make the button look gray
-            DispatchQueue.global().sync {
-                self.localInput?.removeTap(onBus: 0)
-                self.muteButton.backgroundColor = UIColor.darkGray
-                self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+        if (outputStreamIsSet && inputStreamIsSet) {
+            if (!muteIsOn) {
+                muteIsOn = true
+                
+                // Make the button look gray
+                DispatchQueue.global().sync {
+                    self.localInput?.removeTap(onBus: 0)
+                    self.muteButton.backgroundColor = UIColor.darkGray
+                    self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+                }
             }
-        }
-        else {
-            muteIsOn = false
-            
-            // Make button go back to black
-            DispatchQueue.global().sync {
-                self.recordAudio()
-                self.muteButton.backgroundColor = UIColor.clear
-                self.muteButton.backgroundColor?.withAlphaComponent(1)
+            else {
+                muteIsOn = false
+                
+                // Make button go back to black
+                DispatchQueue.global().sync {
+                    self.recordAudio()
+                    self.muteButton.backgroundColor = UIColor.clear
+                    self.muteButton.backgroundColor?.withAlphaComponent(1)
+                }
             }
         }
         
@@ -522,7 +511,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Stopping recording")
         
         OperationQueue.main.addOperation {
-            self.closeAllResources()
+            DispatchQueue.global().async {
+                self.closeAllResources()
+            }
             self.dismiss(animated: true, completion: nil)
         }
     }
@@ -540,13 +531,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             localAudioPlayer.stop()
         }
         
-        if peerAudioEngine.isRunning {
-            peerAudioEngine.stop()
-        }
-        
-        if peerAudioPlayer.isPlaying {
-            peerAudioPlayer.stop()
-        }
+//        if peerAudioEngine.isRunning {
+//            peerAudioEngine.stop()
+//        }
+//        
+//        if peerAudioPlayer.isPlaying {
+//            peerAudioPlayer.stop()
+//        }
         
         // Stop the timer
         timer?.invalidate()
@@ -656,10 +647,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.outputStream!.delegate = self
             self.outputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.outputStream!.open()
-            
-            self.recordingQueue.sync {
-                self.recordAudio()
-            }
         
             self.inputStream = inputStream
             self.inputStreamIsSet = true
@@ -667,7 +654,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.inputStream!.open()
             
-            
+            self.recordingQueue.async {
+                self.localInput?.removeTap(onBus: 0)
+                sleep(1)
+                self.recordAudio()
+            }
         }
         else {
             print("\(#file) > \(#function) > Should not print.")

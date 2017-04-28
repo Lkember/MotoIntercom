@@ -29,6 +29,7 @@
 		B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */; };
 		B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */; };
 		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
+		B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */ = {isa = PBXBuildFile; fileRef = B2C7047D1EB2D4AE00C1B938 /* microphone.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +84,7 @@
 		B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "High Volume Filled-50.png"; sourceTree = "<group>"; };
 		B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowMediaViewController.swift; sourceTree = "<group>"; };
 		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
+		B2C7047D1EB2D4AE00C1B938 /* microphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = microphone.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,10 +164,10 @@
 				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
-				B2515C581D2C7CCB00760DE0 /* Info.plist */,
-				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
 				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
+				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
 				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
+				B2515C581D2C7CCB00760DE0 /* Info.plist */,
 			);
 			path = MotoIntercom;
 			sourceTree = "<group>";
@@ -199,6 +201,7 @@
 		B27C39C11E9B36B100B3DF77 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B2C7047D1EB2D4AE00C1B938 /* microphone.png */,
 				B27C39C21E9B36C300B3DF77 /* Mute-50.png */,
 				B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */,
 				B27C39C61E9B36F400B3DF77 /* High Volume-50.png */,
@@ -336,6 +339,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B27C39C51E9B36CC00B3DF77 /* Mute Filled-50.png in Resources */,
+				B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */,
 				B2515C571D2C7CCB00760DE0 /* LaunchScreen.storyboard in Resources */,
 				B24248721E292BC200B4D260 /* Assets.xcassets in Resources */,
 				B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */,
