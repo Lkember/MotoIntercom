@@ -138,12 +138,16 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         muteButton.layer.cornerRadius = muteButton.frame.width/2
         muteButton.layer.borderWidth = 1
         muteButton.layer.borderColor = UIColor.black.cgColor
+        muteButton.isUserInteractionEnabled = false
+        muteButton.isEnabled = false
         
         let speakerImage: UIImage = UIImage.init(named: "High Volume-50.png")!
         speakerButton.setImage(speakerImage, for: UIControlState.normal)
         speakerButton.layer.cornerRadius = speakerButton.frame.width/2
         speakerButton.layer.borderWidth = 1
         speakerButton.layer.borderColor = UIColor.black.cgColor
+        speakerButton.isEnabled = false
+        speakerButton.isUserInteractionEnabled = false
     }
     
     func callPeer() {
@@ -234,7 +238,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localInput = self.localAudioEngine.inputNode
         self.localAudioEngine.attach(self.localAudioPlayer)
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
-        self.localInputFormat = AVAudioFormat.init(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)
         self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
         
         self.localAudioEngine.prepare()
@@ -251,7 +254,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 print("\(#file) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
             }
         }
-        localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
+        localInput?.installTap(onBus: 0, bufferSize: 17640, format: localInputFormat) {
             (buffer, when) -> Void in
             /* Calling this method so that there is no delay when the user starts speaking.
              * I was having an issue where there was about a 100-300 ms delay, however I noticed
@@ -260,6 +263,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
              * automatically remove the tap and reinstall the tap.
             */
         }
+        localInput?.removeTap(onBus: 0)
     }
     
     
@@ -429,10 +433,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     func dataToPCMBuffer(data: NSData) -> AVAudioPCMBuffer {
-        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 44100, channels: 2, interleaved: false)  // given NSData audio format
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: UInt32(data.length) / audioFormat.streamDescription.pointee.mBytesPerFrame)
-        
-//        print("\(#file) > \(#function) > audioBuffer frameCapacity = \(audioBuffer.frameCapacity)")
+        let audioBuffer = AVAudioPCMBuffer(pcmFormat: localInputFormat!,
+                                           frameCapacity: UInt32(data.length) / localInputFormat!.streamDescription.pointee.mBytesPerFrame)
         
         audioBuffer.frameLength = audioBuffer.frameCapacity
         let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: Int(audioBuffer.format.channelCount))
@@ -444,30 +446,40 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     //MARK: - Button Actions
     
     @IBAction func muteButtonIsTouched(_ sender: Any) {
-        if (outputStreamIsSet && inputStreamIsSet) {
-            if (!muteIsOn) {
-                muteIsOn = true
+        
+        print("\(#file) > \(#function) > Entry > mute: \(muteIsOn) -> \(!muteIsOn) -- isEnabled: \(muteButton.isUserInteractionEnabled)")
+        
+        if (muteButton.isUserInteractionEnabled == true && muteButton.isEnabled == true) {
+        
+            muteButton.isUserInteractionEnabled = false
+            muteButton.isEnabled = false
+            
+            DispatchQueue.global().sync {
                 
-                // Make the button look gray
-                DispatchQueue.global().sync {
-                    self.localInput?.removeTap(onBus: 0)
-                    self.muteButton.backgroundColor = UIColor.darkGray
-                    self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+                if (!muteIsOn) {
+                    // Make the button look gray
+                    print("\(#file) > \(#function) > removing tap")
+                        self.localInput?.removeTap(onBus: 0)
+                        self.muteButton.backgroundColor = UIColor.darkGray
+                        self.muteButton.backgroundColor?.withAlphaComponent(0.5)
+                        muteIsOn = true
                 }
-            }
-            else {
-                muteIsOn = false
-                
-                // Make button go back to black
-                DispatchQueue.global().sync {
+                else {
+                    // Make button go back to black
+                    print("\(#file) > \(#function) > removing tap")
+                    self.localInput?.removeTap(onBus: 0)
+                    print("\(#file) > \(#function) > installing tap")
                     self.recordAudio()
                     self.muteButton.backgroundColor = UIColor.clear
                     self.muteButton.backgroundColor?.withAlphaComponent(1)
+                    muteIsOn = false
                 }
             }
+            
+            muteButton.isEnabled = true
+            muteButton.isUserInteractionEnabled = true
         }
-        
-        print("\(#file) > \(#function) > mute: \(muteIsOn)")
+        print("\(#file) > \(#function) > Exit > mute: \(muteIsOn)")
     }
     
     @IBAction func speakerButtonIsTouched(_ sender: Any) {
@@ -476,12 +488,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             // Make the button look gray
             DispatchQueue.global().sync {
-                do {
-                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
-                }
-                catch let error as NSError {
-                    print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
-                }
+                //TODO: Need to make the output go to the speaker
+//                do {
+//                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
+//                }
+//                catch let error as NSError {
+//                    print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
+//                }
                 
                 self.speakerButton.backgroundColor = UIColor.darkGray
                 self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
@@ -586,7 +599,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(#file) > \(#function) > Connected with the current peer.")
             
             OperationQueue.main.addOperation { () -> Void in
-                self.timerLabel.text = "Connected to \(self.peerID!.displayName)"
+                self.timerLabel.text = "Connected to peer \(self.peerID!.displayName)..."
             }
             
             setupStream()
@@ -644,20 +657,25 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName), currQueue=\(currentQueueName()!)")
         if (peerID == self.peerID) {
             
-            self.outputStream!.delegate = self
-            self.outputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-            self.outputStream!.open()
-        
             self.inputStream = inputStream
             self.inputStreamIsSet = true
             self.inputStream!.delegate = self
             self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.inputStream!.open()
             
+            self.outputStream!.delegate = self
+            self.outputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.outputStream!.open()
+            
             self.recordingQueue.async {
-                self.localInput?.removeTap(onBus: 0)
-                sleep(1)
+                sleep(2)
                 self.recordAudio()
+                
+                self.muteButton.isEnabled = true
+                self.speakerButton.isEnabled = true
+                
+                self.muteButton.isUserInteractionEnabled = true
+                self.speakerButton.isUserInteractionEnabled = true
             }
         }
         else {
