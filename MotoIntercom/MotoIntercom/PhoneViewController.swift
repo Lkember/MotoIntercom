@@ -20,7 +20,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let incomingCall = "_incoming_call_"
     
     // MARK: - Properties
-    @IBOutlet weak var timerLabel: UILabel!
+    @IBOutlet weak var statusLabel: UILabel!
+    @IBOutlet weak var peerLabel: UILabel!
     @IBOutlet weak var endCallButton: UIButton!
     var nilButton: UIButton = UIButton.init()
     
@@ -79,11 +80,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // When the device is up to the ear, the screen will dim
         UIDevice.current.isProximityMonitoringEnabled = true
         
+        peerLabel.text = "\(peerID!.displayName)"
+        
         if (isConnecting) {
-            timerLabel.text = "Connecting to \(peerID!.displayName)..."
+            statusLabel.text = "Connecting"
         }
         else {
-            timerLabel.text = "Calling \(peerID!.displayName)..."
+            statusLabel.text = "Calling"
         }
         
         // Stop advertising and browsing for peers when in a call
@@ -180,7 +183,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             if (!self.appDelegate.connectionManager.sendData(message: phoneMessage, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
                 
                 print("\(#file) > \(#function) > Failed to send call invitation to peer")
-                self.timerLabel.text = "Call Failed"
+                self.statusLabel.text = "Call Failed"
                 
                 //TODO: Play a beeping sound to let the user know the call failed
                 
@@ -345,7 +348,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             let minuteString = String(format: "%02d", minutes)
             let secondString = String(format: "%02d", seconds)
             
-            timerLabel.text = "\(minuteString):\(secondString)"
+            statusLabel.text = "\(minuteString):\(secondString)"
             
             let second = Int(secondString)
             
@@ -599,7 +602,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(#file) > \(#function) > Connected with the current peer.")
             
             OperationQueue.main.addOperation { () -> Void in
-                self.timerLabel.text = "Connected to peer \(self.peerID!.displayName)..."
+                self.statusLabel.text = "Connected"
             }
             
             setupStream()
@@ -648,7 +651,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (peerID == self.peerID) {
             OperationQueue.main.addOperation { () -> Void in
-                self.timerLabel.text = "Connecting to peer \(peerID.displayName)..."
+                self.statusLabel.text = "Connecting"
             }
         }
     }
