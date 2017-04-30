@@ -30,6 +30,7 @@
 		B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */; };
 		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
 		B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */ = {isa = PBXBuildFile; fileRef = B2C7047D1EB2D4AE00C1B938 /* microphone.png */; };
+		B2CEC2A21EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +86,7 @@
 		B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowMediaViewController.swift; sourceTree = "<group>"; };
 		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
 		B2C7047D1EB2D4AE00C1B938 /* microphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = microphone.png; sourceTree = "<group>"; };
+		B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestRecordPermissionViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,12 +161,13 @@
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
-				B200C0961E973E060046914B /* JSQChatViewController.swift */,
 				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+				B200C0961E973E060046914B /* JSQChatViewController.swift */,
 				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
+				B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */,
 				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
 				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
@@ -509,6 +512,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */,
+				B2CEC2A21EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift in Sources */,
 				B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */,
 				B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */,
 				B200C0971E973E060046914B /* JSQChatViewController.swift in Sources */,
