@@ -9,14 +9,18 @@
 import UIKit
 import AVFoundation
 
+@available(iOS 10.0, *)
 class StartupViewController: UIViewController {
     
     // MARK: Properties
     var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // MARK: Actions
     @IBAction func startSearching(_ sender: UIButton) {
-        // Nothing to do
+        DispatchQueue.global().sync {
+            appDelegate.generator.impactOccurred()
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

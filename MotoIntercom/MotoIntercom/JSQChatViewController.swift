@@ -12,6 +12,7 @@ import AudioToolbox
 import JSQMessagesViewController
 import Photos
 
+@available(iOS 10.0, *)
 class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegate {
 
     // MARK: Properties
@@ -334,6 +335,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
 }
 
 
+@available(iOS 10.0, *)
 extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     // When a photo from the photo library is taken

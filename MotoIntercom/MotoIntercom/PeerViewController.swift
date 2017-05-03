@@ -4,19 +4,19 @@
 //
 //  Created by Logan Kember on 2016-07-05.
 //  Copyright © 2016 Logan Kember. All rights reserved.
-//
-//  Useful link for InputStream and OutputStream https://robots.thoughtbot.com/streaming-audio-to-multiple-listeners-via-ios-multipeer-connectivity
 
 import UIKit
 import MultipeerConnectivity
 import AudioToolbox             // For sound and vibration
 import JSQMessagesViewController
 
+@available(iOS 10.0, *)
 class PeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
     
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
-    let endChat = "_end_chat_"
     let incomingCall = "_incoming_call_"
+    let acceptedCall = "_accept_call_"
+    let declinedCall = "_decline_call_"
     
     // MARK: - Properties
     @IBOutlet weak var peersTable: UITableView!
@@ -150,13 +150,23 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Function used when the user accepts a call
     func acceptCall() {
-        print("\(#file) > \(#function) > Entry: Call accepted")
+        print("\(#file) > \(#function) > Entry")
         
         // If a call has been accepted
         OperationQueue.main.addOperation { () -> Void in
             print("\(#file) > \(#function) > Performing callSegue")
             super.performSegue(withIdentifier: "callSegue", sender: self)
         }
+        
+        _ = appDelegate.connectionManager.sendData(stringMessage: acceptedCall, toPeer: destinationPeerID!)
+        print("\(#file) > \(#function) > Exit")
+    }
+    
+    func declineCall() {
+        print("\(#file) > \(#function) > Entry")
+        
+        _ = appDelegate.connectionManager.sendData(stringMessage: declinedCall, toPeer: destinationPeerID!)
+        destinationPeerID = nil
         
         print("\(#file) > \(#function) > Exit")
     }
@@ -187,6 +197,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func refresh(sender: AnyObject) {
         print("\(#file) > \(#function) > Refreshing table")
         
+        self.appDelegate.generator.impactOccurred()     // Haptic feedback when the user refreshes the screen
+        
         DispatchQueue.main.async {
             self.peersTable.reloadData()
         }
@@ -202,52 +214,20 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("\(#file) > \(#function) > PeerViewController is visible controller.")
             
             let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
-            let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
-            let fromPeer = dictionary["peer"] as! MCPeerID
             
-            let peerIndex = getIndexForPeer(peer: fromPeer)
+            // If the incoming message is a MessageObject than do the following
+            if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? MessageObject {
             
-            // If the message is an end chat message
-            if (newMessage.messages[0].text == endChat) {
-                //TODO: Need to close connection
-                print("\(#file) > \(#function) > endChat message received")
-                
-                let peer = messages[peerIndex].peerID
-                let sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: peer!)
-                
-                if sessionIndex != -1 {
-                    // disconnect from session and clean sessions
-                    appDelegate.connectionManager.sessions[sessionIndex].disconnect()
-                    appDelegate.connectionManager.cleanSessions()
-                    
-                    peersTable.reloadData()
-                    
-                    print("\(#file) > \(#function) > disconnected from session")
-                }
-            }
-                
-            // If the message is an incoming call message
-            else if (newMessage.messages[0].text == incomingCall) {
-                //TODO: Need to let the user know there is an incoming call
-                print("\(#file) > \(#function) > incomingCall message received")
-            }
-                
-            // If the message is a chat message
-            else {
+                let fromPeer = dictionary["peer"] as! MCPeerID
+                let peerIndex = getIndexForPeer(peer: fromPeer)
+            
                 print("\(#file) > \(#function) > message: \(newMessage.messages[0].text), peerID \(newMessage.peerID.displayName), selfID \(newMessage.selfID.displayName)")
                 messages[peerIndex].messages.append(newMessage.messages[0])
-                
-//                messages[peerIndex].messages.append(newMessage.messages[0])
-//                messages[peerIndex].messageIsFrom.append(newMessage.messageIsFrom[0])
-                print("\(#file) > \(#function) > Adding new message to transcript for peer \(messages[peerIndex].peerID.displayName)")
                 
                 save()
                 
                 //Vibrate
                 JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
-                
-//                let currCell = peersTable.cellForRow(at: IndexPath.init(row: peerIndex, section: 0)) as! PeerTableViewCell
-//                currCell.newMessageArrived()
                 
                 //Changes to UI must be done by main thread
                 DispatchQueue.main.async {
@@ -272,8 +252,38 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
                 }
             }
+                
+            // If this is the case then it is likely a phone call
+            else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
+                if newMessage == incomingCall {
+                    
+                    let fromPeer = dictionary["peer"] as! MCPeerID
+                    
+                    print("\(#file) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
+                    
+                    
+                    let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
+                    self.addChildViewController(popOverView)
+                    
+                    popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
+                    popOverView.messages = self.messages
+                    popOverView.peerDisplayName = fromPeer.displayName
+                    
+                    print("\(#file) > \(#function) > fromPeer=\(fromPeer.displayName)")
+                    
+                    OperationQueue.main.addOperation { () -> Void in
+                        popOverView.view.frame = self.view.frame
+                        self.view.addSubview(popOverView.view)
+                        popOverView.didMove(toParentViewController: self)
+                    }
+                }
+            }
+            else {
+                print("\(#file) > \(#function) > ERROR")
+            }
         }
         else {
+            // TODO: Still need to add message to messages
             print("\(#file) > \(#function) > Not currently visible")
         }
         print("\(#file) > \(#function) > Exit")
@@ -359,18 +369,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         print("\(#file) > \(#function) > Entry - row \(indexPath.row), section \(indexPath.section)")
         let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
-        
-//        var availablePeers : [MessageObject] = []
-//        var unavailablePeers : [MessageObject] = []
-//        
-//        for message in messages {
-//            if (message.isAvailable) {
-//                availablePeers.append(message)
-//            }
-//            else {
-//                unavailablePeers.append(message)
-//            }
-//        }
         
         let peers = getAllPeers()
         var availablePeers = peers[0]
@@ -500,6 +498,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     if (check == -1) {
                         
+                        print("COULD NOT FIND SESSION!!!")
+                        
                         //Setting the connection type to voice
                         let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
                         self.messages[peerIndex].setConnectionTypeToVoice()
@@ -533,6 +533,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         OperationQueue.main.addOperation { () -> Void in
                             self.performSegue(withIdentifier: "callSegue", sender: self)
                         }
+                        
+                        _ = self.appDelegate.connectionManager.sendData(stringMessage: self.incomingCall, toPeer: self.destinationPeerID!)
                     }
                 })
                 
@@ -766,9 +768,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             // Set the connection type to message
             let peerIndex = self.getIndexForPeer(peer: fromPeer)
             self.messages[peerIndex].setConnectionTypeToMessage()
-            
-//            self.destinationPeerID = fromPeer
-//            self.isDestPeerIDSet = true
         }
         else {
             print("\(#file) > \(#function) > Incoming call!")
@@ -843,8 +842,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
 
                 alert.addAction(okAction)
-
-//                currView.messages.isAvailable = false
                 
                 OperationQueue.main.addOperation { () -> Void in
                     self.present(alert, animated: true, completion: nil)
@@ -863,12 +860,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func connectingWithPeer(_ peerID: MCPeerID) {
-        // TODO: Need to decide what to do when connecting to peer
+        // Nothing to do
     }
     
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
         print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
-        // Nothing to do here
+        // Nothing to do
     }
     
     
@@ -928,7 +925,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             dest?.peerID = destinationPeerID
             
             if (didAcceptCall) {
-                dest?.isConnecting = true
+                dest?.didReceiveCall = true
             }
             
             // TODO: Need to finish

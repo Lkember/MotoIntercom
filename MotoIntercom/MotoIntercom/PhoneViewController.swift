@@ -14,10 +14,15 @@ import AVFoundation
 import MultipeerConnectivity
 import JSQMessagesViewController
 
+@available(iOS 10.0, *)
 class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, StreamDelegate, ConnectionManagerDelegate {
 
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let incomingCall = "_incoming_call_"
+    let acceptCall = "_accept_call_"
+    let declineCall = "_decline_call_"
+    let readyForStream = "_ready_for_stream_"
+    let endingCall = "_user_ended_call_"
     
     // MARK: - Properties
     @IBOutlet weak var statusLabel: UILabel!
@@ -28,7 +33,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // MC
     var peerID: MCPeerID?
     var sessionIndex: Int?
-    var isConnecting: Bool = false
+    var didReceiveCall: Bool = false
     
     // Streams
     var outputStream: OutputStream?
@@ -76,14 +81,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
-    
+        self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
+        
         // When the device is up to the ear, the screen will dim
         UIDevice.current.isProximityMonitoringEnabled = true
         
-        peerLabel.text = "\(peerID!.displayName)"
-        
-        if (isConnecting) {
-            statusLabel.text = "Connecting"
+        if (didReceiveCall) {
+            statusLabel.text = "Connecting..."
+            
+            readyToOpenStream()
         }
         else {
             statusLabel.text = "Calling"
@@ -93,18 +99,25 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
+//        self.recordingQueue.sync {
+//            self.prepareAudio()
+//            
+//            if (!didReceiveCall) {
+//                self.callPeer()
+//            }
+//        }
         
-        // Used to change button layouts, views, etc
-        self.updateUI()
-        
-        self.recordingQueue.sync {
-            self.prepareAudio()
-            self.callPeer()
-        }
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
     
         print("\(#file) > \(#function) > Exit")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        // Used to change button layouts, views, etc
+        self.updateUI()
+        self.prepareAudio()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -151,6 +164,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.layer.borderColor = UIColor.black.cgColor
         speakerButton.isEnabled = false
         speakerButton.isUserInteractionEnabled = false
+        
+        peerLabel.text = "\(peerID!.displayName)"
     }
     
     func callPeer() {
@@ -168,20 +183,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                                                                   to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
                                                                   withContext: dataToSend,
                                                                   timeout: 30)
+            
         }
         else {
             print("\(#file) > \(#function) > Sending message to peer.")
             
-            let jsqMessage = JSQMessage.init(senderId: self.appDelegate.connectionManager.uniqueID,
-                                             displayName: self.appDelegate.connectionManager.peer.displayName,
-                                             text: self.incomingCall)
-            
-            let phoneMessage = MessageObject.init(peerID: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0],
-                                                  messages: [jsqMessage!])
-            
-            // Attempt to send phone message
-            if (!self.appDelegate.connectionManager.sendData(message: phoneMessage, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
-                
+            //TODO: Need to change if allowed to connect to multiple users
+            if (!self.appDelegate.connectionManager.sendData(stringMessage: incomingCall, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
                 print("\(#file) > \(#function) > Failed to send call invitation to peer")
                 self.statusLabel.text = "Call Failed"
                 
@@ -190,21 +198,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 // Wait 2 seconds and then end call
                 sleep(2)
                 self.endCallButtonIsClicked(self.nilButton)
-            }
-        }
-        
-        //-------------------------------------------------------------------------------
-        // Attempting to create outputStream. This will only be called if the current peer is already connected to.
-        // This code is necessary since the user may already be connected to because of chat.
-        
-        if (self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: self.peerID!)) {
-            do {
-                self.outputStream = try self.appDelegate.connectionManager.sessions[self.sessionIndex!].startStream(withName: "motoIntercom", toPeer: self.peerID!)
-                self.outputStreamIsSet = true
-            }
-            catch let error as NSError {
-                print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
-                self.outputStreamIsSet = false
             }
         }
     }
@@ -224,11 +217,17 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Setting up AVAudioSession
         do {
+            print("\(#file) > \(#function) > setCategory")
             try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
+            print("\(#file) > \(#function) > setPreferredIOBufferDuration")
             try audioSession.setPreferredIOBufferDuration(0.001)
-            try audioSession.setPreferredInputNumberOfChannels(1)
+//            print("\(#file) > \(#function) > setPreferredNumberOfChannels")
+//            try audioSession.setPreferredInputNumberOfChannels(1)
+            print("\(#file) > \(#function) > setPreferredSampleRate")
             try audioSession.setPreferredSampleRate(44100)
+            print("\(#file) > \(#function) > setMode")
             try audioSession.setMode(AVAudioSessionModeVoiceChat)
+            print("\(#file) > \(#function) > setActive")
             try audioSession.setActive(true)
             
             print("\(#file) > \(#function) > audioSession \(audioSession)")
@@ -259,10 +258,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         localInput?.installTap(onBus: 0, bufferSize: 17640, format: localInputFormat) {
             (buffer, when) -> Void in
-            /* Calling this method so that there is no delay when the user starts speaking.
+            /* Calling this method so that there is less delay when the user starts speaking.
              * I was having an issue where there was about a 100-300 ms delay, however I noticed
-             * if you clicked the mute button twice the delay was basically gone. 
-             * Instead of making the user click the button twice, it will start recording and then
+             * if you clicked the mute button twice the delay was basically gone. Instead
+             * of making the user click the button twice, it will start recording and then
              * automatically remove the tap and reinstall the tap.
             */
         }
@@ -361,11 +360,24 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // MARK: - Stream
     
+    func readyToOpenStream() {
+        print("\(#file) > \(#function) > Entry")
+        let result = appDelegate.connectionManager.sendData(stringMessage: readyForStream, toPeer: peerID!)
+        
+        if (!result) {
+            print("\(#file) > \(#function) > Error sending message...")
+        }
+        
+        setupStream()
+        print("\(#file) > \(#function) > Exit")
+    }
+    
     func setupStream() {
         print("\(#file) > \(#function) > Creating output stream")
         
         if (!outputStreamIsSet) {
             do {
+                
                 outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
                 outputStreamIsSet = true
             }
@@ -423,7 +435,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
         case Stream.Event.endEncountered:
             print("\(#file) > \(#function) > End encountered")
-//            endCallButtonIsClicked(nilButton)
             
             
         case Stream.Event.openCompleted:
@@ -517,6 +528,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     @IBAction func endCallButtonIsClicked(_ sender: UIButton) {
+        print("\(#file) > \(#function) > Entry")
         if (sender == nilButton) {
             userEndedCall = false
         }
@@ -524,7 +536,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             userEndedCall = true
         }
         
-        print("\(#file) > \(#function) > Stopping recording")
+        if (userEndedCall) {
+            _ = appDelegate.connectionManager.sendData(stringMessage: endingCall, toPeer: peerID!)
+        }
         
         OperationQueue.main.addOperation {
             DispatchQueue.global().async {
@@ -532,6 +546,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
             self.dismiss(animated: true, completion: nil)
         }
+        print("\(#file) > \(#function) > Exit")
     }
     
     // A function which stops recording and closes streams
@@ -540,17 +555,19 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         //Stop recording and playing
         if localAudioEngine.isRunning {
+            print("\(#file) > \(#function) > localAudioEngine stopped")
             localAudioEngine.stop()
         }
         
         if localAudioPlayer.isPlaying {
+            print("\(#file) > \(#function) > localAudioPlayer stopped")
             localAudioPlayer.stop()
         }
         
 //        if peerAudioEngine.isRunning {
 //            peerAudioEngine.stop()
 //        }
-//        
+        
 //        if peerAudioPlayer.isPlaying {
 //            peerAudioPlayer.stop()
 //        }
@@ -562,18 +579,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         outputStream?.close()
         inputStream?.close()
         
+        print("\(#file) > \(#function) > Streams closed")
+        
         inputStreamIsSet = false
         outputStreamIsSet = false
         
         UIDevice.current.isProximityMonitoringEnabled = false
-        
-        // Disconnect from peer. This way the other user will be notified that the call has ended.
-        if (appDelegate.connectionManager.checkIfAlreadyConnected(peerID: self.peerID!)) {
-            appDelegate.connectionManager.sessions[sessionIndex!].disconnect()
-        }
-        else {
-            print("\(#file) > \(#function) > Not connected to peer")
-        }
         
         print("\(#file) > \(#function) > Resources closed")
     }
@@ -604,8 +615,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             OperationQueue.main.addOperation { () -> Void in
                 self.statusLabel.text = "Connected"
             }
-            
-            setupStream()
         }
         else {
             print("\(#file) > \(#function) > New connection to \(peerID.displayName)")
@@ -618,7 +627,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Disconnected from peer: \(peerID.displayName), user ended call: \(userEndedCall)")
         
         if (!userEndedCall) {
-            
             if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: peerID)) {
                 if (peerID == self.peerID!) {
                     inputStreamIsSet = false
@@ -633,13 +641,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     
                     alert.addAction(okAction)
                     
-                    OperationQueue.main.addOperation { () -> Void in
-                        self.present(alert, animated: true, completion: nil)
-                    }
-                    
                     // Since the peer is already disconnected, than we need to close all resources immediately
                     OperationQueue.main.addOperation {
                         self.closeAllResources()
+                    }
+                    
+                    OperationQueue.main.addOperation { () -> Void in
+                        self.present(alert, animated: true, completion: nil)
                     }
                 }
             }
@@ -671,7 +679,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.outputStream!.open()
             
             self.recordingQueue.async {
-                sleep(2)
+                sleep(1)
                 self.recordAudio()
                 
                 self.muteButton.isEnabled = true
@@ -684,6 +692,41 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         else {
             print("\(#file) > \(#function) > Should not print.")
         }
+        
+        OperationQueue.main.addOperation {
+            self.statusLabel.text = "Connected"
+        }
+        
+        print("\(#file) > \(#function) > Exit")
+    }
+    
+    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+        print("\(#file) > \(#function) > Entry")
+        
+        let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
+        
+        if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
+            if newMessage == acceptCall {
+                print("\(#file) > \(#function) > Call accepted")
+                OperationQueue.main.addOperation {
+                    self.statusLabel.text = "Connecting..."
+                }
+            }
+            else if newMessage == declineCall {
+                print("\(#file) > \(#function) > Call declined -- Ending")
+                endCallButtonIsClicked(endCallButton)
+            }
+            else if newMessage == readyForStream {
+                print("\(#file) > \(#function) > Ready for stream -- Starting stream")
+                setupStream()
+            }
+            else if newMessage == endingCall {
+                print("\(#file) > \(#function) > Peer ended call")
+                //TODO: Need to play a sound to let the user know that the call has ended
+                endCallButtonIsClicked(nilButton)
+            }
+        }
+        
         print("\(#file) > \(#function) > Exit")
     }
     

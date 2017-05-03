@@ -9,6 +9,7 @@
 import UIKit
 import MultipeerConnectivity
 
+@available(iOS 10.0, *)
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -18,12 +19,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var uniqueIDString = "uniqueIDString"
     var peer : MCPeerID!
     var peerIDString = "selfMCPeerID"
+    var generator = UIImpactFeedbackGenerator(style: UIImpactFeedbackStyle.light)
+    var messages = [MessageObject]()
     
     var didAcceptCall = false
 
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        generator.prepare() //Preparing haptic feedback engine
         
         let didLoad = loadIdentification()
         

@@ -60,11 +60,6 @@ class MessageObject: NSObject, NSCoding {
         connectionType = 2
     }
     
-    func getConnectionType() -> Int {
-        print("\(#file) > \(#function) > RETURN \(connectionType) forPeer \(self.peerID.displayName)")
-        return connectionType
-    }
-    
 //    // MARK: - JSQMessageData
 //    func senderId() -> String! {
 //        return self.senderID

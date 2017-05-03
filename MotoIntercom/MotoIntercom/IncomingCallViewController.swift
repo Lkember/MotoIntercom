@@ -8,6 +8,7 @@
 
 import UIKit
 
+@available(iOS 10.0, *)
 class IncomingCallViewController: UIViewController {
 
 //    let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -61,31 +62,38 @@ class IncomingCallViewController: UIViewController {
     @IBAction func acceptButtonIsTouched(_ sender: UIButton) {
 //        let peerIndex = getIndexForPeer(peer: fromPeer)
         print("\(#file) > \(#function) > Entry")
-        messages?[peerIndex!].setConnectionTypeToVoice()
         
         if ((self.navigationController?.viewControllers.count)! >= 2) {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
-            print("\(#file) > \(#function) > Accepting invitation")
-            
-            let index = self.appDelegate.connectionManager.createNewSession()
-            
-            if self.appDelegate.connectionManager.invitationHandler != nil {
-                self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+        
+            var index = -1
+        
+            if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
+                print("\(#file) > \(#function) > Accepting invitation")
+                index = self.appDelegate.connectionManager.createNewSession()
                 
-                superview!.destinationPeerID = messages?[peerIndex!].peerID
-                superview!.isDestPeerIDSet = true
-                superview!.messages[peerIndex!].setConnectionTypeToVoice()
-                superview!.didAcceptCall = true
-                
-                dismissAnimate()
-                
-                print("\(#file) > \(#function) > Accepting Call")
-                superview!.acceptCall()
+                if self.appDelegate.connectionManager.invitationHandler != nil {
+                    self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+                }
             }
             else {
-                print("\(#file) > \(#function) > Failed to accept invitation.")
-                //TODO: Notify user that connection failed
+                print("\(#file) > \(#function) > Already connected")
+                index = peerIndex!
             }
+                
+            superview!.destinationPeerID = messages?[index].peerID
+            superview!.isDestPeerIDSet = true
+            superview!.messages[peerIndex!].setConnectionTypeToVoice()
+            superview!.didAcceptCall = true
+            
+            dismissAnimate()
+        
+            print("\(#file) > \(#function) > Accepting Call")
+            superview!.acceptCall()
+        }
+        else {
+            print("\(#file) > \(#function) > Failed to accept invitation.")
+            //TODO: Notify user that connection failed
         }
         
         print("\(#file) > \(#function) > Exit")
@@ -93,8 +101,16 @@ class IncomingCallViewController: UIViewController {
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
         print("\(#file) > \(#function)")
-        
-        dismissAnimate()
+        if ((self.navigationController?.viewControllers.count)! >= 2) {
+            let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
+            
+            superview!.destinationPeerID = messages?[peerIndex!].peerID
+            
+            dismissAnimate()
+            
+            superview!.didAcceptCall = false
+            superview!.declineCall()
+        }
     }
     
     

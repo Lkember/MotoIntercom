@@ -22,11 +22,13 @@ protocol ConnectionManagerDelegate {
 }
 
 
+@available(iOS 10.0, *)
 class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
     
     // MARK: - Properties
     
     var delegate : ConnectionManagerDelegate?
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     //Creating service types, session, peerID, browser and advertiser
     var uniqueID : String!
@@ -78,6 +80,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         sessions.append(session)
     }
+    
+    // MARK: - Sessions
     
     
     // a function which returns the index to an unused session
@@ -145,6 +149,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("\(#file) > \(#function) > Exit \(sessions.count)")
     }
     
+    
+    // MARK: - Sending Data
+    
     //Send data to recipient
     func sendData(dictionaryWithData dictionary: Dictionary<String, String>, toPeer targetPeer: MCPeerID) -> Bool {
         print("\(#file) > \(#function) > Sending data to peer.")
@@ -166,6 +173,31 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             print(error.localizedDescription)
             return false
         }
+        return true
+    }
+    
+    // Send a regular string to the peer
+    func sendData(stringMessage: String, toPeer targetPeer: MCPeerID) -> Bool {
+        print("\(#file) > \(#function) > Sending \(stringMessage) to peer.")
+        
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: stringMessage)
+        let peersArray = NSArray(object: targetPeer)
+        
+        let peerIndex = findSinglePeerSession(peer: targetPeer)
+        
+        if (peerIndex == -1) {
+            print("\(#file) > \(#function) > Could not find peer")
+            return false
+        }
+        
+        do {
+            try sessions[peerIndex].send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            return false
+        }
+        
         return true
     }
     
@@ -223,6 +255,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+    
+    // MARK: - Peers
+    
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         
@@ -232,6 +267,16 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         }
         else {
             print("\(#file) > \(#function) > Peer was found but already exists with ID: \(peerID)")
+        }
+        
+        //Connecting to peer
+        if (!checkIfAlreadyConnected(peerID: peerID)) {
+            
+            let sessionIndex = createNewSession()
+            let isPhoneCall = false
+            let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+            
+            self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
         }
         
         delegate?.foundPeer(peerID)
@@ -251,28 +296,21 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //removes all previously seen peers
     func resetPeerArray() {
-        print("\(#file) > \(#function) > The peer array is being reset!")
+        print("\(#file) > \(#function) > Removing all found peers")
         foundPeers.removeAll()
     }
     
     
     // Called when a peer is lost
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        print("\(#file) > \(#function) > Entry")
+        print("\(#file) > \(#function) > Entry > lostPeer \(peerID)")
         for i in 0 ..< foundPeers.count {
-            print("\(#file) > \(#function) > Finding the lost peer... \(i)")
-            print("\(#file) > \(#function) > Check: \(foundPeers[i]) == \(peerID)")
             
             if foundPeers[i] == peerID {
-                print("\(#file) > \(#function) > Removing peer \(foundPeers[i])")
+                print("\(#file) > \(#function) > Return > Removing peer \(foundPeers[i])")
                 foundPeers.remove(at: i)
                 break
             }
-            
-            //Remove the current peer if it is currently connected with
-//            if checkIfAlreadyConnected(peerID: peerID) {
-//                removeConnectedPeer(peerID: peerID)
-//            }
             
             print("\(#file) > \(#function) > lostPeer: \(peerID)")
         }
@@ -283,13 +321,14 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Called to check if the current connection is already in the connectedPeers array
     func checkIfAlreadyConnected(peerID: MCPeerID) -> Bool {
+        print("\(#file) > \(#function) > Entry")
         for session in sessions {
-            if session.connectedPeers.contains(peerID) {
-                print("\(#file) > \(#function) > True")
+            if (session.connectedPeers.contains(peerID) && session.connectedPeers.count == 1) {
+                print("\(#file) > \(#function) > Return True")
                 return true
             }
         }
-        print("\(#file) > \(#function) > False")
+        print("\(#file) > \(#function) > Return False")
         return false
     }
     
@@ -321,17 +360,27 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("\(#file) > \(#function) > \(error)")
     }
 
+    
+    /*
+        This function will automatically accept invitations if it is not a phone call. This way there will always be a session
+        for each peer. The reason for this is to avoid connection times. So when a user clicks on a peer to chat, it will 
+        immediately go into the chat.
+     */
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         self.invitationHandler = invitationHandler
-        
         let isPhoneCall = NSKeyedUnarchiver.unarchiveObject(with: context!) as! Bool
         
-        delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
         
+        // Automatically connecting to the user if it is not a phone call
         if (!isPhoneCall) {
-            let index = self.createNewSession()
-            invitationHandler(true, sessions[index])
+            if (findSinglePeerSession(peer: peerID) == -1) {
+                
+                let index = self.createNewSession()
+                invitationHandler(true, sessions[index])    //Accepting connection
+            }
         }
+        
+        delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
     }
     
     
@@ -357,7 +406,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             
         case MCSessionState.notConnected:
             print("\(#file) > \(#function) > Failed to connect to session: \(session)")
-
+            
             delegate?.disconnectedFromPeer(peerID)
             if (!doesPeerAlreadyExist(peerID: peerID)) {
                 foundPeers.append(peerID)
