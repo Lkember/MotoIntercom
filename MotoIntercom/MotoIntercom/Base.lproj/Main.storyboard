@@ -562,6 +562,8 @@
                     </view>
                     <connections>
                         <outlet property="backgroundView" destination="ObG-Dt-PBg" id="jS7-3h-GLq"/>
+                        <outlet property="mainLabel" destination="glT-hG-SG3" id="nSM-zA-9Gc"/>
+                        <outlet property="microphoneAccessLabel" destination="gdG-ll-jDW" id="JDz-rz-fHg"/>
                         <outlet property="popUpView" destination="fX3-VW-m2H" id="2Eb-VB-5Fe"/>
                     </connections>
                 </viewController>

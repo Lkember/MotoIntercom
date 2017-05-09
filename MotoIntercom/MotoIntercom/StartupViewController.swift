@@ -44,6 +44,17 @@ class StartupViewController: UIViewController {
         }
         else if recordPermission == AVAudioSessionRecordPermission.denied {
             print("\(#file) > \(#function) > Record permission is denied. Phone calls will be disabled.")
+            
+            let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "RequestMicrophoneAccess") as! RequestRecordPermissionViewController
+            
+            self.addChildViewController(popOverView)
+            
+            popOverView.view.frame = self.view.frame
+            self.view.addSubview(popOverView.view)
+            popOverView.didMove(toParentViewController: self)
+            
+            popOverView.mainLabel.text = "No Microphone Access"
+            popOverView.microphoneAccessLabel.text = "You have not given this app access to your microphone. This means that you will not be able to send any audio to your peers. It is recommended to change this option by going into Settings > Privacy > Microphone and giving access to MotoIntercom."
         }
         else if recordPermission == AVAudioSessionRecordPermission.granted {
             print("\(#file) > \(#function) > Record permission is granted.")

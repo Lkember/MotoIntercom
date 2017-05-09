@@ -14,6 +14,9 @@ class RequestRecordPermissionViewController: UIViewController {
     // MARK: - Properties
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var popUpView: UIView!
+    @IBOutlet weak var mainLabel: UILabel!
+    @IBOutlet weak var microphoneAccessLabel: UILabel!
+    
     let audioSession = AVAudioSession.sharedInstance()
     
     // MARK: - View
