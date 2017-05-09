@@ -152,13 +152,14 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func acceptCall() {
         print("\(#file) > \(#function) > Entry")
         
+        _ = self.appDelegate.connectionManager.sendData(stringMessage: self.acceptedCall, toPeer: self.destinationPeerID!)
+        
         // If a call has been accepted
-        OperationQueue.main.addOperation { () -> Void in
+        OperationQueue.main.addOperation {
             print("\(#file) > \(#function) > Performing callSegue")
             super.performSegue(withIdentifier: "callSegue", sender: self)
         }
         
-        _ = appDelegate.connectionManager.sendData(stringMessage: acceptedCall, toPeer: destinationPeerID!)
         print("\(#file) > \(#function) > Exit")
     }
     
@@ -497,24 +498,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     if (check == -1) {
-                        
-                        print("COULD NOT FIND SESSION!!!")
-                        
                         //Setting the connection type to voice
                         let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
                         self.messages[peerIndex].setConnectionTypeToVoice()
-                        
-//                        let index = self.appDelegate.connectionManager.createNewSession()
-                        
-                        // The user selected phone call
-//                        let isPhoneCall: Bool = true
-//                        let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-                        
-                        //Inviting peer
-//                        self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
-                        
-//                            let outputStream = try self.appDelegate.connectionManager.sessions[index].startStream(withName: "motoIntercom", toPeer: currCell.peerID!)
-//                            print("\(#file) > \(#function) didSelectRowAt > Successfully created stream")
                             
                         self.destinationPeerID = currCell.peerID!
                         self.isDestPeerIDSet = true
@@ -767,7 +753,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if (!isPhoneCall) {
             // Set the connection type to message
             let peerIndex = self.getIndexForPeer(peer: fromPeer)
-            self.messages[peerIndex].setConnectionTypeToMessage()
+            
+            if (peerIndex >= 0) {
+                self.messages[peerIndex].setConnectionTypeToMessage()
+            }
+            else {
+                print("\(#file) > \(#function) > ERROR! COULD NOT FIND PEER!")
+            }
         }
         else {
             print("\(#file) > \(#function) > Incoming call!")
