@@ -20,6 +20,10 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var selectedImage: UIImage?
     
+    var isTyping: Bool = false
+    var userIsTyping: String = "_user_is_typing_"
+    var userHasStoppedTyping: String = "_user_stopped_typing_"
+    
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
     
@@ -141,6 +145,10 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // When a new message is received
     private func addMessage(withId id: String, name: String, text: String) {
+        OperationQueue.main.addOperation {
+            self.showTypingIndicator = false
+        }
+        
         if let message = JSQMessage(senderId: id, displayName: name, text: text) {
             print("\(#file) > \(#function) > Adding message \(text)")
             messageObject.messages.append(message)
@@ -148,6 +156,10 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
     private func addMediaMessage(withId id: String, name: String, media: JSQMessageMediaData) {
+        OperationQueue.main.addOperation {
+            self.showTypingIndicator = false
+        }
+        
         if let message = JSQMessage(senderId: id, displayName: name, media: media) {
             print("\(#file) > \(#function) > Adding media message")
             messageObject.messages.append(message)
@@ -158,14 +170,13 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // When the user sends a message
     
     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
+        isTyping = false
         
         let jsqMessage = JSQMessage(senderId: senderId, senderDisplayName: senderDisplayName, date: date, text: text)
         let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
         
         if (appDelegate.connectionManager.sendData(message: message, toPeer: message.peerID)) {
             messageObject.messages.append(jsqMessage!)
-            
-//            self.collectionView.reloadData()
         }
         
         JSQSystemSoundPlayer.jsq_playMessageSentAlert()
@@ -235,53 +246,47 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(#file) > \(#function) > Message received")
         
         let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
-        let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as! MessageObject
+        if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? MessageObject {
         
 //        let fromPeer = newMessage.peerID
-        
-        //Vibrate
-        AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
-        
+            
+            //Vibrate
+//            AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
+            JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
+            
 //        if newMessage.messages[0].text != endChat {
 //        self.messageObject.messages.append(newMessage.messages[0])
-        if (!newMessage.messages[0].isMediaMessage) {
-            addMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, text: newMessage.messages[0].text)
-        }
-        else {
-            addMediaMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, media: newMessage.messages[0].media)
-        }
-        
-        OperationQueue.main.addOperation {
-            self.collectionView.reloadData()
+            if (!newMessage.messages[0].isMediaMessage) {
+                addMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, text: newMessage.messages[0].text)
+            }
+            else {
+                addMediaMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, media: newMessage.messages[0].media)
+            }
             
-            let lastMessage: IndexPath = IndexPath.init(row: self.messageObject.messages.count-1, section: 0)
-            self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
+            OperationQueue.main.addOperation {
+                self.collectionView.reloadData()
+                
+                let lastMessage: IndexPath = IndexPath.init(row: self.messageObject.messages.count-1, section: 0)
+                self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
+            }
+            
+            print("\(#file) > \(#function) > Message: \(newMessage.messages[0].text)")
         }
-        
-        print("\(#file) > \(#function) > Message: \(newMessage.messages[0].text)")
-        
-//        }
-//        else {
-//            let alert = UIAlertController(title: "", message: "\(fromPeer!.displayName) ended this chat", preferredStyle: UIAlertControllerStyle.alert)
-//            
-//            let doneAction: UIAlertAction = UIAlertAction(title: "Okay", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-//                
-//                var sess : MCSession?
-//                let sessIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: fromPeer!)
-//                
-//                if sessIndex != -1 {
-//                    sess = self.appDelegate.connectionManager.sessions[sessIndex]
-//                    sess?.disconnect()
-//                }
-//                self.dismiss(animated: true, completion: nil)
-//            }
-//            
-//            alert.addAction(doneAction)
-//            
-//            OperationQueue.main.addOperation {
-//                self.present(alert, animated: true, completion: nil)
-//            }
-//        }
+        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
+            if newMessage == userIsTyping {
+                print("\(#file) > \(#function) > Peer is typing")
+                OperationQueue.main.addOperation {
+                    self.showTypingIndicator = true
+                }
+            }
+            else if newMessage == userHasStoppedTyping {
+                print("\(#file) > \(#function) > Peer stopped typing")
+                OperationQueue.main.addOperation {
+                    self.showTypingIndicator = false
+                }
+            }
+        }
+        print("\(#file) > \(#function) > Exit")
     }
     
     //MARK: - Connection Manager
@@ -330,6 +335,23 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
         // Nothing to do here
         print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
+    }
+    
+    
+    // MARK: - TextView
+    override func textViewDidChange(_ textView: UITextView) {
+        super.textViewDidChange(textView)
+        
+        if (textView.text != "") {
+            if (isTyping) {
+                _ = appDelegate.connectionManager.sendData(stringMessage: userIsTyping, toPeer: self.messageObject.peerID)
+            }
+            isTyping = true
+        }
+        else {
+            _ = appDelegate.connectionManager.sendData(stringMessage: userHasStoppedTyping, toPeer: self.messageObject.peerID)
+            isTyping = false
+        }
     }
     
 }
