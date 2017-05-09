@@ -11,6 +11,7 @@
 
 import UIKit
 import AVFoundation
+import Accelerate
 import MultipeerConnectivity
 import JSQMessagesViewController
 
@@ -56,11 +57,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // Audio Capture and Playing
     var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
-    
     var localAudioEngine: AVAudioEngine = AVAudioEngine()
     var localAudioPlayer: AVAudioPlayerNode = AVAudioPlayerNode()
     var localInput: AVAudioInputNode?
     var localInputFormat: AVAudioFormat?
+    
+    var averageInputIsSet = false
+    var averageInputVolume: Double = 0.0
+    var size = 0
     
     // Button Options
     @IBOutlet weak var muteButton: UIButton!
@@ -71,7 +75,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // User ended call
     var userEndedCall = false
-    
     
     
     // MARK: - View Methods
@@ -95,21 +98,16 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             statusLabel.text = "Calling"
         }
         
+        self.prepareAudio()
+        
         // Stop advertising and browsing for peers when in a call
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
-//        self.recordingQueue.sync {
-//            self.prepareAudio()
-//            
-//            if (!didReceiveCall) {
-//                self.callPeer()
-//            }
-//        }
-        
         NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
-    
+//        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: AVAudioSessionRouteChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
         print("\(#file) > \(#function) > Exit")
     }
     
@@ -117,7 +115,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Used to change button layouts, views, etc
         self.updateUI()
-        self.prepareAudio()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -138,6 +135,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // MARK: - Startup
     
     func updateUI() {
+        print("\(#file) > \(#function) > Entry")
         self.navigationController?.navigationBar.isHidden = true
         
         // Giving the background view a blur effect
@@ -166,6 +164,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.isUserInteractionEnabled = false
         
         peerLabel.text = "\(peerID!.displayName)"
+        
+        print("\(#file) > \(#function) > Exit")
     }
     
     func callPeer() {
@@ -191,7 +191,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             //TODO: Need to change if allowed to connect to multiple users
             if (!self.appDelegate.connectionManager.sendData(stringMessage: incomingCall, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
                 print("\(#file) > \(#function) > Failed to send call invitation to peer")
-                self.statusLabel.text = "Call Failed"
+                
+                OperationQueue.main.addOperation {
+                    self.statusLabel.text = "Call Failed"
+                }
                 
                 //TODO: Play a beeping sound to let the user know the call failed
                 
@@ -240,7 +243,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localInput = self.localAudioEngine.inputNode
         self.localAudioEngine.attach(self.localAudioPlayer)
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
-        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: self.localInputFormat)
+        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: nil)
         
         self.localAudioEngine.prepare()
         
@@ -256,6 +259,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 print("\(#file) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
             }
         }
+        print("\(#file) > \(#function) > removing tap")
+        localInput?.reset()
+        localInput?.removeTap(onBus: 0)
+        print("\(#file) > \(#function) > tap removed")
+        print("\(#file) > \(#function) > installing tap")
         localInput?.installTap(onBus: 0, bufferSize: 17640, format: localInputFormat) {
             (buffer, when) -> Void in
             /* Calling this method so that there is less delay when the user starts speaking.
@@ -265,37 +273,98 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
              * automatically remove the tap and reinstall the tap.
             */
         }
+        print("\(#file) > \(#function) > tap installed")
+        print("\(#file) > \(#function) > removing tap")
+        localInput?.reset()
         localInput?.removeTap(onBus: 0)
+        print("\(#file) > \(#function) > tap removed")
+    }
+    
+    
+    func updateAudioSettings() {
+        print("\(#file) > \(#function) > Entry")
+        self.localInput = self.localAudioEngine.inputNode
+        self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
+        self.localAudioEngine.disconnectNodeInput(self.localAudioPlayer)
+        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: nil)
+        print("\(#file) > \(#function) > Exit")
     }
     
     
     func recordAudio() {
         localPlayerQueue.sync {
+            localInput?.reset()
+            localInput?.removeTap(onBus: 0)
             localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
                 (buffer, when) -> Void in
                 
 //                http://stackoverflow.com/questions/14349874/taking-absolute-value-of-cgfloat
-//                let arraySize = Int(buffer.frameLength)
-//                let samples = Array(UnsafeBufferPointer(start: buffer.floatChannelData![0], count:arraySize))
-//                
-//                //do something with samples
-//                let volume = fabs(20 * log10(samples.reduce(0){ $0 + $1} / Float(arraySize)))
-//                if(!volume.isNaN){
-//                    print("this is the current volume: \(volume)")
-//                }
+//                http://stackoverflow.com/questions/32891012/spectrogram-from-avaudiopcmbuffer-using-accelerate-framework-in-swift
                 
-                let data = self.audioBufferToNSData(PCMBuffer: buffer)
-                let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                //------------------------------------------------------------------
+                // Calculating the magnitude of sound coming from the microphone
                 
-                if output > 0 {
-//                    print("\(#file) > \(#function) > \(output) bytes written")
+                let arraySize = Int(buffer.frameLength)
+                var channelSamples: [[DSPComplex]] = []
+                
+                for i in 0..<1 {
+                    
+                    channelSamples.append([])
+                    let firstSample = buffer.format.isInterleaved ? i : i*arraySize
+                    
+                    for j in stride(from: firstSample, to: arraySize, by: buffer.stride*2) {
+                        
+                        let channels = UnsafeBufferPointer(start: buffer.floatChannelData, count: Int(buffer.format.channelCount))
+                        let floats = UnsafeBufferPointer(start: channels[0], count: Int(buffer.frameLength))
+                        channelSamples[i].append(DSPComplex(real: floats[j], imag: floats[j+buffer.stride]))
+                        
+                    }
                 }
-                else if output == -1 {
-                    let error = self.outputStream!.streamError
-                    print("\(#file) > \(#function) > Error writing to stream: \(String(describing: error?.localizedDescription))")
+                
+                var spectrum = [Float]()
+                
+                for i in 0..<arraySize/2 {
+                    
+                    let imag = channelSamples[0][i].imag
+                    let real = channelSamples[0][i].real
+                    let magnitude = sqrt(pow(real,2)+pow(imag,2))
+                    
+                    spectrum.append(magnitude)
                 }
-                else {
-                    print("\(#file) > \(#function) > Cannot write to stream, stream is full")
+                
+                var sum = 0.0
+                var iter = 0.0
+                for i in stride(from: 0, to: spectrum.count, by: 20) {
+                    sum += Double(spectrum[i])
+                    iter += 1
+                }
+                
+                sum = sum/iter
+                
+                DispatchQueue.global().async {
+                    self.updateAverageVolumeInput(average: sum)
+                }
+                
+                //---------------------------------------------------
+                // Sending the data to peer
+                
+                print("\(#file) > \(#function) > curr: \(sum) -- average: \(self.averageInputVolume)")
+                
+                if (sum > self.averageInputVolume || !self.averageInputIsSet) {
+                    print("\(#file) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
+                    let data = self.audioBufferToNSData(PCMBuffer: buffer)
+                    let output = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                    
+                    if output > 0 {
+    //                    print("\(#file) > \(#function) > \(output) bytes written")
+                    }
+                    else if output == -1 {
+                        let error = self.outputStream!.streamError
+                        print("\(#file) > \(#function) > Error writing to stream: \(String(describing: error?.localizedDescription))")
+                    }
+                    else {
+                        print("\(#file) > \(#function) > Cannot write to stream, stream is full")
+                    }
                 }
             }
         }
@@ -314,6 +383,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Error")
     }
     
+    func audioHardwareRouteChanged(notification: NSNotification) {
+        print("\(#file) > \(#function) > Entry \(notification.name)")
+        self.localInput?.reset()
+        self.localInput?.removeTap(onBus: 0)
+        updateAudioSettings()
+        
+        if (inputStreamIsSet && outputStreamIsSet) {
+            print("\(#file) > \(#function) > Recording audio")
+            recordAudio()
+        }
+        
+        print("\(#file) > \(#function) > Exit")
+    }
+    
     func audioRecorderBeginInterruption(_ recorder: AVAudioRecorder) {
         if recorder.isRecording {
             recorder.pause()
@@ -328,6 +411,35 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
     }
     
+    func updateAverageVolumeInput(average: Double) {
+        if (averageInputIsSet) {
+            
+            // If the current average volume is greater than the average * 50%, then the user is talking.
+            // If this is the case, then do not update the volume.
+            // Otherwise update it.
+            if (!(average > averageInputVolume * 1.5)) {
+                averageInputVolume = averageInputVolume * 1000
+                averageInputVolume += average*1.05
+                averageInputVolume = averageInputVolume/1001
+            }
+//            else {
+//                averageInputVolume = averageInputVolume * 100
+//                averageInputVolume += average
+//                averageInputVolume = averageInputVolume/101
+//            }
+        }
+        else {
+            averageInputVolume += average
+            size += 1
+            
+            if (size >= 100) {
+                averageInputVolume = averageInputVolume/Double(size)
+                
+                averageInputIsSet = true
+            }
+        }
+        print("\(#file) > \(#function) > averageInputIsSet \(averageInputIsSet) -- averageInputVolume \(averageInputVolume)")
+    }
     
     // MARK: - Timer
     
@@ -347,7 +459,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             let minuteString = String(format: "%02d", minutes)
             let secondString = String(format: "%02d", seconds)
             
-            statusLabel.text = "\(minuteString):\(secondString)"
+            OperationQueue.main.addOperation {
+                self.statusLabel.text = "\(minuteString):\(secondString)"
+            }
             
             let second = Int(secondString)
             
@@ -377,18 +491,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (!outputStreamIsSet) {
             do {
-                
-                outputStream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
+                let stream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
+                outputStream = stream
                 outputStreamIsSet = true
             }
             catch let error as NSError {
                 print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
                 
-                endCallButtonIsClicked(nilButton)
+                endCallButtonIsClicked(endCallButton)
             }
         }
         
-        print("\(#file) > \(#function) > Exit - Queue: \(currentQueueName()!)")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -415,12 +529,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 
 //                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
             
-                if (self.testBufferCount >= 1024
-                    ) {
+                if (self.testBufferCount >= 1024) {
 //                    print("\(#file) > \(#function) > Test buffer full, testBuffer.count = \(self.testBuffer.count), testBufferCount = \(self.testBufferCount)")
                     let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
                     let audioBuffer = self.dataToPCMBuffer(data: data)
-                        
+                    
                     self.localAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
                     
                     self.testBuffer.removeAll()
@@ -464,34 +577,51 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Entry > mute: \(muteIsOn) -> \(!muteIsOn) -- isEnabled: \(muteButton.isUserInteractionEnabled)")
         
         if (muteButton.isUserInteractionEnabled == true && muteButton.isEnabled == true) {
-        
-            muteButton.isUserInteractionEnabled = false
-            muteButton.isEnabled = false
+            
+            OperationQueue.main.addOperation {
+                self.muteButton.isUserInteractionEnabled = false
+                self.muteButton.isEnabled = false
+            }
             
             DispatchQueue.global().sync {
                 
                 if (!muteIsOn) {
                     // Make the button look gray
                     print("\(#file) > \(#function) > removing tap")
-                        self.localInput?.removeTap(onBus: 0)
+                    localInput?.reset()
+                    self.localInput?.removeTap(onBus: 0)
+                    print("\(#file) > \(#function) > tap removed")
+                    
+                    OperationQueue.main.addOperation {
                         self.muteButton.backgroundColor = UIColor.darkGray
                         self.muteButton.backgroundColor?.withAlphaComponent(0.5)
-                        muteIsOn = true
+                    }
+                    
+                    muteIsOn = true
                 }
                 else {
                     // Make button go back to black
                     print("\(#file) > \(#function) > removing tap")
+                    localInput?.reset()
                     self.localInput?.removeTap(onBus: 0)
+                    print("\(#file) > \(#function) > tap removed")
                     print("\(#file) > \(#function) > installing tap")
                     self.recordAudio()
-                    self.muteButton.backgroundColor = UIColor.clear
-                    self.muteButton.backgroundColor?.withAlphaComponent(1)
+                    print("\(#file) > \(#function) > tap installed")
+                    
+                    OperationQueue.main.addOperation {
+                        self.muteButton.backgroundColor = UIColor.clear
+                        self.muteButton.backgroundColor?.withAlphaComponent(1)
+                    }
+                    
                     muteIsOn = false
                 }
             }
             
-            muteButton.isEnabled = true
-            muteButton.isUserInteractionEnabled = true
+            OperationQueue.main.addOperation {
+                self.muteButton.isEnabled = true
+                self.muteButton.isUserInteractionEnabled = true
+            }
         }
         print("\(#file) > \(#function) > Exit > mute: \(muteIsOn)")
     }
@@ -503,15 +633,17 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             // Make the button look gray
             DispatchQueue.global().sync {
                 //TODO: Need to make the output go to the speaker
-//                do {
-//                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
-//                }
-//                catch let error as NSError {
-//                    print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
-//                }
+                do {
+                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
+                }
+                catch let error as NSError {
+                    print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
+                }
                 
-                self.speakerButton.backgroundColor = UIColor.darkGray
-                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
+                OperationQueue.main.addOperation {
+                    self.speakerButton.backgroundColor = UIColor.darkGray
+                    self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
+                }
             }
         }
         else {
@@ -519,8 +651,17 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             // Make button go back to black
             DispatchQueue.global().sync {
-                self.speakerButton.backgroundColor = UIColor.clear
-                self.speakerButton.backgroundColor?.withAlphaComponent(1)
+                do {
+                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.none)
+                }
+                catch let error as NSError {
+                    print("\(#file) > \(#function) > Could not change to ear speaker: \(error.description)")
+                }
+                
+                OperationQueue.main.addOperation {
+                    self.speakerButton.backgroundColor = UIColor.clear
+                    self.speakerButton.backgroundColor?.withAlphaComponent(1)
+                }
             }
         }
         
@@ -541,7 +682,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         OperationQueue.main.addOperation {
-            DispatchQueue.global().async {
+            DispatchQueue.global().sync {
                 self.closeAllResources()
             }
             self.dismiss(animated: true, completion: nil)
@@ -551,7 +692,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // A function which stops recording and closes streams
     func closeAllResources() {
-        print("\(#file) > \(#function) > Closing resources")
+        print("\(#file) > \(#function) > Entry")
         
         //Stop recording and playing
         if localAudioEngine.isRunning {
@@ -584,9 +725,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         inputStreamIsSet = false
         outputStreamIsSet = false
         
+        self.testBufferCount = 0
+        self.testBuffer.removeAll()
+        
         UIDevice.current.isProximityMonitoringEnabled = false
         
-        print("\(#file) > \(#function) > Resources closed")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -612,7 +756,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         if (peerID == self.peerID) {
             print("\(#file) > \(#function) > Connected with the current peer.")
             
-            OperationQueue.main.addOperation { () -> Void in
+            OperationQueue.main.addOperation {
                 self.statusLabel.text = "Connected"
             }
         }
@@ -652,6 +796,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 }
             }
         }
+        print("\(#file) > \(#function) > Exit")
     }
     
     func connectingWithPeer(_ peerID: MCPeerID) {
@@ -662,10 +807,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.statusLabel.text = "Connecting"
             }
         }
+        print("\(#file) > \(#function) > Exit")
     }
     
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
-        print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName), currQueue=\(currentQueueName()!)")
+        
+        print("\(#file) > \(#function) > Entry > Received inputStream from peer \(peerID.displayName)")
         if (peerID == self.peerID) {
             
             self.inputStream = inputStream
@@ -680,7 +827,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             self.recordingQueue.async {
                 sleep(1)
+                print("\(#file) > \(#function) > installing tap")
                 self.recordAudio()
+                print("\(#file) > \(#function) > tap installed")
                 
                 self.muteButton.isEnabled = true
                 self.speakerButton.isEnabled = true
@@ -708,8 +857,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
             if newMessage == acceptCall {
                 print("\(#file) > \(#function) > Call accepted")
-                OperationQueue.main.addOperation {
-                    self.statusLabel.text = "Connecting..."
+                
+                if (!outputStreamIsSet) {
+                    OperationQueue.main.addOperation {
+                        self.statusLabel.text = "Connecting..."
+                    }
                 }
             }
             else if newMessage == declineCall {
@@ -718,7 +870,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
             else if newMessage == readyForStream {
                 print("\(#file) > \(#function) > Ready for stream -- Starting stream")
-                setupStream()
+                if (!outputStreamIsSet) {
+                    setupStream()
+                }
             }
             else if newMessage == endingCall {
                 print("\(#file) > \(#function) > Peer ended call")
