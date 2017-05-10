@@ -14,7 +14,7 @@ class PeerTableViewCell: UITableViewCell {
     // MARK: Properties
     @IBOutlet weak var peerDisplayNameLabel: UILabel?
     @IBOutlet weak var latestMessage: UILabel?
-    @IBOutlet weak var isAvailableLabel: UILabel?     //🔵 is online, 🔴 is offline
+    @IBOutlet weak var isAvailableLabel: UILabel?     //🔵 is new message, 🔴 is offline
     var peerID: MCPeerID?
     
     override func awakeFromNib() {
@@ -38,6 +38,10 @@ class PeerTableViewCell: UITableViewCell {
     
     func removeNewMessageIcon() {
         isAvailableLabel?.text = ""
+    }
+    
+    func peerIsTyping() {
+        isAvailableLabel?.text = "💬"
     }
     
     func newMessageArrived() {
