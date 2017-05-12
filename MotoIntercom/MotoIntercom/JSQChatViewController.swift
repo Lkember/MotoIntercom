@@ -180,7 +180,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             messageObject.messages.append(jsqMessage!)
         }
         
-        JSQSystemSoundPlayer.jsq_playMessageSentAlert()
+        JSQSystemSoundPlayer.jsq_playMessageSentSound()
         finishSendingMessage(animated: true)
     }
     
