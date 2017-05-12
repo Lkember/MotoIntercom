@@ -104,7 +104,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
 //        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: AVAudioSessionRouteChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
@@ -849,13 +849,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Exit")
     }
     
-    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+    func receivedStandardMessage(_ notification: Notification) {
         print("\(#file) > \(#function) > Entry")
         
-        let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
+        let newMessage = notification.object as! StandardMessage
         
-        if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
-            if newMessage == acceptCall {
+        if (newMessage.peerID == self.peerID) {
+            if newMessage.message == acceptCall {
                 print("\(#file) > \(#function) > Call accepted")
                 
                 if (!outputStreamIsSet) {
@@ -864,21 +864,27 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     }
                 }
             }
-            else if newMessage == declineCall {
+            else if newMessage.message == declineCall {
                 print("\(#file) > \(#function) > Call declined -- Ending")
                 endCallButtonIsClicked(endCallButton)
             }
-            else if newMessage == readyForStream {
+            
+            else if newMessage.message == readyForStream {
                 print("\(#file) > \(#function) > Ready for stream -- Starting stream")
                 if (!outputStreamIsSet) {
                     setupStream()
                 }
             }
-            else if newMessage == endingCall {
+            
+            else if newMessage.message == endingCall {
                 print("\(#file) > \(#function) > Peer ended call")
                 //TODO: Need to play a sound to let the user know that the call has ended
                 endCallButtonIsClicked(nilButton)
             }
+            
+        }
+        else {
+            print("\(#file) > \(#function) > Wrong peer")
         }
         
         print("\(#file) > \(#function) > Exit")

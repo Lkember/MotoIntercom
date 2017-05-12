@@ -43,7 +43,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         collectionView!.collectionViewLayout.outgoingAvatarViewSize = CGSize.zero
         
         // Adding an observer for when a message is received
-        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedMessageObject(_:)), name: NSNotification.Name(rawValue: "receivedMessageObjectNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         
         print("Checking... ")
         if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messageObject.peerID)) {
@@ -242,52 +243,49 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     //MARK: - Message Received
     
-    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+    func receivedMessageObject(_ notification: Notification) {
         print("\(#file) > \(#function) > Message received")
+        let newMessage = notification.object as! MessageObject
         
-        let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
-        if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? MessageObject {
+        //Vibrate
+        JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
         
-//        let fromPeer = newMessage.peerID
-            
-            //Vibrate
-//            AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
-            JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
-            
-//        if newMessage.messages[0].text != endChat {
-//        self.messageObject.messages.append(newMessage.messages[0])
-            if (!newMessage.messages[0].isMediaMessage) {
-                addMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, text: newMessage.messages[0].text)
-            }
-            else {
-                addMediaMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, media: newMessage.messages[0].media)
-            }
-            
-            OperationQueue.main.addOperation {
-                self.collectionView.reloadData()
-                
-                let lastMessage: IndexPath = IndexPath.init(row: self.messageObject.messages.count-1, section: 0)
-                self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
-            }
-            
-            print("\(#file) > \(#function) > Message: \(newMessage.messages[0].text)")
+        if (!newMessage.messages[0].isMediaMessage) {
+            addMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, text: newMessage.messages[0].text)
         }
-        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
-            if newMessage == userIsTyping {
-                print("\(#file) > \(#function) > Peer is typing")
-                OperationQueue.main.addOperation {
-                    self.showTypingIndicator = true
-                }
-            }
-            else if newMessage == userHasStoppedTyping {
-                print("\(#file) > \(#function) > Peer stopped typing")
-                OperationQueue.main.addOperation {
-                    self.showTypingIndicator = false
-                }
-            }
+        else {
+            addMediaMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, media: newMessage.messages[0].media)
         }
+        
+        OperationQueue.main.addOperation {
+            self.collectionView.reloadData()
+            
+            let lastMessage: IndexPath = IndexPath.init(row: self.messageObject.messages.count-1, section: 0)
+            self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
+        }
+        
         print("\(#file) > \(#function) > Exit")
     }
+    
+    func receivedStandardMessage(_ notification: NSNotification) {
+        print("\(#file) > \(#function) > Entry")
+        let newMessage = notification.object as! StandardMessage
+        
+        if newMessage.message == userIsTyping {
+            print("\(#file) > \(#function) > Peer is typing")
+            OperationQueue.main.addOperation {
+                self.showTypingIndicator = true
+            }
+        }
+        else if newMessage.message == userHasStoppedTyping {
+            print("\(#file) > \(#function) > Peer stopped typing")
+            OperationQueue.main.addOperation {
+                self.showTypingIndicator = false
+            }
+        }
+        print("\(#file) > \(#function) > Entry")
+    }
+    
     
     //MARK: - Connection Manager
     func foundPeer(_ newPeer: MCPeerID) {
@@ -343,12 +341,14 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         super.textViewDidChange(textView)
         
         if (textView.text != "") {
-            if (isTyping) {
+            if (!isTyping) {
+                print("\(#file) > \(#function) > Sending isTyping to peer")
                 _ = appDelegate.connectionManager.sendData(stringMessage: userIsTyping, toPeer: self.messageObject.peerID)
             }
             isTyping = true
         }
         else {
+            print("\(#file) > \(#function) > Sending stopped typing to peer")
             _ = appDelegate.connectionManager.sendData(stringMessage: userHasStoppedTyping, toPeer: self.messageObject.peerID)
             isTyping = false
         }

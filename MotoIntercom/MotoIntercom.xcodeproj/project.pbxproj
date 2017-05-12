@@ -14,6 +14,7 @@
 		B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */; };
 		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
 		B24248721E292BC200B4D260 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B24248711E292BC200B4D260 /* Assets.xcassets */; };
+		B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2507DD51EC39E9000841F02 /* StandardMessage.swift */; };
 		B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */; };
 		B2515C4D1D2C7CCB00760DE0 /* PeerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */; };
 		B2515C521D2C7CCB00760DE0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2515C501D2C7CCB00760DE0 /* Main.storyboard */; };
@@ -64,6 +65,7 @@
 		B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		B24248711E292BC200B4D260 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2507DD51EC39E9000841F02 /* StandardMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardMessage.swift; sourceTree = "<group>"; };
 		B2515C471D2C7CCB00760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerViewController.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
+				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
 				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
 				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
 				B200C0961E973E060046914B /* JSQChatViewController.swift */,
@@ -521,6 +524,7 @@
 				B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */,
 				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
 				B272670F1E1DA80800B86146 /* IncomingCallViewController.swift in Sources */,
+				B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */,
 				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

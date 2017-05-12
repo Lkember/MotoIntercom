@@ -17,12 +17,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     let incomingCall = "_incoming_call_"
     let acceptedCall = "_accept_call_"
     let declinedCall = "_decline_call_"
+    let peerIsTyping = "_user_is_typing_"
+    var peerStoppedTyping: String = "_user_stopped_typing_"
     
     // MARK: - Properties
     @IBOutlet weak var peersTable: UITableView!
     var refreshControl: UIRefreshControl!
     var messages = [MessageObject]()
-    var newMessage: [MCPeerID] = []
     
     var UNSPECIFIED_CONNECTION_TYPE = 0
     var MESSAGE_CONNECTION_TYPE = 1
@@ -66,7 +67,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
         //Adding an observer for when data is received
-        NotificationCenter.default.addObserver(self, selector: #selector(handleMPCReceivedDataWithNotification(_:)), name: NSNotification.Name(rawValue: "receivedMPCDataNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didReceiveMessageObject(_:)), name: NSNotification.Name(rawValue: "receivedMessageObjectNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didReceiveStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         
         isDestPeerIDSet = false
         didAcceptCall = false
@@ -117,11 +119,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // A function which returns the index for a given peer
     func getIndexForPeer(peer: MCPeerID) -> Int {
+        print("\(#file) > \(#function) > Entry \(peer)")
         for i in 0..<messages.count {
+            print("\(#file) > \(#function) > \(i) \(messages[i].peerID)")
             if (messages[i].peerID == peer) {
+                print("\(#file) > \(#function) > Exit - Success")
                 return i
             }
         }
+        print("\(#file) > \(#function) > Exit - Failure")
         return -1
     }
     
@@ -208,79 +214,47 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    func handleMPCReceivedDataWithNotification(_ notification: Notification) {
+    func didReceiveMessageObject(_ notification: Notification) {
         print("\(#file) > \(#function) > Entry")
         
+        // If currently visible
         if let _ = navigationController?.visibleViewController as? PeerViewController {
+            
             print("\(#file) > \(#function) > PeerViewController is visible controller.")
+            let newMessage: MessageObject = notification.object as! MessageObject
+            let fromPeer = newMessage.peerID!
             
-            let dictionary = NSKeyedUnarchiver.unarchiveObject(with: notification.object as! Data) as! [String: Any]
+            let peerIndex = getIndexForPeer(peer: fromPeer)
+        
+            print("\(#file) > \(#function) > message: \(newMessage.messages[0].text), from peer \(newMessage.peerID.displayName), peerIndex = \(peerIndex)")
+            messages[peerIndex].messages.append(newMessage.messages[0])
             
-            // If the incoming message is a MessageObject than do the following
-            if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? MessageObject {
+            save()
             
-                let fromPeer = dictionary["peer"] as! MCPeerID
-                let peerIndex = getIndexForPeer(peer: fromPeer)
+            //Vibrate
+            JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
             
-                print("\(#file) > \(#function) > message: \(newMessage.messages[0].text), peerID \(newMessage.peerID.displayName), selfID \(newMessage.selfID.displayName)")
-                messages[peerIndex].messages.append(newMessage.messages[0])
+            print("\(#file) > \(#function) > Test")
+            
+            //Changes to UI must be done by main thread
+            DispatchQueue.main.async {
+                let numRows = self.peersTable.numberOfRows(inSection: 0)
                 
-                save()
-                
-                //Vibrate
-                JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
-                
-                //Changes to UI must be done by main thread
-                DispatchQueue.main.async {
-                    if (!self.newMessage.contains(fromPeer)) {
-                        self.newMessage.append(fromPeer)
-                    }
+                for i in 0..<numRows {
                     
-                    let numRows = self.peersTable.numberOfRows(inSection: 0)
-                    var indexPathsToUpdate: [IndexPath] = []
+                    let currIndexPath = IndexPath.init(row: i, section: 0)
+                    let currCell = self.peersTable.cellForRow(at: currIndexPath) as! PeerTableViewCell
                     
-                    for i in 0..<numRows {
-                        indexPathsToUpdate.append(IndexPath.init(row: i, section: 0))
-                        
-                        let currIndexPath = IndexPath.init(row: i, section: 0)
-                        let currCell = self.peersTable.cellForRow(at: currIndexPath) as! PeerTableViewCell
-                        
-                        if currCell.peerID == newMessage.peerID {
-                            currCell.newMessageArrived()
+                    if currCell.peerID == newMessage.peerID {
+                        currCell.newMessageArrived()
+                        if (!newMessage.messages[0].isMediaMessage) {
+                            currCell.latestMessage?.text = "\(newMessage.messages[0].text!)"
+                        }
+                        else {
+                            currCell.latestMessage?.text = "Image"
                         }
                     }
-                    
-                    self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
                 }
-            }
-                
-            // If this is the case then it is likely a phone call
-            else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: dictionary["data"] as! Data) as? String {
-                if newMessage == incomingCall {
-                    
-                    let fromPeer = dictionary["peer"] as! MCPeerID
-                    
-                    print("\(#file) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
-                    
-                    
-                    let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
-                    self.addChildViewController(popOverView)
-                    
-                    popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
-                    popOverView.messages = self.messages
-                    popOverView.peerDisplayName = fromPeer.displayName
-                    
-                    print("\(#file) > \(#function) > fromPeer=\(fromPeer.displayName)")
-                    
-                    OperationQueue.main.addOperation { () -> Void in
-                        popOverView.view.frame = self.view.frame
-                        self.view.addSubview(popOverView.view)
-                        popOverView.didMove(toParentViewController: self)
-                    }
-                }
-            }
-            else {
-                print("\(#file) > \(#function) > ERROR")
             }
         }
         else {
@@ -288,6 +262,57 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("\(#file) > \(#function) > Not currently visible")
         }
         print("\(#file) > \(#function) > Exit")
+    }
+    
+    
+    func didReceiveStandardMessage(_ notification: NSNotification) {
+        let newMessage = notification.object as! StandardMessage
+        let fromPeer = newMessage.peerID!
+        
+        if newMessage.message == incomingCall {
+            
+            print("\(#file) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
+            
+            let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
+            self.addChildViewController(popOverView)
+            
+            popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
+            popOverView.messages = self.messages
+            popOverView.peerDisplayName = fromPeer.displayName
+            
+            print("\(#file) > \(#function) > fromPeer=\(fromPeer.displayName)")
+            
+            OperationQueue.main.addOperation { () -> Void in
+                popOverView.view.frame = self.view.frame
+                self.view.addSubview(popOverView.view)
+                popOverView.didMove(toParentViewController: self)
+            }
+        }
+        if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
+            
+            DispatchQueue.main.async {
+            
+                let numRows = self.peersTable.numberOfRows(inSection: 0)
+//                var indexPathsToUpdate: [IndexPath] = []
+                
+                for i in 0..<numRows {
+                    let currIndexPath = IndexPath.init(row: i, section: 0)
+                    let currCell = self.peersTable.cellForRow(at: currIndexPath) as! PeerTableViewCell
+                    
+                    if currCell.peerID == newMessage.peerID {
+//                        indexPathsToUpdate.append(currIndexPath)
+                        if (newMessage.message == self.peerIsTyping) {
+                            currCell.peerIsTyping()
+                        }
+                        else {
+                            currCell.removeNewMessageIcon()
+                        }
+                    }
+                }
+            
+//                self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
+            }
+        }
     }
     
     
@@ -399,20 +424,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.peerID = currPeer.peerID
             cell.setPeerDisplayName(displayName: currPeer.peerID.displayName)
             cell.selectionStyle = UITableViewCellSelectionStyle.blue
-            
-            if (self.newMessage.contains(currPeer.peerID)) {
-                for i in 0..<newMessage.count {
-                    if (newMessage[i] == currPeer.peerID) {
-                        newMessage.remove(at: i)
-                        break
-                    }
-                }
-                
-                cell.newMessageArrived()
-            }
-            else {
-                cell.peerIsAvailable()
-            }
+            cell.peerIsAvailable()
             
             if (currPeer.messages.count > 0) {
                 print("\(#file) > \(#function) > Updating last message to: \(currPeer.messages[currPeer.messages.count-1])")

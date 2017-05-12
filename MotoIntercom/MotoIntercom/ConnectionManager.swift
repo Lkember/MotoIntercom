@@ -152,37 +152,13 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // MARK: - Sending Data
     
-    //Send data to recipient
-    func sendData(dictionaryWithData dictionary: Dictionary<String, String>, toPeer targetPeer: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Sending data to peer.")
-        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: dictionary)
-        let peersArray = NSArray(object: targetPeer)
-        var sess : MCSession = MCSession(peer: peer)
-        
-        for session in sessions {
-            //TODO: If we allow multi-peer connectivity this method must be modified
-            if session.connectedPeers.contains(targetPeer) {
-                sess = session
-            }
-        }
-        
-        do {
-            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
-        }
-        catch let error as NSError {
-            print(error.localizedDescription)
-            return false
-        }
-        return true
-    }
-    
-    // Send a regular string to the peer
+    // Send a StandardMessage to the peer
     func sendData(stringMessage: String, toPeer targetPeer: MCPeerID) -> Bool {
         print("\(#file) > \(#function) > Sending \(stringMessage) to peer.")
         
-        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: stringMessage)
+        let message = StandardMessage.init(message: stringMessage, peerID: self.appDelegate.connectionManager.peer)
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: message)
         let peersArray = NSArray(object: targetPeer)
-        
         let peerIndex = findSinglePeerSession(peer: targetPeer)
         
         if (peerIndex == -1) {
@@ -222,31 +198,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         
         do {
             try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
-        }
-        catch let error as NSError {
-            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
-            return false
-        }
-        return true
-    }
-    
-    //Send JSQMessage data to peer
-    func sendData(jsqMessage: JSQMessage, toPeer targetPeer: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Sending message to peer.")
-        
-        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: jsqMessage)
-        let peerArray = NSArray(object: targetPeer)
-        var sess : MCSession = MCSession(peer: peer)
-        
-        for session in sessions {
-            //TODO: If we allow multi-peer connectivity this method must be modified
-            if session.connectedPeers.contains(targetPeer) {
-                sess = session
-            }
-        }
-        
-        do {
-            try sess.send(dataToSend, toPeers: peerArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
@@ -416,12 +367,16 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         
-        let myDict: [String: AnyObject] = ["data": data as AnyObject, "peer": peerID]
-        let archiveData = NSKeyedArchiver.archivedData(withRootObject: myDict)
+        if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? StandardMessage {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedStandardMessageNotification"), object: newMessage)
+        }
+        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? MessageObject {
+            newMessage.peerID = peerID
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
+        }
         
         print("\(#file) > \(#function) > Received \(data) from peer \(peerID.displayName)")
         
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMPCDataNotification"), object: archiveData)
     }
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {

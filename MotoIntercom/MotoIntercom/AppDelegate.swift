@@ -125,7 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let peerData = defaults.object(forKey: peerIDString) as? Data {
             if let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerData) as? MCPeerID {
                 self.peer = peerID
-                print("\(#file) > \(#function) > Successful load of peerID")
+                print("\(#file) > \(#function) > Successful load of peerID - \(peerID)")
                 didLoadPeerID = true
             }
         }
