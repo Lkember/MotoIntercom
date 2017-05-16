@@ -206,6 +206,36 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+    func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
+        print("\(#file) > \(#function) > Sending audio format")
+        
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
+        let peersArray = NSArray(object: targetPeer)
+        var sess : MCSession = MCSession(peer: peer)
+        
+        for session in sessions {
+            //TODO: If we allow multi-peer connectivity this method must be modified
+            if session.connectedPeers.contains(targetPeer) {
+                sess = session
+            }
+            else {
+                // TODO: If message fails to send we need to connect to peer
+                print("\(#file) > \(#function) > Not connected to peer. Message couldn't be sent.")
+                
+                return false
+            }
+        }
+        do {
+            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            return false
+        }
+        
+        return true
+    }
+    
     
     // MARK: - Peers
     
@@ -373,6 +403,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? MessageObject {
             newMessage.peerID = peerID
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
+        }
+        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? AVAudioFormat {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedAVAudioFormat"), object: newMessage)
         }
         
         print("\(#file) > \(#function) > Received \(data) from peer \(peerID.displayName)")
