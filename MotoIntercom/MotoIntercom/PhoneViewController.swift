@@ -22,7 +22,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let incomingCall = "_incoming_call_"
     let acceptCall = "_accept_call_"
     let declineCall = "_decline_call_"
-    let readyForStream = "_ready_for_stream_"
     let endingCall = "_user_ended_call_"
     
     // MARK: - Properties
@@ -62,6 +61,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var localInput: AVAudioInputNode?
     var localInputFormat: AVAudioFormat?
     
+    // Peer audio format
+    var peerAudioFormat: AVAudioFormat?
+    var peerAudioFormatIsSet = false
+    
+    // Average Volume
     var averageInputIsSet = false
     var averageInputVolume: Double = 0.0
     var size = 0
@@ -86,8 +90,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         appDelegate.connectionManager.delegate = self
         self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
         
+        print("\(#file) > \(#function) > sessionIndex = \(sessionIndex)")
+        
         // When the device is up to the ear, the screen will dim
         UIDevice.current.isProximityMonitoringEnabled = true
+        self.prepareAudio()
         
         if (didReceiveCall) {
             statusLabel.text = "Connecting..."
@@ -98,16 +105,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             statusLabel.text = "Calling"
         }
         
-        self.prepareAudio()
-        
         // Stop advertising and browsing for peers when in a call
 //        self.appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
 //        self.appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
         NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: AVAudioSessionRouteChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedPeerStreamInformation(_:)), name: NSNotification.Name(rawValue: "receivedAVAudioFormat"), object: nil)
+        
         print("\(#file) > \(#function) > Exit")
     }
     
@@ -171,6 +177,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func callPeer() {
         self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
         
+        // TODO: This code may be unnecessary because we should be already connected to the peer.
         // sessionIndex is -1 then we are not connected to peer, so send invite
         if (self.sessionIndex == -1) {
             print("\(#file) > \(#function) > Sending call invitation to peer.")
@@ -259,11 +266,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 print("\(#file) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
             }
         }
-        print("\(#file) > \(#function) > removing tap")
+        
         localInput?.reset()
         localInput?.removeTap(onBus: 0)
-        print("\(#file) > \(#function) > tap removed")
-        print("\(#file) > \(#function) > installing tap")
         localInput?.installTap(onBus: 0, bufferSize: 17640, format: localInputFormat) {
             (buffer, when) -> Void in
             /* Calling this method so that there is less delay when the user starts speaking.
@@ -274,7 +279,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             */
         }
         print("\(#file) > \(#function) > tap installed")
-        print("\(#file) > \(#function) > removing tap")
         localInput?.reset()
         localInput?.removeTap(onBus: 0)
         print("\(#file) > \(#function) > tap removed")
@@ -286,7 +290,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localInput = self.localAudioEngine.inputNode
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
         self.localAudioEngine.disconnectNodeInput(self.localAudioPlayer)
-        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: nil)
+        
+        if (peerAudioFormatIsSet) {
+            self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: peerAudioFormat)
+        }
+        
         print("\(#file) > \(#function) > Exit")
     }
     
@@ -307,19 +315,19 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 let arraySize = Int(buffer.frameLength)
                 var channelSamples: [[DSPComplex]] = []
                 
-                for i in 0..<1 {
-                    
+//                for i in 0..<1 {
+                
                     channelSamples.append([])
-                    let firstSample = buffer.format.isInterleaved ? i : i*arraySize
+                    let firstSample = buffer.format.isInterleaved ? 0 : 0*arraySize
                     
                     for j in stride(from: firstSample, to: arraySize, by: buffer.stride*2) {
                         
                         let channels = UnsafeBufferPointer(start: buffer.floatChannelData, count: Int(buffer.format.channelCount))
                         let floats = UnsafeBufferPointer(start: channels[0], count: Int(buffer.frameLength))
-                        channelSamples[i].append(DSPComplex(real: floats[j], imag: floats[j+buffer.stride]))
+                        channelSamples[0].append(DSPComplex(real: floats[j], imag: floats[j+buffer.stride]))
                         
                     }
-                }
+//                }
                 
                 var spectrum = [Float]()
                 
@@ -476,7 +484,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     func readyToOpenStream() {
         print("\(#file) > \(#function) > Entry")
-        let result = appDelegate.connectionManager.sendData(stringMessage: readyForStream, toPeer: peerID!)
+//        let result = appDelegate.connectionManager.sendData(stringMessage: readyForStream, toPeer: peerID!)
+        let result = appDelegate.connectionManager.sendData(format: localInputFormat!, toPeer: peerID!)
         
         if (!result) {
             print("\(#file) > \(#function) > Error sending message...")
@@ -497,7 +506,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
             catch let error as NSError {
                 print("\(#file) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
-                
+                // TODO: Send streamFailed message to user
                 endCallButtonIsClicked(endCallButton)
             }
         }
@@ -528,9 +537,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.testBuffer.append(contentsOf: tempBuffer)
                 
 //                print("\(#file) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
-            
+                
                 if (self.testBufferCount >= 1024) {
-//                    print("\(#file) > \(#function) > Test buffer full, testBuffer.count = \(self.testBuffer.count), testBufferCount = \(self.testBufferCount)")
+                    
                     let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
                     let audioBuffer = self.dataToPCMBuffer(data: data)
                     
@@ -560,8 +569,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     func dataToPCMBuffer(data: NSData) -> AVAudioPCMBuffer {
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: localInputFormat!,
-                                           frameCapacity: UInt32(data.length) / localInputFormat!.streamDescription.pointee.mBytesPerFrame)
+        let audioBuffer = AVAudioPCMBuffer(pcmFormat: peerAudioFormat!,
+                                           frameCapacity: UInt32(data.length) / peerAudioFormat!.streamDescription.pointee.mBytesPerFrame)
         
         audioBuffer.frameLength = audioBuffer.frameCapacity
         let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: Int(audioBuffer.format.channelCount))
@@ -695,14 +704,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Entry")
         
         //Stop recording and playing
-        if localAudioEngine.isRunning {
-            print("\(#file) > \(#function) > localAudioEngine stopped")
-            localAudioEngine.stop()
-        }
-        
         if localAudioPlayer.isPlaying {
             print("\(#file) > \(#function) > localAudioPlayer stopped")
             localAudioPlayer.stop()
+        }
+        
+        if localAudioEngine.isRunning {
+            print("\(#file) > \(#function) > localAudioEngine stopped")
+            localAudioEngine.stop()
         }
         
 //        if peerAudioEngine.isRunning {
@@ -748,52 +757,38 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
         //TODO: Need to notify the user that someone is trying to connect
         print("\(#file) > \(#function) > \(fromPeer.displayName)")
-    }
-    
-    
-    func connectedWithPeer(_ peerID : MCPeerID) {
         
-        if (peerID == self.peerID) {
-            print("\(#file) > \(#function) > Connected with the current peer.")
-            
-            OperationQueue.main.addOperation {
-                self.statusLabel.text = "Connected"
-            }
+        if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: fromPeer)) {
+            let index = self.appDelegate.connectionManager.createNewSession()
+            self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
         }
-        else {
-            print("\(#file) > \(#function) > New connection to \(peerID.displayName)")
-        }
-        
     }
     
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("\(#file) > \(#function) > Disconnected from peer: \(peerID.displayName), user ended call: \(userEndedCall)")
         
-        if (!userEndedCall) {
-            if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: peerID)) {
-                if (peerID == self.peerID!) {
-                    inputStreamIsSet = false
-                    outputStreamIsSet = false
+        if (peerID == self.peerID!) {
+            
+            // If the user did not end the call and the peer is not connected, attempt to reconnect
+            if (!userEndedCall && !appDelegate.connectionManager.checkIfAlreadyConnected(peerID: peerID)) {
                 
-                    let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(self.peerID!.displayName)", preferredStyle: UIAlertControllerStyle.alert)
-                    
-                    let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                        //Go back to PeerView
-                        self.endCallButtonIsClicked(self.nilButton)
-                    }
-                    
-                    alert.addAction(okAction)
-                    
-                    // Since the peer is already disconnected, than we need to close all resources immediately
-                    OperationQueue.main.addOperation {
-                        self.closeAllResources()
-                    }
-                    
-                    OperationQueue.main.addOperation { () -> Void in
-                        self.present(alert, animated: true, completion: nil)
-                    }
+                // Closing all resources (this is to save battery while reconnecting)
+                OperationQueue.main.addOperation {
+                    self.closeAllResources()
+                    self.statusLabel.text = "Reconnecting..."
                 }
+                
+                self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
+                
+                let isPhoneCall: Bool = true
+                let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+                
+                self.appDelegate.connectionManager.browser.invitePeer(self.peerID!,
+                                                                      to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
+                                                                      withContext: dataToSend,
+                                                                      timeout: 60)
+                
             }
         }
         print("\(#file) > \(#function) > Exit")
@@ -806,8 +801,28 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             OperationQueue.main.addOperation { () -> Void in
                 self.statusLabel.text = "Connecting"
             }
+            
+            self.prepareAudio()
         }
+        
         print("\(#file) > \(#function) > Exit")
+    }
+    
+    func connectedWithPeer(_ peerID : MCPeerID) {
+        
+        if (peerID == self.peerID) {
+            print("\(#file) > \(#function) > Connected with the current peer.")
+            
+            OperationQueue.main.addOperation {
+                self.statusLabel.text = "Connected"
+            }
+            
+            readyToOpenStream()
+        }
+        else {
+            print("\(#file) > \(#function) > New connection to \(peerID.displayName)")
+        }
+        
     }
     
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
@@ -869,12 +884,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 endCallButtonIsClicked(endCallButton)
             }
             
-            else if newMessage.message == readyForStream {
-                print("\(#file) > \(#function) > Ready for stream -- Starting stream")
-                if (!outputStreamIsSet) {
-                    setupStream()
-                }
-            }
+//            else if newMessage.message == readyForStream {
+//                print("\(#file) > \(#function) > Ready for stream -- Starting stream")
+////                if (!outputStreamIsSet) {
+////                    setupStream()
+////                }
+//            }
             
             else if newMessage.message == endingCall {
                 print("\(#file) > \(#function) > Peer ended call")
@@ -888,6 +903,36 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         print("\(#file) > \(#function) > Exit")
+    }
+    
+    func receivedPeerStreamInformation(_ notification: NSNotification) {
+        print("\(#file) > \(#function) > Entry \(localAudioEngine.isRunning)")
+        
+        let audioFormat = notification.object as! AVAudioFormat
+        
+        peerAudioFormat = audioFormat
+        peerAudioFormatIsSet = true
+        
+        if (!didReceiveCall) {
+            _ = appDelegate.connectionManager.sendData(format: self.localInputFormat!, toPeer: peerID!)
+        }
+        
+        // Setting the format for the localAudioPlayer
+        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: peerAudioFormat)
+        self.localAudioEngine.prepare()
+        do {
+            try self.localAudioEngine.start()
+        }
+        catch let error as NSError {
+            print("\(#file) > \(#function) > failed to start audio engine \(error.localizedDescription)")
+        }
+        
+        self.localAudioPlayer.play()
+        
+        if (!outputStreamIsSet) {
+            self.setupStream()
+        }
+        print("\(#file) > \(#function) > Exit - \(peerAudioFormat)")
     }
     
     
