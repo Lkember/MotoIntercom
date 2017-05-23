@@ -83,6 +83,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // MARK: - Sessions
     
+    func debugSessions() {
+        print("\(#file) > \(#function) > Entry")
+        print("\(#file) > \(#function) > Number of sessions: \(sessions.count)")
+        for session in sessions {
+            for peer in session.connectedPeers {
+                print("\(#file) > \(#function) > Connected with peer: \(peer)")
+            }
+        }
+        print("\(#file) > \(#function) > Exit")
+    }
+    
     
     // a function which returns the index to an unused session
     func checkForReusableSession() -> Int {
@@ -98,13 +109,14 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // a function which finds the index for a session with a given peer
     func findSinglePeerSession(peer: MCPeerID) -> Int {
+        print("\(#file) > \(#function) > Entry")
         for i in 0..<sessions.count {
-            if (sessions[i].connectedPeers.count == 1 && sessions[i].connectedPeers[0] == peer) {
-                print("\(#file) > \(#function) > returning \(i)")
+            if (sessions[i].connectedPeers.contains(peer) && sessions[i].connectedPeers.count == 1) {
+                print("\(#file) > \(#function) > Exit: Found session \(i)")
                 return i
             }
         }
-        print("\(#file) > \(#function) > could not find single peer session")
+        print("\(#file) > \(#function) > Could not find session")
         return -1
     }
     
@@ -398,17 +410,18 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         
         if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? StandardMessage {
+            print("\(#file) > \(#function) > Received \(newMessage.message) from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedStandardMessageNotification"), object: newMessage)
         }
         else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? MessageObject {
+            print("\(#file) > \(#function) > Received new message from peer \(peerID.displayName)")
             newMessage.peerID = peerID
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
         }
         else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? AVAudioFormat {
+            print("\(#file) > \(#function) > Received audio format from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedAVAudioFormat"), object: newMessage)
         }
-        
-        print("\(#file) > \(#function) > Received \(data) from peer \(peerID.displayName)")
         
     }
     
