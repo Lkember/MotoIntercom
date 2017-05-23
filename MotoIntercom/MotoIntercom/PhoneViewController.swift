@@ -18,13 +18,16 @@ import JSQMessagesViewController
 @available(iOS 10.0, *)
 class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, StreamDelegate, ConnectionManagerDelegate {
 
+    // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let incomingCall = "_incoming_call_"
     let acceptCall = "_accept_call_"
     let declineCall = "_decline_call_"
     let endingCall = "_user_ended_call_"
     
-    // MARK: - Properties
+    // Background Task to keep the app running in the background
+    var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
+
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var peerLabel: UILabel!
     @IBOutlet weak var endCallButton: UIButton!
@@ -88,21 +91,29 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
+        appDelegate.connectionManager.debugSessions()
         self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
         
-        print("\(#file) > \(#function) > sessionIndex = \(sessionIndex)")
-        
-        // When the device is up to the ear, the screen will dim
-        UIDevice.current.isProximityMonitoringEnabled = true
-        self.prepareAudio()
-        
-        if (didReceiveCall) {
-            statusLabel.text = "Connecting..."
-            
-            readyToOpenStream()
+        if (sessionIndex! == -1) {
+            statusLabel.text = "Calling..."
+            userEndedCall = false
+            disconnectedFromPeer(self.peerID!)
         }
         else {
-            statusLabel.text = "Calling"
+            print("\(#file) > \(#function) > sessionIndex = \(sessionIndex!.description)")
+            
+            // When the device is up to the ear, the screen will dim
+            UIDevice.current.isProximityMonitoringEnabled = true
+            self.prepareAudio()
+            
+            if (didReceiveCall) {
+                statusLabel.text = "Connecting..."
+                
+                readyToOpenStream()
+            }
+            else {
+                statusLabel.text = "Calling"
+            }
         }
         
         // Stop advertising and browsing for peers when in a call
@@ -210,6 +221,22 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.endCallButtonIsClicked(self.nilButton)
             }
         }
+    }
+    
+    
+    func registerBackgroundTask() {
+        print("\(#file) > \(#function) > backgroundTask is registered")
+        backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
+            self?.endBackgroundTask()
+        }
+        assert(backgroundTask != UIBackgroundTaskInvalid)
+    }
+    
+    
+    func endBackgroundTask() {
+        print("\(#file) > \(#function) > Background task ended")
+        UIApplication.shared.endBackgroundTask(backgroundTask)
+        backgroundTask = UIBackgroundTaskInvalid
     }
     
     
@@ -560,6 +587,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             
         case Stream.Event.openCompleted:
+            registerBackgroundTask()
             print("\(#file) > \(#function) > Open completed")
         
             
@@ -703,6 +731,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func closeAllResources() {
         print("\(#file) > \(#function) > Entry")
         
+        // Ending the background task
+        self.endBackgroundTask()
+        
         //Stop recording and playing
         if localAudioPlayer.isPlaying {
             print("\(#file) > \(#function) > localAudioPlayer stopped")
@@ -713,14 +744,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(#file) > \(#function) > localAudioEngine stopped")
             localAudioEngine.stop()
         }
-        
-//        if peerAudioEngine.isRunning {
-//            peerAudioEngine.stop()
-//        }
-        
-//        if peerAudioPlayer.isPlaying {
-//            peerAudioPlayer.stop()
-//        }
         
         // Stop the timer
         timer?.invalidate()
