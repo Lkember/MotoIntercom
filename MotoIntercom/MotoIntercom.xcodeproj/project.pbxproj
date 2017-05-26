@@ -28,6 +28,9 @@
 		B27C39C51E9B36CC00B3DF77 /* Mute Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */; };
 		B27C39C71E9B36F400B3DF77 /* High Volume-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C61E9B36F400B3DF77 /* High Volume-50.png */; };
 		B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */; };
+		B2904C7A1ED8A6F900008461 /* add.png in Resources */ = {isa = PBXBuildFile; fileRef = B2904C791ED8A6F900008461 /* add.png */; };
+		B2904C7C1ED8A76900008461 /* add (1).png in Resources */ = {isa = PBXBuildFile; fileRef = B2904C7B1ED8A76900008461 /* add (1).png */; };
+		B2904C7E1ED8A87600008461 /* AddPeerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */; };
 		B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */; };
 		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
 		B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */ = {isa = PBXBuildFile; fileRef = B2C7047D1EB2D4AE00C1B938 /* microphone.png */; };
@@ -85,6 +88,9 @@
 		B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Mute Filled-50.png"; sourceTree = "<group>"; };
 		B27C39C61E9B36F400B3DF77 /* High Volume-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "High Volume-50.png"; sourceTree = "<group>"; };
 		B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "High Volume Filled-50.png"; sourceTree = "<group>"; };
+		B2904C791ED8A6F900008461 /* add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = add.png; sourceTree = "<group>"; };
+		B2904C7B1ED8A76900008461 /* add (1).png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "add (1).png"; sourceTree = "<group>"; };
+		B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddPeerViewController.swift; sourceTree = "<group>"; };
 		B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowMediaViewController.swift; sourceTree = "<group>"; };
 		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
 		B2C7047D1EB2D4AE00C1B938 /* microphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = microphone.png; sourceTree = "<group>"; };
@@ -158,21 +164,10 @@
 		B2515C491D2C7CCB00760DE0 /* MotoIntercom */ = {
 			isa = PBXGroup;
 			children = (
+				B2904C811ED8A90700008461 /* Storyboard */,
+				B2904C801ED8A8CC00008461 /* ViewControllers */,
+				B2904C7F1ED8A88900008461 /* Structure */,
 				B24248711E292BC200B4D260 /* Assets.xcassets */,
-				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
-				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
-				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
-				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
-				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
-				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
-				B200C0961E973E060046914B /* JSQChatViewController.swift */,
-				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
-				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
-				B274AE821D464C9200E732FD /* StartupViewController.swift */,
-				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
-				B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */,
-				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
-				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
 				B2515C581D2C7CCB00760DE0 /* Info.plist */,
 			);
 			path = MotoIntercom;
@@ -207,6 +202,8 @@
 		B27C39C11E9B36B100B3DF77 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B2904C791ED8A6F900008461 /* add.png */,
+				B2904C7B1ED8A76900008461 /* add (1).png */,
 				B2C7047D1EB2D4AE00C1B938 /* microphone.png */,
 				B27C39C21E9B36C300B3DF77 /* Mute-50.png */,
 				B27C39C41E9B36CC00B3DF77 /* Mute Filled-50.png */,
@@ -214,6 +211,42 @@
 				B27C39C81E9B36F900B3DF77 /* High Volume Filled-50.png */,
 			);
 			name = Images;
+			sourceTree = "<group>";
+		};
+		B2904C7F1ED8A88900008461 /* Structure */ = {
+			isa = PBXGroup;
+			children = (
+				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
+				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
+				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
+				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
+				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+			);
+			name = Structure;
+			sourceTree = "<group>";
+		};
+		B2904C801ED8A8CC00008461 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */,
+				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
+				B200C0961E973E060046914B /* JSQChatViewController.swift */,
+				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
+				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
+				B274AE821D464C9200E732FD /* StartupViewController.swift */,
+				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
+				B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
+		B2904C811ED8A90700008461 /* Storyboard */ = {
+			isa = PBXGroup;
+			children = (
+				B2515C501D2C7CCB00760DE0 /* Main.storyboard */,
+				B2515C551D2C7CCB00760DE0 /* LaunchScreen.storyboard */,
+			);
+			name = Storyboard;
 			sourceTree = "<group>";
 		};
 		CE69EDD78825B3C2A7276702 /* Frameworks */ = {
@@ -344,10 +377,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2904C7A1ED8A6F900008461 /* add.png in Resources */,
 				B27C39C51E9B36CC00B3DF77 /* Mute Filled-50.png in Resources */,
 				B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */,
 				B2515C571D2C7CCB00760DE0 /* LaunchScreen.storyboard in Resources */,
 				B24248721E292BC200B4D260 /* Assets.xcassets in Resources */,
+				B2904C7C1ED8A76900008461 /* add (1).png in Resources */,
 				B27C39C91E9B36F900B3DF77 /* High Volume Filled-50.png in Resources */,
 				B2515C521D2C7CCB00760DE0 /* Main.storyboard in Resources */,
 				B27C39C31E9B36C300B3DF77 /* Mute-50.png in Resources */,
@@ -514,6 +549,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2904C7E1ED8A87600008461 /* AddPeerViewController.swift in Sources */,
 				B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */,
 				B2CEC2A21EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift in Sources */,
 				B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */,
