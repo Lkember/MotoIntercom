@@ -26,7 +26,7 @@ protocol ConnectionManagerDelegate {
 class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
     
     // MARK: - Properties
-    
+    // Delegates
     var delegate : ConnectionManagerDelegate?
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -42,6 +42,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //invitation handler
     var invitationHandler: ((Bool, MCSession) -> Void)?
+    
     
     // MARK: - Initialization
     
@@ -81,8 +82,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         sessions.append(session)
     }
     
-    // MARK: - Sessions
     
+    // MARK: - Sessions
+    // A method used to print out how many total sessions and each session
     func debugSessions() {
         print("\(#file) > \(#function) > Entry")
         print("\(#file) > \(#function) > Number of sessions: \(sessions.count)")
@@ -95,7 +97,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     
-    // a function which returns the index to an unused session
+    // a function which returns the index to an unused session or -1 if it can't find one
     func checkForReusableSession() -> Int {
         for i in 0..<sessions.count {
             if sessions[i].connectedPeers.count == 0 {
@@ -144,15 +146,15 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // A function which removes sessions that are not connected with any peers.
     func cleanSessions() {
         print("\(#file) > \(#function) > Entry \(sessions.count)")
-        var indexToRemove : [Int] = []
+        var indexesToRemove : [Int] = []
         
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.count == 0) {
-                indexToRemove.append(i)
+                indexesToRemove.append(i)
             }
         }
         
-        indexToRemove.sort()
+        indexesToRemove.sort()
         
         for i in (0..<sessions.count).reversed() {
             sessions.remove(at: i)
@@ -218,6 +220,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+    // Send AVAudioFormat to peer - used by PhoneViewController
     func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
         print("\(#file) > \(#function) > Sending audio format")
         
