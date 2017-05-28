@@ -78,7 +78,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
-        // TODO: Decide waht to do
+        // TODO: Decide what to do
     }
     
     func connectingWithPeer(_ peerID: MCPeerID) {
