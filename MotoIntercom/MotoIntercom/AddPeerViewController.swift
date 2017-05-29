@@ -20,7 +20,15 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view.
+        // Setting delegates
+        peerViewTable.delegate = self
+        peerViewTable.dataSource = self
+        
+        // Setting the table to allow selection of peers
+        peerViewTable.layer.cornerRadius = 10
+        peerViewTable.allowsSelectionDuringEditing = true
+        peerViewTable.allowsMultipleSelectionDuringEditing = true
+        peerViewTable.isEditing = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,18 +53,21 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // TODO: Need to return the number of available
-        return 0
+        return self.appDelegate.connectionManager.foundPeers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // TODO: Need to return a cell
-        return UITableViewCell.init()
+        let peerName = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+        let cell = UITableViewCell.init()
+        cell.textLabel?.text = peerName
+        
+        return cell
     }
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO: Need to show that the row is selected
+        // Nothing to do, the row will be selected automatically
     }
     
     
