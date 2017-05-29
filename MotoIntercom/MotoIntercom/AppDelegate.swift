@@ -16,14 +16,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     var connectionManager : ConnectionManager!
     var uniqueID: String!
-    var uniqueIDString = "uniqueIDString"
     var peer : MCPeerID!
-    var peerIDString = "selfMCPeerID"
-    var generator = UIImpactFeedbackGenerator(style: UIImpactFeedbackStyle.light)
+    
     var messages = [MessageObject]()
     
     var didAcceptCall = false
 
+    // Used for haptic feedback
+    var generator = UIImpactFeedbackGenerator(style: UIImpactFeedbackStyle.light)
+    
+    // Used for saving and loading peerID and uniqueID
+    let uniqueIDString = "uniqueIDString"
+    let peerIDString = "selfMCPeerID"
+    
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
