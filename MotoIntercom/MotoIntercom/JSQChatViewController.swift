@@ -20,12 +20,20 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var selectedImage: UIImage?
     
+    var latestMessageSentIndex = -1
+    var latestMessageStatus = ""
+    let delivered = "_is_delivered_"
+    // TODO: Add a read message
+//    let read = "_is_read_"
+    
     var isTyping: Bool = false
-    var userIsTyping: String = "_user_is_typing_"
-    var userHasStoppedTyping: String = "_user_stopped_typing_"
+    let userIsTyping: String = "_user_is_typing_"
+    let userHasStoppedTyping: String = "_user_stopped_typing_"
     
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
+    
+    // MARK: ViewDidLoad
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,8 +41,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         self.senderId = appDelegate.connectionManager.uniqueID
         self.senderDisplayName = appDelegate.connectionManager.peer.displayName
         
-        // Setting the title to the display name
-        self.navigationItem.title = messageObject.peerID.displayName
+        self.navigationItem.title = messageObject.peerID.displayName    // Setting the title to the display name
+        self.updateLatestMessagesIndex()                                // Updating the latest message sent index
         
         appDelegate.connectionManager.browser.stopBrowsingForPeers()
         
@@ -63,6 +71,14 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func updateLatestMessagesIndex() {
+        for i in 0..<messageObject.messages.count {
+            if (messageObject.messages[i].senderId == self.appDelegate.connectionManager.uniqueID) {
+                self.latestMessageSentIndex = i
+            }
+        }
     }
     
 
@@ -117,10 +133,12 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // Checks if the message is from the curr user or the peer
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
         print("\(#file) > \(#function)")
-        let message = messageObject.messages[indexPath.item] // 1
-        if message.senderId == appDelegate.connectionManager.uniqueID { // 2
+        let message = messageObject.messages[indexPath.item]
+        
+        // if the sender ID is us, then get an outgoingBubbleImage, else get an incomingBubbleImage
+        if message.senderId == appDelegate.connectionManager.uniqueID {
             return outgoingBubbleImageView
-        } else { // 3
+        } else {
             return incomingBubbleImageView
         }
     }
@@ -141,6 +159,14 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Removes avatars
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
+        return nil
+    }
+    
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, attributedTextForCellBottomLabelAt indexPath: IndexPath!) -> NSAttributedString! {
+        
+        // TODO: Need to figure out how to show a delivered message
+        
+        
         return nil
     }
     
@@ -257,6 +283,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             addMediaMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, media: newMessage.messages[0].media)
         }
         
+        _ = appDelegate.connectionManager.sendData(stringMessage: delivered, toPeer: self.messageObject.peerID)
+        
         OperationQueue.main.addOperation {
             self.collectionView.reloadData()
             
@@ -283,6 +311,10 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
                 self.showTypingIndicator = false
             }
         }
+        else if newMessage.message == delivered {
+            // TODO: Mark the last sent message as delivered
+        }
+        
         print("\(#file) > \(#function) > Entry")
     }
     
