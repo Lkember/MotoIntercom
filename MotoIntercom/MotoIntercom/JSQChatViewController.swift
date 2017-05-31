@@ -8,7 +8,6 @@
 
 import UIKit
 import MultipeerConnectivity
-import AudioToolbox
 import JSQMessagesViewController
 import Photos
 
@@ -75,10 +74,28 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     func updateLatestMessagesIndex() {
         for i in 0..<messageObject.messages.count {
+            print("Sender ID = \(messageObject.messages[i].senderId) == uniqueID = \(self.appDelegate.connectionManager.uniqueID)")
             if (messageObject.messages[i].senderId == self.appDelegate.connectionManager.uniqueID) {
                 self.latestMessageSentIndex = i
             }
         }
+        print("\(#file) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
+    }
+    
+    func nextMessageWasDelivered() {
+        print("\(#file) > \(#function) > Updated index from \(self.latestMessageSentIndex)")
+        for i in self.latestMessageSentIndex+1..<messageObject.messages.count {
+            if (messageObject.messages[i].senderId == self.appDelegate.connectionManager.uniqueID) {
+                self.latestMessageSentIndex = i
+                break
+            }
+        }
+        
+        // Need to add to main queue since this will affect the layout
+        OperationQueue.main.addOperation {
+            self.collectionView.reloadData()
+        }
+        print("\(#file) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
 
@@ -104,12 +121,12 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Gets the data for the message at index
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
-        if messageObject.messages[indexPath.item].isMediaMessage {
-            print("\(#file) > \(#function) > Picture message...")
-        }
-        else {
-            print("\(#file) > \(#function) > \(messageObject.messages[indexPath.item].text)")
-        }
+//        if messageObject.messages[indexPath.item].isMediaMessage {
+//            print("\(#file) > \(#function) > Picture message...")
+//        }
+//        else {
+//            print("\(#file) > \(#function) > \(messageObject.messages[indexPath.item].text)")
+//        }
         return messageObject.messages[indexPath.item]
     }
     
@@ -162,13 +179,53 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         return nil
     }
     
+    // Adds a delivered message to chat
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, attributedTextForCellBottomLabelAt indexPath: IndexPath!) -> NSAttributedString! {
         
-        // TODO: Need to figure out how to show a delivered message
+        if (self.latestMessageSentIndex == indexPath.row) {
+            print("\(#file) > \(#function) > Setting to delivered")
+            
+            return NSAttributedString(string: "delivered")
+        }
+        else {
+            print("\(#file) > \(#function) > Exit")
         
-        
-        return nil
+            return nil
+        }
     }
+
+
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, layout collectionViewLayout: JSQMessagesCollectionViewFlowLayout!, heightForCellBottomLabelAt indexPath: IndexPath!) -> CGFloat {
+        
+        if (self.latestMessageSentIndex == indexPath.row) {
+            print("\(#file) > \(#function) > Updating row")
+            
+            return kJSQMessagesCollectionViewCellLabelHeightDefault
+        }
+        else {
+            print("\(#file) > \(#function) > Exit")
+            
+            return 0.0
+        }
+        
+    }
+
+    // If we want to use text label at the top, this method needs to be used
+//    // Adds the name of the user that sent the message
+//    override func collectionView(_ collectionView: JSQMessagesCollectionView, attributedTextForMessageBubbleTopLabelAt indexPath: IndexPath) -> NSAttributedString? {
+//        let message = messageObject.messages[indexPath.row]
+//        
+//        if message.senderId == self.appDelegate.uniqueID {
+//            return nil
+//        }
+//        
+//        return NSAttributedString(string: message.senderDisplayName)
+//    }
+//    
+//    // Creates space for a label for the user's name to appear
+//    override func collectionView(_ collectionView: JSQMessagesCollectionView, layout collectionViewLayout: JSQMessagesCollectionViewFlowLayout, heightForMessageBubbleTopLabelAt indexPath: IndexPath) -> CGFloat {
+//        
+//    }
     
     // When a new message is received
     private func addMessage(withId id: String, name: String, text: String) {
@@ -312,7 +369,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             }
         }
         else if newMessage.message == delivered {
-            // TODO: Mark the last sent message as delivered
+            self.nextMessageWasDelivered()
         }
         
         print("\(#file) > \(#function) > Entry")

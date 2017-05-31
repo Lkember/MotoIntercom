@@ -18,6 +18,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     let acceptedCall = "_accept_call_"
     let declinedCall = "_decline_call_"
     let peerIsTyping = "_user_is_typing_"
+    let delivered = "_is_delivered_"
     var peerStoppedTyping: String = "_user_stopped_typing_"
     
     // MARK: - Properties
@@ -92,8 +93,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         //        print("\(#file) > \(#function) viewWillDisappear > Resetting table")
     }
     
-    
-    override func viewDidAppear(_ animated: Bool) {
+    // Called before the view appears, this way the user won't see the view updating
+    override func viewWillAppear(_ animated: Bool) {
         print("\(#file) > \(#function) > Entry")
         
         // Setting the connectionManager delegate to self
@@ -228,6 +229,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
             print("\(#file) > \(#function) > message: \(newMessage.messages[0].text), from peer \(newMessage.peerID.displayName), peerIndex = \(peerIndex)")
             messages[peerIndex].messages.append(newMessage.messages[0])
+            
+            _ = appDelegate.connectionManager.sendData(stringMessage: delivered, toPeer: fromPeer)
             
             save()
             
@@ -521,6 +524,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                             print("\(#file) > \(#function) > Performing segue")
                             self.performSegue(withIdentifier: "callSegue", sender: self)
                         }
+                        
+                        // TODO: Reconnect to peer first
                     }
                     else {
                         
@@ -529,6 +534,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                         
                         // Perform segue to phone view
                         OperationQueue.main.addOperation { () -> Void in
+                            print("\(#file) > \(#function) > Performing segue")
                             self.performSegue(withIdentifier: "callSegue", sender: self)
                         }
                         
@@ -931,8 +937,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             if (didAcceptCall) {
                 dest?.didReceiveCall = true
             }
-            
-            // TODO: Need to finish
         }
         
         print("\(#file) > \(#function) > Exit")
