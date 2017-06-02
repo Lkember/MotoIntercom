@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="agF-ob-HpW">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="agF-ob-HpW">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -188,10 +188,35 @@
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calling..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z5l-ck-Va6" userLabel="Status Label">
                                 <rect key="frame" x="8" y="86" width="359" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="24" id="bYX-fV-4Gd"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mute" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="unZ-y7-2Aw">
+                                <rect key="frame" x="268" y="282" width="96" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="2vZ-eG-pFg"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tId-E6-9kF">
+                                <rect key="frame" x="274" y="189" width="85" height="85"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="85" id="7ac-56-7CP"/>
+                                    <constraint firstAttribute="width" constant="85" id="DXs-rO-Sfu"/>
+                                </constraints>
+                                <state key="normal" image="microphone.png">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="muteButtonIsTouched:" destination="o5O-mf-9bf" eventType="touchUpInside" id="2tG-rZ-Dgr"/>
+                                </connections>
+                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Peer Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vuq-bW-5di">
                                 <rect key="frame" x="8" y="20" width="359" height="58"/>
                                 <constraints>
@@ -201,102 +226,81 @@
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ogw-ds-fQJ" userLabel="MuteButton View">
-                                <rect key="frame" x="8" y="118" width="175" height="461"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mute" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="unZ-y7-2Aw">
-                                        <rect key="frame" x="8" y="101" width="159" height="21"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="21" id="2vZ-eG-pFg"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tId-E6-9kF">
-                                        <rect key="frame" x="45.5" y="8" width="85" height="85"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="85" id="7ac-56-7CP"/>
-                                            <constraint firstAttribute="width" constant="85" id="DXs-rO-Sfu"/>
-                                        </constraints>
-                                        <state key="normal" image="microphone.png">
-                                            <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="muteButtonIsTouched:" destination="o5O-mf-9bf" eventType="touchUpInside" id="2tG-rZ-Dgr"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uBJ-uI-3W7">
+                                <rect key="frame" x="16" y="189" width="85" height="85"/>
                                 <constraints>
-                                    <constraint firstItem="unZ-y7-2Aw" firstAttribute="leading" secondItem="Ogw-ds-fQJ" secondAttribute="leading" constant="8" id="CKq-Z2-T7V"/>
-                                    <constraint firstItem="tId-E6-9kF" firstAttribute="centerX" secondItem="unZ-y7-2Aw" secondAttribute="centerX" id="WMY-Ew-STa"/>
-                                    <constraint firstAttribute="trailing" secondItem="unZ-y7-2Aw" secondAttribute="trailing" constant="8" id="eGW-0M-3qT"/>
-                                    <constraint firstItem="unZ-y7-2Aw" firstAttribute="top" secondItem="tId-E6-9kF" secondAttribute="bottom" constant="8" id="fl6-kH-p28"/>
-                                    <constraint firstItem="unZ-y7-2Aw" firstAttribute="leading" secondItem="Ogw-ds-fQJ" secondAttribute="leading" constant="8" id="hrl-yD-cVz"/>
-                                    <constraint firstItem="tId-E6-9kF" firstAttribute="top" secondItem="Ogw-ds-fQJ" secondAttribute="top" constant="8" id="ti4-ZM-1Kl"/>
-                                    <constraint firstAttribute="trailing" secondItem="unZ-y7-2Aw" secondAttribute="trailing" constant="8" id="yKa-O3-cq4"/>
-                                    <constraint firstItem="tId-E6-9kF" firstAttribute="top" secondItem="Ogw-ds-fQJ" secondAttribute="top" constant="8" id="yP4-xU-FMJ"/>
+                                    <constraint firstAttribute="height" constant="85" id="erv-8M-ZNj"/>
+                                    <constraint firstAttribute="width" constant="85" id="zVd-cH-jKc"/>
                                 </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QZ8-HB-X0Y" userLabel="SpeakerButton View">
-                                <rect key="frame" x="192" y="118" width="175" height="461"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Speaker" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UHJ-WX-mbp">
-                                        <rect key="frame" x="0.0" y="101" width="175" height="21"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="21" id="hHs-31-6iC"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uBJ-uI-3W7">
-                                        <rect key="frame" x="45.5" y="8" width="85" height="85"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="85" id="erv-8M-ZNj"/>
-                                            <constraint firstAttribute="width" constant="85" id="zVd-cH-jKc"/>
-                                        </constraints>
-                                        <state key="normal" image="High Volume-50.png">
-                                            <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="speakerButtonIsTouched:" destination="o5O-mf-9bf" eventType="touchUpInside" id="Ocp-fK-k8A"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
+                                <state key="normal" image="High Volume-50.png">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="speakerButtonIsTouched:" destination="o5O-mf-9bf" eventType="touchUpInside" id="Ocp-fK-k8A"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Speaker" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UHJ-WX-mbp">
+                                <rect key="frame" x="27" y="282" width="63" height="21"/>
                                 <constraints>
-                                    <constraint firstItem="uBJ-uI-3W7" firstAttribute="top" secondItem="QZ8-HB-X0Y" secondAttribute="top" constant="8" id="0di-wl-x7U"/>
-                                    <constraint firstItem="uBJ-uI-3W7" firstAttribute="centerX" secondItem="UHJ-WX-mbp" secondAttribute="centerX" id="HWj-uF-GJE"/>
-                                    <constraint firstItem="UHJ-WX-mbp" firstAttribute="top" secondItem="uBJ-uI-3W7" secondAttribute="bottom" constant="8" id="g6f-Gd-c3W"/>
-                                    <constraint firstItem="UHJ-WX-mbp" firstAttribute="leading" secondItem="QZ8-HB-X0Y" secondAttribute="leading" id="tF9-WO-WRE"/>
-                                    <constraint firstAttribute="trailing" secondItem="UHJ-WX-mbp" secondAttribute="trailing" id="v83-AY-vyV"/>
+                                    <constraint firstAttribute="height" constant="21" id="hHs-31-6iC"/>
                                 </constraints>
-                            </view>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add Peer" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i84-4R-kh2">
+                                <rect key="frame" x="152.5" y="282" width="70" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="QuL-Vu-v5O"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="egB-1b-ug6" userLabel="Add Peer Button">
+                                <rect key="frame" x="145.5" y="189" width="85" height="85"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="85" id="Bah-qs-yUT"/>
+                                    <constraint firstAttribute="height" constant="85" id="Lp6-Kn-KEr"/>
+                                </constraints>
+                                <state key="normal" image="add (1).png">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="addPeerButtonIsTouched:" destination="o5O-mf-9bf" eventType="touchUpInside" id="j0N-53-hsr"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="QZ8-HB-X0Y" secondAttribute="trailing" constant="8" id="4NS-Qa-al5"/>
+                            <constraint firstItem="egB-1b-ug6" firstAttribute="centerX" secondItem="Z5l-ck-Va6" secondAttribute="centerX" id="7C9-bY-SOG"/>
+                            <constraint firstItem="unZ-y7-2Aw" firstAttribute="centerX" secondItem="tId-E6-9kF" secondAttribute="centerX" id="7Jq-d9-Bbg"/>
                             <constraint firstItem="0Z5-1K-q4d" firstAttribute="top" secondItem="dwA-Kp-lgL" secondAttribute="bottom" id="8em-Fg-oDO"/>
                             <constraint firstItem="dwA-Kp-lgL" firstAttribute="leading" secondItem="tHZ-HH-XM5" secondAttribute="leading" id="A7h-7b-evk"/>
                             <constraint firstItem="Z5l-ck-Va6" firstAttribute="leading" secondItem="tHZ-HH-XM5" secondAttribute="leading" constant="8" id="Aqu-rq-yQl"/>
-                            <constraint firstItem="dwA-Kp-lgL" firstAttribute="top" secondItem="QZ8-HB-X0Y" secondAttribute="bottom" constant="8" id="Ilc-hI-Ihh"/>
+                            <constraint firstItem="UHJ-WX-mbp" firstAttribute="centerX" secondItem="uBJ-uI-3W7" secondAttribute="centerX" id="FPb-I5-UaS"/>
+                            <constraint firstItem="tId-E6-9kF" firstAttribute="trailing" secondItem="tHZ-HH-XM5" secondAttribute="trailingMargin" id="HWR-Nb-iCf"/>
+                            <constraint firstItem="unZ-y7-2Aw" firstAttribute="baseline" secondItem="UHJ-WX-mbp" secondAttribute="baseline" id="IcW-WC-fuq"/>
                             <constraint firstAttribute="trailing" secondItem="dwA-Kp-lgL" secondAttribute="trailing" id="JXD-by-Lya"/>
-                            <constraint firstItem="QZ8-HB-X0Y" firstAttribute="top" secondItem="Z5l-ck-Va6" secondAttribute="bottom" constant="8" id="NhS-KQ-j81"/>
-                            <constraint firstItem="QZ8-HB-X0Y" firstAttribute="leading" secondItem="Ogw-ds-fQJ" secondAttribute="trailing" constant="9" id="Nht-wp-2x8"/>
+                            <constraint firstItem="uBJ-uI-3W7" firstAttribute="leading" secondItem="tHZ-HH-XM5" secondAttribute="leadingMargin" id="NzQ-3h-Dtm"/>
                             <constraint firstItem="vuq-bW-5di" firstAttribute="leading" secondItem="Z5l-ck-Va6" secondAttribute="leading" id="PNd-kp-xAY"/>
-                            <constraint firstItem="QZ8-HB-X0Y" firstAttribute="width" secondItem="Ogw-ds-fQJ" secondAttribute="width" id="RBI-SV-Rh2"/>
-                            <constraint firstItem="Ogw-ds-fQJ" firstAttribute="leading" secondItem="tHZ-HH-XM5" secondAttribute="leading" constant="8" id="Vn5-FB-il0"/>
+                            <constraint firstItem="i84-4R-kh2" firstAttribute="top" secondItem="egB-1b-ug6" secondAttribute="bottom" constant="8" id="Rw8-3m-YOe"/>
+                            <constraint firstItem="i84-4R-kh2" firstAttribute="centerX" secondItem="egB-1b-ug6" secondAttribute="centerX" id="bCD-7y-2NZ"/>
+                            <constraint firstItem="egB-1b-ug6" firstAttribute="top" secondItem="Z5l-ck-Va6" secondAttribute="bottom" constant="79" id="bLh-K1-QkW"/>
                             <constraint firstAttribute="trailing" secondItem="Z5l-ck-Va6" secondAttribute="trailing" constant="8" id="cDm-Ql-lqs"/>
-                            <constraint firstItem="Ogw-ds-fQJ" firstAttribute="top" secondItem="Z5l-ck-Va6" secondAttribute="bottom" constant="8" id="dyD-L4-j2N"/>
-                            <constraint firstItem="QZ8-HB-X0Y" firstAttribute="leading" secondItem="Ogw-ds-fQJ" secondAttribute="trailing" constant="9" id="si2-T5-fiv"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="unZ-y7-2Aw" secondAttribute="trailing" constant="-5" id="fJM-ty-pXz"/>
+                            <constraint firstItem="unZ-y7-2Aw" firstAttribute="baseline" secondItem="i84-4R-kh2" secondAttribute="baseline" id="mMv-TV-HZX"/>
+                            <constraint firstItem="i84-4R-kh2" firstAttribute="top" secondItem="egB-1b-ug6" secondAttribute="bottom" constant="8" id="mOr-eI-f8d"/>
+                            <constraint firstItem="UHJ-WX-mbp" firstAttribute="top" secondItem="uBJ-uI-3W7" secondAttribute="bottom" constant="8" id="ppb-dT-ufe"/>
                             <constraint firstItem="vuq-bW-5di" firstAttribute="top" secondItem="Ynm-BC-aTn" secondAttribute="bottom" id="x6H-jM-UQj"/>
                             <constraint firstItem="vuq-bW-5di" firstAttribute="trailing" secondItem="Z5l-ck-Va6" secondAttribute="trailing" id="xMb-Ql-5i3"/>
                             <constraint firstItem="Z5l-ck-Va6" firstAttribute="top" secondItem="vuq-bW-5di" secondAttribute="bottom" constant="8" symbolic="YES" id="xb7-DG-xln"/>
-                            <constraint firstItem="dwA-Kp-lgL" firstAttribute="top" secondItem="Ogw-ds-fQJ" secondAttribute="bottom" constant="8" id="yP2-U1-mM7"/>
+                            <constraint firstItem="unZ-y7-2Aw" firstAttribute="top" secondItem="tId-E6-9kF" secondAttribute="bottom" constant="8" id="zHU-a8-dMx"/>
                         </constraints>
                     </view>
                     <nil key="simulatedTopBarMetrics"/>
                     <connections>
+                        <outlet property="addPeerButton" destination="egB-1b-ug6" id="Le7-97-KqH"/>
                         <outlet property="endCallButton" destination="dwA-Kp-lgL" id="So1-hg-tlW"/>
                         <outlet property="muteButton" destination="tId-E6-9kF" id="erU-8q-asB"/>
                         <outlet property="peerLabel" destination="vuq-bW-5di" id="HKA-NH-bgO"/>
@@ -551,10 +555,10 @@
             </objects>
             <point key="canvasLocation" x="304.80000000000001" y="706.59670164917543"/>
         </scene>
-        <!--Add Peer View Controller-->
+        <!--AddNewPeers-->
         <scene sceneID="vSg-DO-waD">
             <objects>
-                <viewController id="IRf-JH-ONb" customClass="AddPeerViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AddNewPeers" title="AddNewPeers" id="IRf-JH-ONb" customClass="AddPeerViewController" customModule="MotoIntercom" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="6V8-XE-kWt"/>
                         <viewControllerLayoutGuide type="bottom" id="qOi-3N-cTe"/>
@@ -574,7 +578,6 @@
                                         </constraints>
                                         <state key="normal" title="Add"/>
                                         <connections>
-                                            <action selector="acceptButtonIsTouched:" destination="IRf-JH-ONb" eventType="touchUpInside" id="7co-lg-ScG"/>
                                             <action selector="addPeerButtonIsTouched:" destination="IRf-JH-ONb" eventType="touchUpInside" id="Zco-YJ-r47"/>
                                         </connections>
                                     </button>
@@ -584,7 +587,6 @@
                                         <state key="normal" title="Cancel"/>
                                         <connections>
                                             <action selector="cancelButtonIsTouched:" destination="IRf-JH-ONb" eventType="touchUpInside" id="tUj-WT-cWM"/>
-                                            <action selector="declineButtonIsTouched:" destination="IRf-JH-ONb" eventType="touchUpInside" id="GyZ-SO-9Rs"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select Peers to Add" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R5z-nx-Occ">
@@ -651,9 +653,9 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="backgroundView" destination="205-LG-Vgg" id="rj2-lF-gMd"/>
+                        <outlet property="backgroundView" destination="205-LG-Vgg" id="qU1-At-yMv"/>
+                        <outlet property="foregroundView" destination="NXg-mc-HDf" id="pIv-do-R96"/>
                         <outlet property="peerViewTable" destination="paB-da-eGA" id="M1t-fY-hIa"/>
-                        <outlet property="popUpView" destination="NXg-mc-HDf" id="j1p-ku-F6h"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="so9-EM-4mz" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -663,6 +665,7 @@
     </scenes>
     <resources>
         <image name="High Volume-50.png" width="50" height="50"/>
+        <image name="add (1).png" width="64" height="64"/>
         <image name="microphone.png" width="64" height="64"/>
     </resources>
 </document>

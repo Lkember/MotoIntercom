@@ -38,7 +38,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var advertiser : MCNearbyServiceAdvertiser
     
     //Array of peers
-    var foundPeers = [MCPeerID]()
+    var availablePeers = [MCPeerID]()
     
     //invitation handler
     var invitationHandler: ((Bool, MCSession) -> Void)?
@@ -256,31 +256,25 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        
-        if (!doesPeerAlreadyExist(peerID: peerID)) {
-            foundPeers.append(peerID)
-            print("\(#file) > \(#function) > Peer was found with ID: \(peerID.displayName)")
-        }
-        else {
-            print("\(#file) > \(#function) > Peer was found but already exists with ID: \(peerID)")
-        }
-        
-        //Connecting to peer
-        if (!checkIfAlreadyConnected(peerID: peerID)) {
+        if (!availablePeers.contains(peerID)) {
+            availablePeers.append(peerID)
             
-            let sessionIndex = createNewSession()
-            let isPhoneCall = false
-            let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-            
-            self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
+            //Connecting to peer
+            if (!checkIfAlreadyConnected(peerID: peerID)) {
+                
+                let sessionIndex = createNewSession()
+                let isPhoneCall = false
+                let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+                
+                self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
+            }
         }
-        
         delegate?.foundPeer(peerID)
     }
-    
-    // checks to see if the current peer is already in the table
-    func doesPeerAlreadyExist(peerID: MCPeerID) -> Bool {
-        for peer in foundPeers {
+
+    // Checks to see if a peer is already in the availablePeers array
+    func doesPeerExist(peerID: MCPeerID) -> Bool {
+        for peer in availablePeers {
             if peerID == peer {
                 print("\(#file) > \(#function) > True")
                 return true
@@ -293,22 +287,19 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //removes all previously seen peers
     func resetPeerArray() {
         print("\(#file) > \(#function) > Removing all found peers")
-        foundPeers.removeAll()
+        availablePeers.removeAll()
     }
     
     
     // Called when a peer is lost
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        print("\(#file) > \(#function) > Entry > lostPeer \(peerID)")
-        for i in 0 ..< foundPeers.count {
-            
-            if foundPeers[i] == peerID {
-                print("\(#file) > \(#function) > Return > Removing peer \(foundPeers[i])")
-                foundPeers.remove(at: i)
+        
+        for i in 0..<availablePeers.count {
+            if availablePeers[i] == peerID {
+                print("\(#file) > \(#function) > Return > Removing peer \(availablePeers[i])")
+                availablePeers.remove(at: i)
                 break
             }
-            
-            print("\(#file) > \(#function) > lostPeer: \(peerID)")
         }
         
         delegate?.lostPeer(peerID)
@@ -331,19 +322,13 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     //Called when a new connection with a peer is made.
     func connectedWithPeer(peerID: MCPeerID) {
         print("\(#file) > \(#function) > Calling connected with peer.")
-        if (checkIfAlreadyConnected(peerID: peerID)) {
-//            session.connectedPeers.append(peerID)
-//            session.connectPeer(peerID, withNearbyConnectionData: nil)
-            removeFoundPeer(peerID: peerID)
-        }
     }
     
-    // Called to remove a peer that is no longer visible or is already connected
-    func removeFoundPeer(peerID: MCPeerID) {
+    func removeAvailablePeer(peerID: MCPeerID) {
         print("\(#file) > \(#function) > Removing peer \(peerID.displayName)")
-        for i in 0..<foundPeers.count {
-            if foundPeers[i] == peerID {
-                foundPeers.remove(at: i)
+        for i in 0..<availablePeers.count {
+            if availablePeers[i] == peerID {
+                availablePeers.remove(at: i)
                 return
             }
         }
@@ -391,10 +376,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         case MCSessionState.connected:
             print("\(#file) > \(#function) > Connected to peer: \(peerID)")
             delegate?.connectedWithPeer(peerID)
-
-            if (doesPeerAlreadyExist(peerID: peerID)) {
-                removeFoundPeer(peerID: peerID)
-            }
             
         case MCSessionState.connecting:
             print("\(#file) > \(#function) > Connecting to peer: \(peerID)")
@@ -404,9 +385,6 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             print("\(#file) > \(#function) > Failed to connect to session: \(session)")
             
             delegate?.disconnectedFromPeer(peerID)
-            if (!doesPeerAlreadyExist(peerID: peerID)) {
-                foundPeers.append(peerID)
-            }
         }
     }
     
