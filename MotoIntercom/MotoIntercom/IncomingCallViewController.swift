@@ -29,6 +29,15 @@ class IncomingCallViewController: UIViewController {
         // Do any additional setup after loading the view.
         peerDisplayNameLabel.text = peerDisplayName!
         
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+        self.popUpView.layer.cornerRadius = 10
+        self.popUpView.layer.borderColor = UIColor.white.cgColor
+        self.popUpView.layer.borderWidth = 2
+        
+        self.animate()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
@@ -45,13 +54,6 @@ class IncomingCallViewController: UIViewController {
             self.backgroundView.backgroundColor = UIColor.black
             self.backgroundView.alpha = 0.80
         }
-        
-        self.navigationController?.setNavigationBarHidden(true, animated: true)
-        self.popUpView.layer.cornerRadius = 10
-        self.popUpView.layer.borderColor = UIColor.white.cgColor
-        self.popUpView.layer.borderWidth = 2
-        
-        self.animate()
     }
 
     override func didReceiveMemoryWarning() {
@@ -113,11 +115,12 @@ class IncomingCallViewController: UIViewController {
         }
     }
     
+    // MARK: - Animation
     
     func animate() {
         self.view.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
         self.view.alpha = 0.0;
-        UIView.animate(withDuration: 0.25, animations: {
+        UIView.animate(withDuration: 0.5, animations: {
             self.view.alpha = 1.0
             self.view.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
         });
@@ -128,7 +131,7 @@ class IncomingCallViewController: UIViewController {
     {
         self.navigationController?.setNavigationBarHidden(false, animated: true)
         
-        UIView.animate(withDuration: 0.25, animations: {
+        UIView.animate(withDuration: 0.5, animations: {
             self.view.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
             self.view.alpha = 0.0;
         }, completion:{(finished : Bool)  in
