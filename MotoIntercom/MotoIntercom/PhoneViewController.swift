@@ -16,7 +16,7 @@ import MultipeerConnectivity
 import JSQMessagesViewController
 
 @available(iOS 10.0, *)
-class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, StreamDelegate, ConnectionManagerDelegate {
+class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, StreamDelegate, ConnectionManagerDelegate, PeerAddedDelegate {
 
     // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -64,6 +64,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var localInput: AVAudioInputNode?
     var localInputFormat: AVAudioFormat?
     
+    // Used to fix a crash when attempting to detach a node that isn't attached
+    var isNodeAttached = false
+    
     // Peer audio format
     var peerAudioFormat: AVAudioFormat?
     var peerAudioFormatIsSet = false
@@ -76,6 +79,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // Button Options
     @IBOutlet weak var muteButton: UIButton!
     @IBOutlet weak var speakerButton: UIButton!
+    @IBOutlet weak var addPeerButton: UIButton!
     
     var muteIsOn = false
     var speakerIsOn = false
@@ -96,7 +100,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (sessionIndex! == -1) {
             statusLabel.text = "Calling..."
-            userEndedCall = false
+            userEndedCall = true
             disconnectedFromPeer(self.peerID!)
         }
         else {
@@ -147,6 +151,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Dispose of any resources that can be recreated.
     }
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     
     
     // MARK: - Startup
@@ -165,18 +172,32 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Making the buttons circular
         let muteImage: UIImage = UIImage.init(named: "microphone.png")!
-        muteButton.setImage(muteImage, for: UIControlState.normal)
+        let tintedMuteImage = muteImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+        muteButton.setImage(tintedMuteImage, for: UIControlState.normal)
+        muteButton.tintColor = UIColor.white
         muteButton.layer.cornerRadius = muteButton.frame.width/2
         muteButton.layer.borderWidth = 1
-        muteButton.layer.borderColor = UIColor.black.cgColor
+        muteButton.layer.borderColor = UIColor.gray.cgColor
         muteButton.isUserInteractionEnabled = false
         muteButton.isEnabled = false
         
+        let addPeerImage: UIImage = UIImage.init(named: "add (1).png")!
+        let tintedAddPeerImage = addPeerImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+        addPeerButton.setImage(tintedAddPeerImage, for: UIControlState.normal)
+        addPeerButton.tintColor = UIColor.white
+        addPeerButton.layer.cornerRadius = muteButton.frame.width/2
+        addPeerButton.layer.borderWidth = 1
+        addPeerButton.layer.borderColor = UIColor.gray.cgColor
+        addPeerButton.isUserInteractionEnabled = false
+        addPeerButton.isEnabled = false
+        
         let speakerImage: UIImage = UIImage.init(named: "High Volume-50.png")!
-        speakerButton.setImage(speakerImage, for: UIControlState.normal)
+        let tintedSpeakerImage = speakerImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+        speakerButton.setImage(tintedSpeakerImage, for: UIControlState.normal)
+        speakerButton.tintColor = UIColor.white
         speakerButton.layer.cornerRadius = speakerButton.frame.width/2
         speakerButton.layer.borderWidth = 1
-        speakerButton.layer.borderColor = UIColor.black.cgColor
+        speakerButton.layer.borderColor = UIColor.gray.cgColor
         speakerButton.isEnabled = false
         speakerButton.isUserInteractionEnabled = false
         
@@ -273,11 +294,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(#file) > \(#function) > Error encountered: \(error)")
         }
         
+        
         // Setting up audio engine for local recording and sounds
         self.localInput = self.localAudioEngine.inputNode
         self.localAudioEngine.attach(self.localAudioPlayer)
+        self.isNodeAttached = true
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
-        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: nil)
+        
+        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: localInputFormat)
         
         self.localAudioEngine.prepare()
         
@@ -303,12 +327,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
              * if you clicked the mute button twice the delay was basically gone. Instead
              * of making the user click the button twice, it will start recording and then
              * automatically remove the tap and reinstall the tap.
+             * It may eventually be unnecessary
             */
         }
         print("\(#file) > \(#function) > tap installed")
         localInput?.reset()
         localInput?.removeTap(onBus: 0)
         print("\(#file) > \(#function) > tap removed")
+        print("\(#file) > \(#function) > Exit")
     }
     
     
@@ -383,7 +409,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 //---------------------------------------------------
                 // Sending the data to peer
                 
-                print("\(#file) > \(#function) > curr: \(sum) -- average: \(self.averageInputVolume)")
+//                print("\(#file) > \(#function) > curr: \(sum) -- average: \(self.averageInputVolume)")
                 
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     print("\(#file) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
@@ -473,7 +499,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 averageInputIsSet = true
             }
         }
-        print("\(#file) > \(#function) > averageInputIsSet \(averageInputIsSet) -- averageInputVolume \(averageInputVolume)")
+//        print("\(#file) > \(#function) > averageInputIsSet \(averageInputIsSet) -- averageInputVolume \(averageInputVolume)")
     }
     
     // MARK: - Timer
@@ -608,6 +634,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     
     //MARK: - Button Actions
+    
+    @IBAction func addPeerButtonIsTouched(_ sender: Any) {
+        print("\(#file) > \(#function)")
+        
+        let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "AddNewPeers") as! AddPeerViewController
+        self.addChildViewController(popOverView)
+        
+        OperationQueue.main.addOperation {
+            popOverView.view.frame = self.view.frame
+            self.view.addSubview(popOverView.view)
+            popOverView.didMove(toParentViewController: self)
+        }
+    }
+    
     
     @IBAction func muteButtonIsTouched(_ sender: Any) {
         
@@ -745,6 +785,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             localAudioEngine.stop()
         }
         
+        if (self.isNodeAttached) {
+            self.localAudioEngine.detach(self.localAudioPlayer)
+            self.isNodeAttached = false
+        }
+        
         // Stop the timer
         timer?.invalidate()
         
@@ -761,6 +806,31 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.testBuffer.removeAll()
         
         UIDevice.current.isProximityMonitoringEnabled = false
+        
+        print("\(#file) > \(#function) > Exit")
+    }
+    
+    // MARK: - PeerAddedDelegate
+    func peersToBeAdded(peers: [MCPeerID]) {
+        print("\(#file) > \(#function) > Entry -- \(peers.count) peers to call")
+        let isPhoneCall = true
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+        
+        // Loop through each peer and send them an invite
+        for i in 0..<peers.count {
+            
+            // If the peer is not already in the session, then send them an invite
+            if (!self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers.contains(peers[i])) {
+                self.appDelegate.connectionManager.browser.invitePeer(peers[i],
+                                                                      to: self.appDelegate.connectionManager.sessions[sessionIndex!],
+                                                                      withContext: dataToSend,
+                                                                      timeout: 20)
+                
+            }
+            else {
+                print("\(#file) > \(#function) > Peer \(peers[i].displayName) is already in the call")
+            }
+        }
         
         print("\(#file) > \(#function) > Exit")
     }
@@ -871,9 +941,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 
                 self.muteButton.isEnabled = true
                 self.speakerButton.isEnabled = true
+                self.addPeerButton.isEnabled = true
                 
                 self.muteButton.isUserInteractionEnabled = true
                 self.speakerButton.isUserInteractionEnabled = true
+                self.addPeerButton.isUserInteractionEnabled = true
             }
         }
         else {
@@ -941,6 +1013,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         // Setting the format for the localAudioPlayer
+        self.localAudioEngine.disconnectNodeInput(self.localAudioPlayer)
         self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: peerAudioFormat)
         self.localAudioEngine.prepare()
         do {

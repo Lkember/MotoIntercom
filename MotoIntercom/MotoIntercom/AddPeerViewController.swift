@@ -9,14 +9,22 @@
 import UIKit
 import MultipeerConnectivity
 
+protocol PeerAddedDelegate {
+    func peersToBeAdded(peers: [MCPeerID])
+}
+
 @available(iOS 10.0, *)
 class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
 
     // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    let peerAddedDelegate: PeerAddedDelegate? = nil
     
     @IBOutlet weak var peerViewTable: UITableView!
+    @IBOutlet var backgroundView: UIView!
+    @IBOutlet weak var foregroundView: UIView!
     
+    // MARK: - Views
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,6 +37,29 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         peerViewTable.allowsSelectionDuringEditing = true
         peerViewTable.allowsMultipleSelectionDuringEditing = true
         peerViewTable.isEditing = true
+        
+        self.animate()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        //only apply blur if the user hasn't disabled transparency effects
+        if !UIAccessibilityIsReduceTransparencyEnabled() {
+            self.backgroundView.backgroundColor = UIColor.clear
+            
+            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+            let blurEffectView = UIVisualEffectView(effect: blurEffect)
+            
+            blurEffectView.frame = self.backgroundView.bounds
+            blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            
+            self.backgroundView.insertSubview(blurEffectView, at: 0)
+        }
+        else {
+            self.backgroundView.backgroundColor = UIColor.black
+            self.backgroundView.alpha = 0.80
+        }
+        
+        self.foregroundView.alpha = 1.0
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,28 +68,69 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @IBAction func addPeerButtonIsTouched(_ sender: UIButton) {
+        print("\(#file) > \(#function) > Entry")
+        var peersToAdd = [MCPeerID]()
         
+        if let indexPaths = self.peerViewTable.indexPathsForSelectedRows?.sorted() {
+            for i in 0..<indexPaths.count {
+                peersToAdd.append(self.appDelegate.connectionManager.availablePeers[indexPaths[i].row])
+                
+                print("\(#file) > \(#function) > Adding \(self.appDelegate.connectionManager.availablePeers[indexPaths[i].row].displayName)")
+            }
+        }
+        
+        dismissAnimate()
+        
+        peerAddedDelegate?.peersToBeAdded(peers: peersToAdd)
+        print("\(#file) > \(#function) > Exit")
     }
     
     @IBAction func cancelButtonIsTouched(_ sender: UIButton) {
+        print("\(#file) > \(#function)")
+        dismissAnimate()
+    }
+    
+    // MARK: - Animation
+    func animate() {
+        self.view.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+        self.view.alpha = 0.0;
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.alpha = 1.0
+            self.view.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+        });
+    }
+    
+    
+    func dismissAnimate()
+    {
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
         
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+            self.view.alpha = 0.0;
+        }, completion:{(finished : Bool)  in
+            if (finished)
+            {
+                self.view.removeFromSuperview()
+            }
+        });
     }
     
     
     // MARK: - TableViewDelegate Methods
     
-    // We only ever want 1 section, the users available
+    // We only ever want 1 section -> the users available
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.appDelegate.connectionManager.foundPeers.count
+        return self.appDelegate.connectionManager.availablePeers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // TODO: Need to return a cell
-        let peerName = appDelegate.connectionManager.foundPeers[indexPath.row].displayName
+        let peerName = appDelegate.connectionManager.availablePeers[indexPath.row].displayName
         let cell = UITableViewCell.init()
         cell.textLabel?.text = peerName
         
@@ -73,11 +145,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: - Connection Manager Delegate
     func foundPeer(_ newPeer: MCPeerID) {
-        // TODO: need to add peer
+        self.peerViewTable.reloadData()
     }
     
     func lostPeer(_ lostPeer: MCPeerID) {
-        // TODO: need to remove peer
+        self.peerViewTable.reloadData()
     }
     
     func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
@@ -100,14 +172,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Nothing to do
     }
     
-    /*
     // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
+    
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        // Get the new view controller using segue.destinationViewController.
+//        // Pass the selected object to the new view controller.
+//    }
 
 }
