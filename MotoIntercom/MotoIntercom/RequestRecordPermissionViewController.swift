@@ -23,6 +23,17 @@ class RequestRecordPermissionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+        self.popUpView.layer.cornerRadius = 10
+        self.popUpView.layer.borderColor = UIColor.white.cgColor
+        self.popUpView.layer.borderWidth = 2
+        
+        self.animate()
+
+        // Do any additional setup after loading the view.
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
             
@@ -38,15 +49,6 @@ class RequestRecordPermissionViewController: UIViewController {
             self.backgroundView.backgroundColor = UIColor.black
             self.backgroundView.alpha = 0.80
         }
-        
-        self.navigationController?.setNavigationBarHidden(true, animated: true)
-        self.popUpView.layer.cornerRadius = 10
-        self.popUpView.layer.borderColor = UIColor.white.cgColor
-        self.popUpView.layer.borderWidth = 2
-        
-        self.animate()
-
-        // Do any additional setup after loading the view.
     }
 
     override func didReceiveMemoryWarning() {
