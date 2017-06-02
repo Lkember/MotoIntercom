@@ -60,4 +60,14 @@ class StartupViewController: UIViewController {
             print("\(#file) > \(#function) > Record permission is granted.")
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if self.isMovingFromParentViewController {
+            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
+            appDelegate.connectionManager.browser.stopBrowsingForPeers()
+            appDelegate.connectionManager.cleanSessions()
+            
+            print("\(#file) > \(#function) > Stopped advertising and browsing.")
+        }
+    }
 }
