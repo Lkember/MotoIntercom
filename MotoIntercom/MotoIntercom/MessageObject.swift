@@ -17,7 +17,6 @@ class MessageObject: NSObject, NSCoding {
     var peerID: MCPeerID!
     var selfID: MCPeerID!
     var messages = [JSQMessage]()
-    var isAvailable : Bool = false
     
     var connectionType : Int = 0    // 0 = not specified, 1 = message, 2 = voice
     
@@ -58,6 +57,19 @@ class MessageObject: NSObject, NSCoding {
     func setConnectionTypeToVoice() {
         print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 2
+    }
+    
+    func getLastMessage() -> String {
+        if (messages.count == 0) {
+            return "No history"
+        }
+        
+        if (!messages[messages.count-1].isMediaMessage) {
+            return messages[messages.count-1].text
+        }
+        else {
+            return "Media"
+        }
     }
     
 //    // MARK: - JSQMessageData
