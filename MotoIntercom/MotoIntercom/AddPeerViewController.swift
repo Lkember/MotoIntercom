@@ -23,6 +23,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var peerViewTable: UITableView!
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var foregroundView: UIView!
+    @IBOutlet weak var addPeerButton: UIButton!
     
     // MARK: - Views
     override func viewDidLoad() {
@@ -37,6 +38,10 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         peerViewTable.allowsSelectionDuringEditing = true
         peerViewTable.allowsMultipleSelectionDuringEditing = true
         peerViewTable.isEditing = true
+        
+        // Don't let the user click the button when no users are selected
+        addPeerButton.isEnabled = false
+        addPeerButton.isUserInteractionEnabled = false
         
         self.animate()
     }
@@ -137,9 +142,21 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         return cell
     }
     
-    
+    // Called when a row is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // Nothing to do, the row will be selected automatically
+        
+        // Check to see if the addPeerButton should be enabled
+        let indexPaths = tableView.indexPathForSelectedRow?.sorted()
+        
+        // If some users are selected, then the button can be touched
+        if indexPaths!.count >= 1 {
+            addPeerButton.isEnabled = true
+            addPeerButton.isUserInteractionEnabled = true
+        }
+        else {
+            addPeerButton.isEnabled = false
+            addPeerButton.isUserInteractionEnabled = false
+        }
     }
     
     

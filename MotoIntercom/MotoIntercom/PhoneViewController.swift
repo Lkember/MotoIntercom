@@ -821,6 +821,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             // If the peer is not already in the session, then send them an invite
             if (!self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers.contains(peers[i])) {
+                
+                print("\(#file) > \(#function) > Adding peer \(peers[i].displayName)")
                 self.appDelegate.connectionManager.browser.invitePeer(peers[i],
                                                                       to: self.appDelegate.connectionManager.sessions[sessionIndex!],
                                                                       withContext: dataToSend,
