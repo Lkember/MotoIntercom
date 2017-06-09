@@ -319,11 +319,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return false
     }
     
-    //Called when a new connection with a peer is made.
-    func connectedWithPeer(peerID: MCPeerID) {
-        print("\(#file) > \(#function) > Calling connected with peer.")
-    }
-    
+    // Called to remove a specific peer from the available peers array
     func removeAvailablePeer(peerID: MCPeerID) {
         print("\(#file) > \(#function) > Removing peer \(peerID.displayName)")
         for i in 0..<availablePeers.count {
@@ -334,6 +330,18 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         }
     }
     
+    // Called to get all available peers that are not in the session given by sessionIndex
+    func getPeersNotInSession(sessionIndex: Int) -> [MCPeerID] {
+        var peers = [MCPeerID]()
+        
+        for peer in availablePeers {
+            if (!sessions[sessionIndex].connectedPeers.contains(peer)) {
+                peers.append(peer)
+            }
+        }
+        
+        return peers
+    }
     
     // MARK: - ConnectionManager
     

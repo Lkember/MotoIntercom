@@ -19,6 +19,8 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let peerAddedDelegate: PeerAddedDelegate? = nil
+    var sessionIndex = -1
+    var peers = [MCPeerID]()
     
     @IBOutlet weak var peerViewTable: UITableView!
     @IBOutlet var backgroundView: UIView!
@@ -42,6 +44,9 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Don't let the user click the button when no users are selected
         addPeerButton.isEnabled = false
         addPeerButton.isUserInteractionEnabled = false
+        
+        // Getting all the peers available but not in the current session
+        peers = self.appDelegate.connectionManager.getPeersNotInSession(sessionIndex: sessionIndex)
         
         self.animate()
     }
@@ -78,9 +83,9 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         if let indexPaths = self.peerViewTable.indexPathsForSelectedRows?.sorted() {
             for i in 0..<indexPaths.count {
-                peersToAdd.append(self.appDelegate.connectionManager.availablePeers[indexPaths[i].row])
+                peersToAdd.append(self.peers[indexPaths[i].row])
                 
-                print("\(#file) > \(#function) > Adding \(self.appDelegate.connectionManager.availablePeers[indexPaths[i].row].displayName)")
+                print("\(#file) > \(#function) > Adding \(self.peers[indexPaths[i].row].displayName)")
             }
         }
         
@@ -130,12 +135,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.appDelegate.connectionManager.availablePeers.count
+        return self.peers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // TODO: Need to return a cell
-        let peerName = appDelegate.connectionManager.availablePeers[indexPath.row].displayName
+        let peerName = peers[indexPath.row].displayName
         let cell = UITableViewCell.init()
         cell.textLabel?.text = peerName
         
@@ -162,10 +166,12 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: - Connection Manager Delegate
     func foundPeer(_ newPeer: MCPeerID) {
+        peers = self.appDelegate.connectionManager.getPeersNotInSession(sessionIndex: sessionIndex)
         self.peerViewTable.reloadData()
     }
     
     func lostPeer(_ lostPeer: MCPeerID) {
+        peers = self.appDelegate.connectionManager.getPeersNotInSession(sessionIndex: sessionIndex)
         self.peerViewTable.reloadData()
     }
     

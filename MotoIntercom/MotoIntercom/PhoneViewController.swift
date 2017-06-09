@@ -100,7 +100,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (sessionIndex! == -1) {
             statusLabel.text = "Calling..."
-            userEndedCall = true
+            userEndedCall = false
             disconnectedFromPeer(self.peerID!)
         }
         else {
@@ -639,6 +639,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function)")
         
         let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "AddNewPeers") as! AddPeerViewController
+        popOverView.sessionIndex = self.sessionIndex!
         self.addChildViewController(popOverView)
         
         OperationQueue.main.addOperation {
