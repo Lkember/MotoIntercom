@@ -66,6 +66,7 @@ class StartupViewController: UIViewController {
             appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
             appDelegate.connectionManager.browser.stopBrowsingForPeers()
             appDelegate.connectionManager.cleanSessions()
+            appDelegate.connectionManager.resetPeerArray()
             
             print("\(#file) > \(#function) > Stopped advertising and browsing.")
         }

@@ -47,8 +47,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
         
-        print("\(#file) > \(#function) > Resetting peer array.")
-        appDelegate.connectionManager.resetPeerArray()
+//        print("\(#file) > \(#function) > Resetting peer array.")
+//        appDelegate.connectionManager.resetPeerArray()
         navigationItem.leftBarButtonItem?.title = "Back"
         
         peersTable.delegate = self
