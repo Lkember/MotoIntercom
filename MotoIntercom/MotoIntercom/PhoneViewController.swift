@@ -66,6 +66,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // Used to fix a crash when attempting to detach a node that isn't attached
     var isNodeAttached = false
+    var isAudioSetup = false
     
     // Peer audio format
     var peerAudioFormat: AVAudioFormat?
@@ -335,6 +336,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         localInput?.removeTap(onBus: 0)
         print("\(#file) > \(#function) > tap removed")
         print("\(#file) > \(#function) > Exit")
+        isAudioSetup = true
     }
     
     
@@ -802,6 +804,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         inputStreamIsSet = false
         outputStreamIsSet = false
+        isAudioSetup = false
         
         self.testBufferCount = 0
         self.testBuffer.removeAll()
@@ -898,7 +901,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.statusLabel.text = "Connecting"
             }
             
-            self.prepareAudio()
+            if !isAudioSetup {
+                self.prepareAudio()
+            }
         }
         
         print("\(#file) > \(#function) > Exit")

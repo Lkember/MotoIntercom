@@ -394,7 +394,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         else {      //For section 1 (unavailable peers)
             let unavailablePeers = getUnavailablePeers()
             
-            if (indexPath.row > unavailablePeers.count) {
+            if (indexPath.row >= unavailablePeers.count) {
                 print("\(#file) > \(#function) > Exit - Table needs update")
                 self.peersTable.reloadData()
                 return cell

@@ -62,13 +62,13 @@ class StartupViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if self.isMovingFromParentViewController {
-            appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
-            appDelegate.connectionManager.browser.stopBrowsingForPeers()
-            appDelegate.connectionManager.cleanSessions()
-            appDelegate.connectionManager.resetPeerArray()
-            
-            print("\(#file) > \(#function) > Stopped advertising and browsing.")
-        }
+        print("\(#file) > \(#function) > Entry")
+        
+        appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
+        appDelegate.connectionManager.browser.stopBrowsingForPeers()
+        appDelegate.connectionManager.cleanSessions()
+        appDelegate.connectionManager.resetPeerArray()
+        
+        print("\(#file) > \(#function) > Stopped advertising and browsing.")
     }
 }
