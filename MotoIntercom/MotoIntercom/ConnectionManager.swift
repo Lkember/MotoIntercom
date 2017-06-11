@@ -86,11 +86,10 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // MARK: - Sessions
     // A method used to print out how many total sessions and each session
     func debugSessions() {
-        print("\(#file) > \(#function) > Entry")
-        print("\(#file) > \(#function) > Number of sessions: \(sessions.count)")
-        for session in sessions {
-            for peer in session.connectedPeers {
-                print("\(#file) > \(#function) > Connected with peer: \(peer)")
+        print("\(#file) > \(#function) > Entry > Number of sessions: \(sessions.count)")
+        for i in 0..<sessions.count {
+            for peer in sessions[i].connectedPeers {
+                print("\(#file) > \(#function) > session \(i): \(peer)")
             }
         }
         print("\(#file) > \(#function) > Exit")
@@ -111,7 +110,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // a function which finds the index for a session with a given peer
     func findSinglePeerSession(peer: MCPeerID) -> Int {
-        print("\(#file) > \(#function) > Entry")
+        print("\(#file) > \(#function) > Entry \(sessions.count)")
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.contains(peer) && sessions[i].connectedPeers.count == 1) {
                 print("\(#file) > \(#function) > Exit: Found session \(i)")
@@ -259,15 +258,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         if (!availablePeers.contains(peerID)) {
             availablePeers.append(peerID)
             
-            //Connecting to peer
-            if (!checkIfAlreadyConnected(peerID: peerID)) {
-                
-                let sessionIndex = createNewSession()
-                let isPhoneCall = false
-                let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-                
-                self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
-            }
+            connectToPeer(peerID: peerID, isPhoneCall: false)
         }
         delegate?.foundPeer(peerID)
     }
@@ -343,6 +334,18 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return peers
     }
     
+    func connectToPeer(peerID: MCPeerID, isPhoneCall: Bool) {
+        print("\(#file) > \(#function) > Sending connection request to peer \(peerID)")
+        //Connecting to peer
+        if (!checkIfAlreadyConnected(peerID: peerID)) {
+            
+            let sessionIndex = createNewSession()
+            let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+            
+            self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
+        }
+    }
+    
     // MARK: - ConnectionManager
     
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
@@ -391,8 +394,12 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             
         case MCSessionState.notConnected:
             print("\(#file) > \(#function) > Failed to connect to session: \(session)")
-            
             delegate?.disconnectedFromPeer(peerID)
+            
+            if (self.availablePeers.contains(peerID)) {
+                print("\(#file) > \(#function) > Attempting reconnect...")
+                connectToPeer(peerID: peerID, isPhoneCall: false)
+            }
         }
     }
     

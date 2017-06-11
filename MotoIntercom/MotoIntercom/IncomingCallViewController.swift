@@ -114,10 +114,13 @@ class IncomingCallViewController: UIViewController {
                 superview!.didAcceptCall = false
                 superview!.declineCall()
                 
+                NotificationCenter.default.removeObserver(self)
+                
                 print("\(#file) > \(#function) > Setting didAcceptCall to false")
             }
             else {
                 print("\(#file) > \(#function) > superview could not be found.")
+                NotificationCenter.default.removeObserver(self)
                 self.dismissAnimate()
             }
         }

@@ -714,6 +714,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             DispatchQueue.global().sync {
                 //TODO: Need to make the output go to the speaker
                 do {
+                    print("\(#file) > \(#function) > Setting output to speaker")
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
                 }
                 catch let error as NSError {
@@ -732,6 +733,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             // Make button go back to black
             DispatchQueue.global().sync {
                 do {
+                    print("\(#file) > \(#function) > Setting output to ear speaker")
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.none)
                 }
                 catch let error as NSError {
@@ -1036,7 +1038,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         if (!outputStreamIsSet) {
             self.setupStream()
         }
-        print("\(#file) > \(#function) > Exit - \(peerAudioFormat)")
+        print("\(#file) > \(#function) > Exit - \(String(describing: peerAudioFormat))")
     }
     
     
