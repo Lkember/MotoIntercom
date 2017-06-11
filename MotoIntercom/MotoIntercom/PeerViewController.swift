@@ -17,6 +17,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     let incomingCall = "_incoming_call_"
     let acceptedCall = "_accept_call_"
     let declinedCall = "_decline_call_"
+    let endingCall = "_user_ended_call_"
     let peerIsTyping = "_user_is_typing_"
     let delivered = "_is_delivered_"
     var peerStoppedTyping: String = "_user_stopped_typing_"
@@ -241,8 +242,11 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func didReceiveStandardMessage(_ notification: NSNotification) {
+        
         let newMessage = notification.object as! StandardMessage
         let fromPeer = newMessage.peerID!
+        
+        print("\(#file) > \(#function) > Received message = \(newMessage.message)")
         
         if newMessage.message == incomingCall {
             
@@ -263,7 +267,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 popOverView.didMove(toParentViewController: self)
             }
         }
-        if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
+        else if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
             
             DispatchQueue.main.async {
             
@@ -287,6 +291,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
 //                self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
             }
+        }
+        else if (newMessage.message == self.endingCall) {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "peerEndedCall"), object: newMessage)
         }
     }
     

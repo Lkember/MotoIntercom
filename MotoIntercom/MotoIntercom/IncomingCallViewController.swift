@@ -10,8 +10,6 @@ import UIKit
 
 @available(iOS 10.0, *)
 class IncomingCallViewController: UIViewController {
-
-//    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -33,6 +31,8 @@ class IncomingCallViewController: UIViewController {
         self.popUpView.layer.cornerRadius = 10
         self.popUpView.layer.borderColor = UIColor.white.cgColor
         self.popUpView.layer.borderWidth = 2
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(declineButtonIsTouched(_:)), name: NSNotification.Name(rawValue: "peerEndedCall"), object: nil)
         
         self.animate()
     }
@@ -103,15 +103,23 @@ class IncomingCallViewController: UIViewController {
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
         print("\(#file) > \(#function)")
-        if ((self.navigationController?.viewControllers.count)! >= 2) {
-            let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
-            
-            superview!.destinationPeerID = messages?[peerIndex!].peerID
-            
-            dismissAnimate()
-            
-            superview!.didAcceptCall = false
-            superview!.declineCall()
+        DispatchQueue.main.async {
+            if ((self.navigationController?.viewControllers.count)! >= 2) {
+                let superview = self.navigationController?.viewControllers[(self.navigationController?.viewControllers.count)! - 1] as? PeerViewController
+                
+                superview!.destinationPeerID = self.messages?[self.peerIndex!].peerID
+                
+                self.dismissAnimate()
+                
+                superview!.didAcceptCall = false
+                superview!.declineCall()
+                
+                print("\(#file) > \(#function) > Setting didAcceptCall to false")
+            }
+            else {
+                print("\(#file) > \(#function) > superview could not be found.")
+                self.dismissAnimate()
+            }
         }
     }
     
