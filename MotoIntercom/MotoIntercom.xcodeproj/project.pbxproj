@@ -32,6 +32,8 @@
 		B2904C7C1ED8A76900008461 /* add (1).png in Resources */ = {isa = PBXBuildFile; fileRef = B2904C7B1ED8A76900008461 /* add (1).png */; };
 		B2904C7E1ED8A87600008461 /* AddPeerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */; };
 		B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */; };
+		B29845251EF05F42004B080D /* PeerConnectionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29845241EF05F42004B080D /* PeerConnectionStatus.swift */; };
+		B29845271EF086F8004B080D /* ConnectingPeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */; };
 		B2BB1A061E07921800AA8AED /* PhoneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BB1A051E07921800AA8AED /* PhoneViewController.swift */; };
 		B2C7047E1EB2D4AE00C1B938 /* microphone.png in Resources */ = {isa = PBXBuildFile; fileRef = B2C7047D1EB2D4AE00C1B938 /* microphone.png */; };
 		B2CEC2A21EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */; };
@@ -92,6 +94,8 @@
 		B2904C7B1ED8A76900008461 /* add (1).png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "add (1).png"; sourceTree = "<group>"; };
 		B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddPeerViewController.swift; sourceTree = "<group>"; };
 		B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowMediaViewController.swift; sourceTree = "<group>"; };
+		B29845241EF05F42004B080D /* PeerConnectionStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerConnectionStatus.swift; sourceTree = "<group>"; };
+		B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectingPeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2BB1A051E07921800AA8AED /* PhoneViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhoneViewController.swift; sourceTree = "<group>"; };
 		B2C7047D1EB2D4AE00C1B938 /* microphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = microphone.png; sourceTree = "<group>"; };
 		B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestRecordPermissionViewController.swift; sourceTree = "<group>"; };
@@ -220,6 +224,8 @@
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
+				B29845241EF05F42004B080D /* PeerConnectionStatus.swift */,
+				B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */,
 				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
 			);
 			name = Structure;
@@ -550,6 +556,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2904C7E1ED8A87600008461 /* AddPeerViewController.swift in Sources */,
+				B29845271EF086F8004B080D /* ConnectingPeerTableViewCell.swift in Sources */,
+				B29845251EF05F42004B080D /* PeerConnectionStatus.swift in Sources */,
 				B262DE391DF9B97A00DA9931 /* MessageObject.swift in Sources */,
 				B2CEC2A21EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift in Sources */,
 				B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */,

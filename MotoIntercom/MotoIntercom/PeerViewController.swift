@@ -130,7 +130,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         var peers = [MCPeerID]()
         
         for message in messages {
-            if (!appDelegate.connectionManager.availablePeers.contains(message.peerID)) {
+            if (!appDelegate.connectionManager.availablePeers.peers.contains(message.peerID)) {
                 peers.append(message.peerID)
             }
         }
@@ -312,13 +312,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Section 0 holds all available peers
         if (section == 0) {
             
-            if (appDelegate.connectionManager.availablePeers.count == 0) {
+            if (appDelegate.connectionManager.availablePeers.peers.count == 0) {
                 print("\(#file) > \(#function) > section: \(section) rows: 1")
                 return 1
             }
             else {
-                print("\(#file) > \(#function) > section: \(section) rows: \(appDelegate.connectionManager.availablePeers.count)")
-                return appDelegate.connectionManager.availablePeers.count
+                print("\(#file) > \(#function) > section: \(section) rows: \(appDelegate.connectionManager.availablePeers.peers.count)")
+                return appDelegate.connectionManager.availablePeers.peers.count
             }
         }
             
@@ -328,7 +328,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             var count = 0
             
             for message in messages {
-                if (!appDelegate.connectionManager.availablePeers.contains(message.peerID)) {
+                if (!appDelegate.connectionManager.availablePeers.peers.contains(message.peerID)) {
                     count += 1
                 }
             }
@@ -367,11 +367,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         print("\(#file) > \(#function) > Entry - row \(indexPath.row), section \(indexPath.section)")
-        let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
         
         // For available peers
         if indexPath.section == 0 {
-            if (self.appDelegate.connectionManager.availablePeers.count == 0) {
+            if (self.appDelegate.connectionManager.availablePeers.peers.count == 0) {
                 print("\(#file) > \(#function) > Currently no peers available")
                 
                 let cellIdentifier = "PeerTableViewCell"
@@ -385,20 +384,44 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
             
             // If peers are nearby:
-            let currPeer = appDelegate.connectionManager.availablePeers[indexPath.row]
+            let currPeer = appDelegate.connectionManager.availablePeers.peers[indexPath.row]
             
-            cell.peerID = currPeer
-            cell.setPeerDisplayName(displayName: currPeer.displayName)
-            cell.selectionStyle = UITableViewCellSelectionStyle.blue
-            cell.peerIsAvailable()
-            
-            let index = getIndexForPeer(peer: currPeer)
-            cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
-            
-            print("\(#file) > \(#function) > Exit")
-            return cell
+            // If the peer is connected
+            if (appDelegate.connectionManager.availablePeers.isPeerConnected(peer: currPeer)) {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
+                
+                cell.peerID = currPeer
+                cell.setPeerDisplayName(displayName: currPeer.displayName)
+                cell.selectionStyle = UITableViewCellSelectionStyle.blue
+                cell.peerIsAvailable()
+                
+                let index = getIndexForPeer(peer: currPeer)
+                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                
+                print("\(#file) > \(#function) > Exit")
+                return cell
+            }
+                
+            // If the peer is not connected
+            else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "connectingPeerCell") as! ConnectingPeerTableViewCell
+                
+                cell.peerID = currPeer
+                cell.setPeerDisplayName(displayName: currPeer.displayName)
+                cell.selectionStyle = UITableViewCellSelectionStyle.none
+                cell.isUserInteractionEnabled = false
+                
+                let index = getIndexForPeer(peer: currPeer)
+                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                
+                print("\(#file) > \(#function) > Exit")
+                return cell
+            }
         }
-        else {      //For section 1 (unavailable peers)
+            
+        //For section 1 (unavailable peers)
+        else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
             let unavailablePeers = getUnavailablePeers()
             
             if (indexPath.row >= unavailablePeers.count) {
@@ -562,7 +585,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if (indexPath.section == 0) {
-            if (appDelegate.connectionManager.availablePeers.count == 0) {
+            if (appDelegate.connectionManager.availablePeers.peers.count == 0) {
                 return false
             }
             else {
@@ -585,7 +608,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let unavailablePeers = self.getUnavailablePeers()
             
             if (indexPath.section == 0) {
-                let currPeer = self.appDelegate.connectionManager.availablePeers[indexPath.row]
+                let currPeer = self.appDelegate.connectionManager.availablePeers.peers[indexPath.row]
                 let index = self.getIndexForPeer(peer: currPeer)
                 
                 self.messages[index].messages.removeAll()
@@ -733,6 +756,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
         
+        DispatchQueue.main.async {
+            self.peersTable.reloadData()
+        }
     }
     
     // Called when a peer is disconnected from

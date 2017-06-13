@@ -38,7 +38,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     var advertiser : MCNearbyServiceAdvertiser
     
     //Array of peers
-    var availablePeers = [MCPeerID]()
+    var availablePeers = PeerConnectionStatus.init()
     
     //invitation handler
     var invitationHandler: ((Bool, MCSession) -> Void)?
@@ -255,22 +255,23 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        if (!availablePeers.contains(peerID)) {
-            availablePeers.append(peerID)
-            
+        
+        if (!availablePeers.peers.contains(peerID)) {
+            availablePeers.addDisconnectedPeer(peer: peerID)
             connectToPeer(peerID: peerID, isPhoneCall: false)
         }
+        
         delegate?.foundPeer(peerID)
     }
 
     // Checks to see if a peer is already in the availablePeers array
     func doesPeerExist(peerID: MCPeerID) -> Bool {
-        for peer in availablePeers {
-            if peerID == peer {
-                print("\(#file) > \(#function) > True")
-                return true
-            }
+        
+        if availablePeers.peers.contains(peerID) {
+            print("\(#file) > \(#function) > True")
+            return true
         }
+        
         print("\(#file) > \(#function) > False")
         return false
     }
@@ -285,13 +286,8 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // Called when a peer is lost
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         
-        for i in 0..<availablePeers.count {
-            if availablePeers[i] == peerID {
-                print("\(#file) > \(#function) > Return > Removing peer \(availablePeers[i])")
-                availablePeers.remove(at: i)
-                break
-            }
-        }
+        print("\(#file) > \(#function) > Return > Removing peer \(peerID.displayName)")
+        availablePeers.removePeer(peerID: peerID)
         
         delegate?.lostPeer(peerID)
     }
@@ -310,22 +306,12 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return false
     }
     
-    // Called to remove a specific peer from the available peers array
-    func removeAvailablePeer(peerID: MCPeerID) {
-        print("\(#file) > \(#function) > Removing peer \(peerID.displayName)")
-        for i in 0..<availablePeers.count {
-            if availablePeers[i] == peerID {
-                availablePeers.remove(at: i)
-                return
-            }
-        }
-    }
     
     // Called to get all available peers that are not in the session given by sessionIndex
     func getPeersNotInSession(sessionIndex: Int) -> [MCPeerID] {
         var peers = [MCPeerID]()
         
-        for peer in availablePeers {
+        for peer in availablePeers.peers {
             if (!sessions[sessionIndex].connectedPeers.contains(peer)) {
                 peers.append(peer)
             }
@@ -386,20 +372,23 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         switch  state {
         case MCSessionState.connected:
             print("\(#file) > \(#function) > Connected to peer: \(peerID)")
+            
+            availablePeers.setToConnected(peerID: peerID)
             delegate?.connectedWithPeer(peerID)
             
         case MCSessionState.connecting:
             print("\(#file) > \(#function) > Connecting to peer: \(peerID)")
+            
+            availablePeers.setToConnecting(peerID: peerID)
             delegate?.connectingWithPeer(peerID)
             
         case MCSessionState.notConnected:
             print("\(#file) > \(#function) > Failed to connect to session: \(session)")
+            
+            availablePeers.setToDisconnected(peerID: peerID)
             delegate?.disconnectedFromPeer(peerID)
             
-            if (self.availablePeers.contains(peerID)) {
-                print("\(#file) > \(#function) > Attempting reconnect...")
-                connectToPeer(peerID: peerID, isPhoneCall: false)
-            }
+            connectToPeer(peerID: peerID, isPhoneCall: false)
         }
     }
     
