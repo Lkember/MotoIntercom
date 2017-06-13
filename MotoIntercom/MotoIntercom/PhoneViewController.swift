@@ -711,7 +711,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             speakerIsOn = true
             
             // Make the button look gray
-            DispatchQueue.global().sync {
+            OperationQueue.main.addOperation {
                 //TODO: Need to make the output go to the speaker
                 do {
                     print("\(#file) > \(#function) > Setting output to speaker")
@@ -721,17 +721,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
                 }
                 
-                OperationQueue.main.addOperation {
-                    self.speakerButton.backgroundColor = UIColor.darkGray
-                    self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
-                }
+                self.speakerButton.backgroundColor = UIColor.darkGray
+                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
             }
         }
         else {
             speakerIsOn = false
             
             // Make button go back to black
-            DispatchQueue.global().sync {
+            OperationQueue.main.addOperation {
                 do {
                     print("\(#file) > \(#function) > Setting output to ear speaker")
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.none)
@@ -740,10 +738,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(#file) > \(#function) > Could not change to ear speaker: \(error.description)")
                 }
                 
-                OperationQueue.main.addOperation {
-                    self.speakerButton.backgroundColor = UIColor.clear
-                    self.speakerButton.backgroundColor?.withAlphaComponent(1)
-                }
+                self.speakerButton.backgroundColor = UIColor.clear
+                self.speakerButton.backgroundColor?.withAlphaComponent(1)
             }
         }
         
