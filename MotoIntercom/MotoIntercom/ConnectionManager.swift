@@ -328,7 +328,9 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             let sessionIndex = createNewSession()
             let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
             
-            self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
+            if (sessionIndex < self.sessions.count) {
+                self.appDelegate.connectionManager.browser.invitePeer(peerID, to: self.sessions[sessionIndex], withContext: dataToSend, timeout: 20)
+            }
         }
     }
     
