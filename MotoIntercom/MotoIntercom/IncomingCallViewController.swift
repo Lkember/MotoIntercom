@@ -21,9 +21,14 @@ class IncomingCallViewController: UIViewController {
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var popUpView: UIView!
     
+    // Used to determine if the invitation is invalid
+    var timer = Timer()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        timer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(self.declineButtonIsTouched(_:)), userInfo: nil, repeats: false)
+    
         // Do any additional setup after loading the view.
         peerDisplayNameLabel.text = peerDisplayName!
         
