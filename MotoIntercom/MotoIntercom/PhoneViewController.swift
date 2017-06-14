@@ -345,8 +345,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             */
         }
         
-        sleep(UInt32(0.05))
         print("\(#file) > \(#function) > Removing tap")
+        sleep(UInt32(0.05))
         localInput?.removeTap(onBus: 0)
         
         isAudioSetup = true
@@ -390,7 +390,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
         }
         
-//        localInput?.reset()
+//        sleep(UInt32(0.05))
 //        localInput?.removeTap(onBus: 0)
 //        localInput?.installTap(onBus: 0, bufferSize: 17640, format: localInputFormat) {
 //            (buffer, when) -> Void in
@@ -403,7 +403,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //             */
 //        }
 //        
-//        localInput?.reset()
+//        sleep(UInt32(0.05))
 //        localInput?.removeTap(onBus: 0)
         
         self.isAudioSetup = true
@@ -414,7 +414,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     func recordAudio() {
         localPlayerQueue.sync {
-            localInput?.reset()
+            sleep(UInt32(0.05))
             localInput?.removeTap(onBus: 0)
             localInput?.installTap(onBus: 0, bufferSize: 4410, format: localInputFormat) {
                 (buffer, when) -> Void in
@@ -508,7 +508,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(#file) > \(#function) > Entry \(notification.name)")
         
         DispatchQueue.main.async {
-            self.localInput?.reset()
+            sleep(UInt32(0.05))
             self.localInput?.removeTap(onBus: 0)
             self.updateAudioSettings()
             
@@ -731,7 +731,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 if (!muteIsOn) {
                     // Make the button look gray
                     print("\(#file) > \(#function) > removing tap")
-                    localInput?.reset()
+                    sleep(UInt32(0.05))
                     self.localInput?.removeTap(onBus: 0)
                     print("\(#file) > \(#function) > tap removed")
                     
@@ -745,7 +745,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 else {
                     // Make button go back to black
                     print("\(#file) > \(#function) > removing tap")
-                    localInput?.reset()
+                    sleep(UInt32(0.05))
                     self.localInput?.removeTap(onBus: 0)
                     print("\(#file) > \(#function) > tap removed")
                     print("\(#file) > \(#function) > installing tap")
@@ -770,12 +770,21 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     @IBAction func speakerButtonIsTouched(_ sender: Any) {
+        print("\(#file) > \(#function) > Entry \(speakerIsOn) -> \(!speakerIsOn)")
         if (!speakerIsOn) {
             speakerIsOn = true
             
-            // Make the button look gray
+            // Make the button look gray and disable the buttons
             DispatchQueue.main.async {
-                //TODO: Need to make the output go to the speaker
+                
+                self.speakerButton.isUserInteractionEnabled = false
+                self.speakerButton.isEnabled = false
+                
+                self.speakerButton.backgroundColor = UIColor.darkGray
+                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
+            }
+            
+            DispatchQueue.global().sync {
                 do {
                     print("\(#file) > \(#function) > Setting output to speaker")
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
@@ -783,16 +792,22 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 catch let error as NSError {
                     print("\(#file) > \(#function) > Could not change to speaker: \(error.description)")
                 }
-                
-                self.speakerButton.backgroundColor = UIColor.darkGray
-                self.speakerButton.backgroundColor?.withAlphaComponent(0.5)
             }
         }
         else {
             speakerIsOn = false
             
-            // Make button go back to black
             DispatchQueue.main.async {
+                
+                self.speakerButton.isUserInteractionEnabled = false
+                self.speakerButton.isEnabled = false
+                
+                self.speakerButton.backgroundColor = UIColor.clear
+                self.speakerButton.backgroundColor?.withAlphaComponent(1)
+            }
+            
+            // Make button go back to black
+            DispatchQueue.global().sync {
                 do {
                     print("\(#file) > \(#function) > Setting output to ear speaker")
                     try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.none)
@@ -801,9 +816,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(#file) > \(#function) > Could not change to ear speaker: \(error.description)")
                 }
                 
-                self.speakerButton.backgroundColor = UIColor.clear
-                self.speakerButton.backgroundColor?.withAlphaComponent(1)
             }
+        }
+        
+        DispatchQueue.main.async {
+            self.speakerButton.isUserInteractionEnabled = true
+            self.speakerButton.isEnabled = true
         }
         
         print("\(#file) > \(#function) > speaker: \(speakerIsOn)")
