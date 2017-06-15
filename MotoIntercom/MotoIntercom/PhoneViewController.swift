@@ -39,7 +39,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var didReceiveCall: Bool = false
     
     // Streams
-    var outputStream: OutputStream?
+//    var outputStream: OutputStream?
+    var outputStreams = [OutputStream]()
     var outputStreamIsSet: Bool = false
     var inputStream: InputStream?
     var inputStreamIsSet: Bool = false
@@ -474,7 +475,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
-                    let _ = self.outputStream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                    
+                    for stream in self.outputStreams {
+                        let _ = stream.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                    }
                     
 //                    if output > 0 {
 ////                        print("\(type(of: self)) > \(#function) > \(output) bytes written")
@@ -619,7 +623,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         if (!outputStreamIsSet) {
             do {
                 let stream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
-                outputStream = stream
+                outputStreams.append(stream)
                 outputStreamIsSet = true
             }
             catch let error as NSError {
@@ -797,6 +801,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         else {
             speakerIsOn = false
             
+            // Make button go back to black
             DispatchQueue.main.async {
                 
                 self.speakerButton.isUserInteractionEnabled = false
@@ -806,7 +811,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.speakerButton.backgroundColor?.withAlphaComponent(1)
             }
             
-            // Make button go back to black
             DispatchQueue.global().sync {
                 do {
                     print("\(type(of: self)) > \(#function) > Setting output to ear speaker")
@@ -881,7 +885,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         timer?.invalidate()
         
         // Close the output stream
-        outputStream?.close()
+        for stream in outputStreams {
+            stream.close()
+        }
+        
         inputStream?.close()
         
         print("\(type(of: self)) > \(#function) > Streams closed")
@@ -1033,9 +1040,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.inputStream!.open()
             
-            self.outputStream!.delegate = self
-            self.outputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-            self.outputStream!.open()
+            let index = outputStreams.count-1
+            self.outputStreams[index].delegate = self
+            self.outputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.outputStreams[index].open()
             
             self.recordingQueue.async {
                 sleep(1)
