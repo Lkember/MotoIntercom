@@ -70,6 +70,8 @@ class IncomingCallViewController: UIViewController {
 //        let peerIndex = getIndexForPeer(peer: fromPeer)
         print("\(type(of: self)) > \(#function) > Entry")
         
+        timer.invalidate()
+        
         if ((self.navigationController?.viewControllers.count)! >= 2) {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
         
@@ -108,6 +110,8 @@ class IncomingCallViewController: UIViewController {
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
         print("\(type(of: self)) > \(#function)")
+        timer.invalidate()
+        
         DispatchQueue.main.async {
             if ((self.navigationController?.viewControllers.count)! >= 2) {
                 let superview = self.navigationController?.viewControllers[(self.navigationController?.viewControllers.count)! - 1] as? PeerViewController
