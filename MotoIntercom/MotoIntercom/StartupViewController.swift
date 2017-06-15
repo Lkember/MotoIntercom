@@ -28,12 +28,12 @@ class StartupViewController: UIViewController {
     }
     
     override func viewDidLoad() {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         super.viewDidLoad()
         
         let recordPermission = audioSession.recordPermission()
         if recordPermission == AVAudioSessionRecordPermission.undetermined {
-            print("\(#file) > \(#function) > Record permission is undetermined")
+            print("\(type(of: self)) > \(#function) > Record permission is undetermined")
             
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "RequestMicrophoneAccess") as! RequestRecordPermissionViewController
             self.addChildViewController(popOverView)
@@ -43,7 +43,7 @@ class StartupViewController: UIViewController {
             popOverView.didMove(toParentViewController: self)
         }
         else if recordPermission == AVAudioSessionRecordPermission.denied {
-            print("\(#file) > \(#function) > Record permission is denied. Phone calls will be disabled.")
+            print("\(type(of: self)) > \(#function) > Record permission is denied. Phone calls will be disabled.")
             
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "RequestMicrophoneAccess") as! RequestRecordPermissionViewController
             
@@ -57,18 +57,18 @@ class StartupViewController: UIViewController {
             popOverView.microphoneAccessLabel.text = "You have not given this app access to your microphone. This means that you will not be able to send any audio to your peers. It is recommended to change this option by going into Settings > Privacy > Microphone and giving access to MotoIntercom."
         }
         else if recordPermission == AVAudioSessionRecordPermission.granted {
-            print("\(#file) > \(#function) > Record permission is granted.")
+            print("\(type(of: self)) > \(#function) > Record permission is granted.")
         }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         appDelegate.connectionManager.advertiser.stopAdvertisingPeer()
         appDelegate.connectionManager.browser.stopBrowsingForPeers()
         appDelegate.connectionManager.cleanSessions()
         appDelegate.connectionManager.resetPeerArray()
         
-        print("\(#file) > \(#function) > Stopped advertising and browsing.")
+        print("\(type(of: self)) > \(#function) > Stopped advertising and browsing.")
     }
 }

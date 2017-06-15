@@ -47,7 +47,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // MARK: - Initialization
     
     override init() {
-        print("\(#file) > \(#function) > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
+        print("\(type(of: self)) > \(#function) > Initializing ConnectionManager with new peer: \(UIDevice.current.name)")
         
         self.peer = MCPeerID(displayName: UIDevice.current.name)
         let session = MCSession(peer: peer)
@@ -65,7 +65,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     init(peerID : MCPeerID, uniqueID : String) {
-        print("\(#file) > \(#function) > Initializing ConnectionManager with existing peerID: \(peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > Initializing ConnectionManager with existing peerID: \(peerID.displayName)")
         
         self.peer = peerID
         self.uniqueID = uniqueID
@@ -86,13 +86,13 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // MARK: - Sessions
     // A method used to print out how many total sessions and each session
     func debugSessions() {
-        print("\(#file) > \(#function) > Entry > Number of sessions: \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Entry > Number of sessions: \(sessions.count)")
         for i in 0..<sessions.count {
             for peer in sessions[i].connectedPeers {
-                print("\(#file) > \(#function) > session \(i): \(peer)")
+                print("\(type(of: self)) > \(#function) > session \(i): \(peer)")
             }
         }
-        print("\(#file) > \(#function) > Exit")
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     
@@ -100,31 +100,31 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func checkForReusableSession() -> Int {
         for i in 0..<sessions.count {
             if sessions[i].connectedPeers.count == 0 {
-                print("\(#file) > \(#function) > returning \(i)")
+                print("\(type(of: self)) > \(#function) > returning \(i)")
                 return i
             }
         }
-        print("\(#file) > \(#function) > No reusable sessions found")
+        print("\(type(of: self)) > \(#function) > No reusable sessions found")
         return -1
     }
     
     // a function which finds the index for a session with a given peer
     func findSinglePeerSession(peer: MCPeerID) -> Int {
-        print("\(#file) > \(#function) > Entry \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Entry \(sessions.count)")
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.contains(peer) && sessions[i].connectedPeers.count == 1) {
-                print("\(#file) > \(#function) > Exit: Found session \(i)")
+                print("\(type(of: self)) > \(#function) > Exit: Found session \(i)")
                 return i
             }
         }
-        print("\(#file) > \(#function) > Could not find session")
+        print("\(type(of: self)) > \(#function) > Could not find session")
         return -1
     }
     
     
     // Creates a new session for a new peer, returns it's index
     func createNewSession() -> Int {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         let reusableSession = checkForReusableSession()
         
@@ -133,18 +133,18 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             session.delegate = self
             sessions.append(session)
             
-            print("\(#file) > \(#function) > Exit > Creating a new session.")
+            print("\(type(of: self)) > \(#function) > Exit > Creating a new session.")
             return sessions.count - 1
         }
         else {
-            print("\(#file) > \(#function) > Exit > Found reusable session.")
+            print("\(type(of: self)) > \(#function) > Exit > Found reusable session.")
             return reusableSession
         }
     }
     
     // A function which removes sessions that are not connected with any peers.
     func cleanSessions() {
-        print("\(#file) > \(#function) > Entry \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Entry \(sessions.count)")
         var indexesToRemove : [Int] = []
         
         for i in 0..<sessions.count {
@@ -159,7 +159,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             sessions.remove(at: i)
         }
         
-        print("\(#file) > \(#function) > Exit \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Exit \(sessions.count)")
     }
     
     
@@ -167,7 +167,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // Send a StandardMessage to the peer
     func sendData(stringMessage: String, toPeer targetPeer: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Sending \(stringMessage) to peer.")
+        print("\(type(of: self)) > \(#function) > Sending \(stringMessage) to peer.")
         
         let message = StandardMessage.init(message: stringMessage, peerID: self.appDelegate.connectionManager.peer)
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: message)
@@ -175,7 +175,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         let peerIndex = findSinglePeerSession(peer: targetPeer)
         
         if (peerIndex == -1) {
-            print("\(#file) > \(#function) > Could not find peer")
+            print("\(type(of: self)) > \(#function) > Could not find peer")
             return false
         }
         
@@ -183,7 +183,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             try sessions[peerIndex].send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
-            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
             return false
         }
         
@@ -192,7 +192,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Send MessageObject data to peer
     func sendData(message: MessageObject, toPeer targetPeer: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Sending message to peer.")
+        print("\(type(of: self)) > \(#function) > Sending message to peer.")
         
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: message)
         let peersArray = NSArray(object: targetPeer)
@@ -205,7 +205,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             }
             else {
                 // TODO: If message fails to send we need to connect to peer
-                print("\(#file) > \(#function) > Not connected to peer. Message couldn't be sent.")
+                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
             }
         }
         
@@ -213,7 +213,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
-            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
             return false
         }
         return true
@@ -221,7 +221,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // Send AVAudioFormat to peer - used by PhoneViewController
     func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Sending audio format")
+        print("\(type(of: self)) > \(#function) > Sending audio format")
         
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
         let peersArray = NSArray(object: targetPeer)
@@ -234,7 +234,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             }
             else {
                 // TODO: If message fails to send we need to connect to peer
-                print("\(#file) > \(#function) > Not connected to peer. Message couldn't be sent.")
+                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
                 
                 return false
             }
@@ -243,7 +243,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
-            print("\(#file) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+            print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
             return false
         }
         
@@ -268,17 +268,17 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func doesPeerExist(peerID: MCPeerID) -> Bool {
         
         if availablePeers.peers.contains(peerID) {
-            print("\(#file) > \(#function) > True")
+            print("\(type(of: self)) > \(#function) > True")
             return true
         }
         
-        print("\(#file) > \(#function) > False")
+        print("\(type(of: self)) > \(#function) > False")
         return false
     }
     
     //removes all previously seen peers
     func resetPeerArray() {
-        print("\(#file) > \(#function) > Removing all found peers")
+        print("\(type(of: self)) > \(#function) > Removing all found peers")
         availablePeers.removeAll()
     }
     
@@ -286,7 +286,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // Called when a peer is lost
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         
-        print("\(#file) > \(#function) > Return > Removing peer \(peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > Return > Removing peer \(peerID.displayName)")
         availablePeers.removePeer(peerID: peerID)
         
         delegate?.lostPeer(peerID)
@@ -295,14 +295,14 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //Called to check if the current connection is already in the connectedPeers array
     func checkIfAlreadyConnected(peerID: MCPeerID) -> Bool {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         for session in sessions {
             if (session.connectedPeers.contains(peerID) && session.connectedPeers.count == 1) {
-                print("\(#file) > \(#function) > Return True")
+                print("\(type(of: self)) > \(#function) > Return True")
                 return true
             }
         }
-        print("\(#file) > \(#function) > Return False")
+        print("\(type(of: self)) > \(#function) > Return False")
         return false
     }
     
@@ -321,7 +321,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     }
     
     func connectToPeer(peerID: MCPeerID, isPhoneCall: Bool) {
-        print("\(#file) > \(#function) > Sending connection request to peer \(peerID)")
+        print("\(type(of: self)) > \(#function) > Sending connection request to peer \(peerID)")
         //Connecting to peer
         if (!checkIfAlreadyConnected(peerID: peerID)) {
             
@@ -337,7 +337,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     // MARK: - ConnectionManager
     
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
-        print("\(#file) > \(#function) > \(error)")
+        print("\(type(of: self)) > \(#function) > \(error)")
     }
 
     
@@ -365,7 +365,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
-        print("\(#file) > \(#function) > \(error.localizedDescription)")
+        print("\(type(of: self)) > \(#function) > \(error.localizedDescription)")
     }
     
     //MARK: - MCSession
@@ -373,19 +373,19 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch  state {
         case MCSessionState.connected:
-            print("\(#file) > \(#function) > Connected to peer: \(peerID)")
+            print("\(type(of: self)) > \(#function) > Connected to peer: \(peerID)")
             
             availablePeers.setToConnected(peerID: peerID)
             delegate?.connectedWithPeer(peerID)
             
         case MCSessionState.connecting:
-            print("\(#file) > \(#function) > Connecting to peer: \(peerID)")
+            print("\(type(of: self)) > \(#function) > Connecting to peer: \(peerID)")
             
             availablePeers.setToConnecting(peerID: peerID)
             delegate?.connectingWithPeer(peerID)
             
         case MCSessionState.notConnected:
-            print("\(#file) > \(#function) > Failed to connect to session: \(session)")
+            print("\(type(of: self)) > \(#function) > Failed to connect to session: \(session)")
             
             availablePeers.setToDisconnected(peerID: peerID)
             delegate?.disconnectedFromPeer(peerID)
@@ -397,32 +397,32 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         
         if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? StandardMessage {
-            print("\(#file) > \(#function) > Received \(newMessage.message) from peer \(peerID.displayName)")
+            print("\(type(of: self)) > \(#function) > Received \(newMessage.message) from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedStandardMessageNotification"), object: newMessage)
         }
         else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? MessageObject {
-            print("\(#file) > \(#function) > Received new message from peer \(peerID.displayName)")
+            print("\(type(of: self)) > \(#function) > Received new message from peer \(peerID.displayName)")
             newMessage.peerID = peerID
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
         }
         else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? AVAudioFormat {
-            print("\(#file) > \(#function) > Received audio format from peer \(peerID.displayName)")
+            print("\(type(of: self)) > \(#function) > Received audio format from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedAVAudioFormat"), object: newMessage)
         }
         
     }
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        print("\(#file) > \(#function) > from peer \(peerID.displayName) with streamName \(streamName)")
+        print("\(type(of: self)) > \(#function) > from peer \(peerID.displayName) with streamName \(streamName)")
         delegate?.startedStreamWithPeer(peerID, inputStream: stream)
     }
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
     }
     
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?) {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
     }
     
 }

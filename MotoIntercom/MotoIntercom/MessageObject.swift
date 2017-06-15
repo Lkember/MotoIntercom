@@ -23,21 +23,21 @@ class MessageObject: NSObject, NSCoding {
     
     // MARK: init
     override init() {
-        print("\(#file) > \(#function) > new message object is being created with display name \(UIDevice.current.name).")
+        print("\(type(of: self)) > \(#function) > new message object is being created with display name \(UIDevice.current.name).")
         peerID = MCPeerID.init(displayName: UIDevice.current.name)
         selfID = MCPeerID.init(displayName: UIDevice.current.name)
         messages = [JSQMessage]()
     }
     
     init(peerID: MCPeerID, messages: [JSQMessage]) {
-        print("\(#file) > \(#function) > Correctly initializing message object for peer \(peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > Correctly initializing message object for peer \(peerID.displayName)")
         self.peerID = peerID
         self.selfID = MCPeerID.init(displayName: UIDevice.current.name)
         self.messages = messages
     }
     
     init(peerID: MCPeerID, selfID: MCPeerID, messages: [JSQMessage]) {
-        print("\(#file) > \(#function) > Initializing message object as received.")
+        print("\(type(of: self)) > \(#function) > Initializing message object as received.")
         self.peerID = peerID
         self.selfID = selfID
         self.messages = messages
@@ -45,17 +45,17 @@ class MessageObject: NSObject, NSCoding {
     
     // MARK: Functions
     func resetConnectionType() {
-        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 0
     }
     
     func setConnectionTypeToMessage() {
-        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 1
     }
     
     func setConnectionTypeToVoice() {
-        print("\(#file) > \(#function) > forPeer \(self.peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
         connectionType = 2
     }
     

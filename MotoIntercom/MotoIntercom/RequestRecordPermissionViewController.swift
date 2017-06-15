@@ -61,10 +61,10 @@ class RequestRecordPermissionViewController: UIViewController {
         
         audioSession.requestRecordPermission({ (granted: Bool) -> Void in
             if granted {
-                print("\(#file) > \(#function) > User granted access.")
+                print("\(type(of: self)) > \(#function) > User granted access.")
             }
             else {
-                print("\(#file) > \(#function) > User denied access")
+                print("\(type(of: self)) > \(#function) > User denied access")
             }
         })
         

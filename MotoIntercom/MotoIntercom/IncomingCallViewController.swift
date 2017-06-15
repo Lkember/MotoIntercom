@@ -68,7 +68,7 @@ class IncomingCallViewController: UIViewController {
     
     @IBAction func acceptButtonIsTouched(_ sender: UIButton) {
 //        let peerIndex = getIndexForPeer(peer: fromPeer)
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         if ((self.navigationController?.viewControllers.count)! >= 2) {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
@@ -76,7 +76,7 @@ class IncomingCallViewController: UIViewController {
             var index = -1
         
             if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
-                print("\(#file) > \(#function) > Accepting invitation")
+                print("\(type(of: self)) > \(#function) > Accepting invitation")
                 index = self.appDelegate.connectionManager.createNewSession()
                 
                 if self.appDelegate.connectionManager.invitationHandler != nil {
@@ -84,7 +84,7 @@ class IncomingCallViewController: UIViewController {
                 }
             }
             else {
-                print("\(#file) > \(#function) > Already connected")
+                print("\(type(of: self)) > \(#function) > Already connected")
                 index = peerIndex!
             }
                 
@@ -95,19 +95,19 @@ class IncomingCallViewController: UIViewController {
             
             dismissAnimate()
         
-            print("\(#file) > \(#function) > Accepting Call")
+            print("\(type(of: self)) > \(#function) > Accepting Call")
             superview!.acceptCall()
         }
         else {
-            print("\(#file) > \(#function) > Failed to accept invitation.")
+            print("\(type(of: self)) > \(#function) > Failed to accept invitation.")
             //TODO: Notify user that connection failed
         }
         
-        print("\(#file) > \(#function) > Exit")
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     @IBAction func declineButtonIsTouched(_ sender: UIButton) {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
         DispatchQueue.main.async {
             if ((self.navigationController?.viewControllers.count)! >= 2) {
                 let superview = self.navigationController?.viewControllers[(self.navigationController?.viewControllers.count)! - 1] as? PeerViewController
@@ -121,10 +121,10 @@ class IncomingCallViewController: UIViewController {
                 
                 NotificationCenter.default.removeObserver(self)
                 
-                print("\(#file) > \(#function) > Setting didAcceptCall to false")
+                print("\(type(of: self)) > \(#function) > Setting didAcceptCall to false")
             }
             else {
-                print("\(#file) > \(#function) > superview could not be found.")
+                print("\(type(of: self)) > \(#function) > superview could not be found.")
                 NotificationCenter.default.removeObserver(self)
                 self.dismissAnimate()
             }

@@ -19,7 +19,7 @@ class ShowMediaViewController: UIViewController, UIScrollViewDelegate {
         super.viewDidLoad()
 
         if (image == nil) {
-            print("\(#file) > \(#function) > Could not find image...")
+            print("\(type(of: self)) > \(#function) > Could not find image...")
         }
         else {
             imageView.image = image

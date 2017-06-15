@@ -78,25 +78,25 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @IBAction func addPeerButtonIsTouched(_ sender: UIButton) {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         var peersToAdd = [MCPeerID]()
         
         if let indexPaths = self.peerViewTable.indexPathsForSelectedRows?.sorted() {
             for i in 0..<indexPaths.count {
                 peersToAdd.append(self.peers[indexPaths[i].row])
                 
-                print("\(#file) > \(#function) > Adding \(self.peers[indexPaths[i].row].displayName)")
+                print("\(type(of: self)) > \(#function) > Adding \(self.peers[indexPaths[i].row].displayName)")
             }
         }
         
         dismissAnimate()
         
         peerAddedDelegate?.peersToBeAdded(peers: peersToAdd)
-        print("\(#file) > \(#function) > Exit")
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     @IBAction func cancelButtonIsTouched(_ sender: UIButton) {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
         dismissAnimate()
     }
     

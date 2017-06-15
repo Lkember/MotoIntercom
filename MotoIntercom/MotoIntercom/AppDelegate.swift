@@ -51,7 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
         
-        print("\(#file) > \(#function) > resigned active")
+        print("\(type(of: self)) > \(#function) > resigned active")
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -61,7 +61,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         connectionManager.advertiser.startAdvertisingPeer()
         connectionManager.browser.stopBrowsingForPeers()
         
-        print("\(#file) > \(#function) > Entered background")
+        print("\(type(of: self)) > \(#function) > Entered background")
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -70,17 +70,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         connectionManager.advertiser.startAdvertisingPeer()
         connectionManager.browser.startBrowsingForPeers()
         
-        print("\(#file) > \(#function) > Entered foreground")
+        print("\(type(of: self)) > \(#function) > Entered foreground")
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        print("\(#file) > \(#function) > Became active")
+        print("\(type(of: self)) > \(#function) > Became active")
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        print("\(#file) > \(#function) > disconnecting from session.")
+        print("\(type(of: self)) > \(#function) > disconnecting from session.")
         
         for session in connectionManager.sessions {
             session.disconnect()
@@ -94,7 +94,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: Saving
     
     func saveIdentification(peer : MCPeerID, uniqueID: String) {
-        print("\(#file) > \(#function) > peerID: \(peer.displayName) and uniqueID: \(uniqueID) are being saved")
+        print("\(type(of: self)) > \(#function) > peerID: \(peer.displayName) and uniqueID: \(uniqueID) are being saved")
         
         let peerIDData = NSKeyedArchiver.archivedData(withRootObject: peer)
         let uniqueIDData = NSKeyedArchiver.archivedData(withRootObject: uniqueID)
@@ -105,7 +105,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func loadIdentification() -> Bool {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         var didLoadPeerID = false
         var didLoadUniqueID = false
@@ -115,7 +115,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let peerData = defaults.object(forKey: peerIDString) as? Data {
             if let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerData) as? MCPeerID {
                 self.peer = peerID
-                print("\(#file) > \(#function) > Successful load of peerID - \(peerID)")
+                print("\(type(of: self)) > \(#function) > Successful load of peerID - \(peerID)")
                 didLoadPeerID = true
             }
         }
@@ -123,7 +123,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let uniqueData = defaults.object(forKey: uniqueIDString) as? Data {
             if let uniqueID = NSKeyedUnarchiver.unarchiveObject(with: uniqueData) as? String {
                 self.uniqueID = uniqueID
-                print("\(#file) > \(#function) > Successful load of uniqueID")
+                print("\(type(of: self)) > \(#function) > Successful load of uniqueID")
                 didLoadUniqueID = true
             }
         }
@@ -132,7 +132,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return true
         }
         else {
-            print("\(#file) > \(#function) > false: didLoadPeerID=\(didLoadPeerID), didLoadUniqueID=\(didLoadUniqueID)")
+            print("\(type(of: self)) > \(#function) > false: didLoadPeerID=\(didLoadPeerID), didLoadUniqueID=\(didLoadUniqueID)")
             return false
         }
         

@@ -79,11 +79,11 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
                 self.latestMessageSentIndex = i
             }
         }
-        print("\(#file) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
+        print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
     func nextMessageWasDelivered() {
-        print("\(#file) > \(#function) > Updated index from \(self.latestMessageSentIndex)")
+        print("\(type(of: self)) > \(#function) > Updated index from \(self.latestMessageSentIndex)")
         for i in self.latestMessageSentIndex+1..<messageObject.messages.count {
             if (messageObject.messages[i].senderId == self.appDelegate.connectionManager.uniqueID) {
                 self.latestMessageSentIndex = i
@@ -95,7 +95,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         OperationQueue.main.addOperation {
             self.collectionView.reloadData()
         }
-        print("\(#file) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
+        print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
 
@@ -122,17 +122,17 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // Gets the data for the message at index
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
 //        if messageObject.messages[indexPath.item].isMediaMessage {
-//            print("\(#file) > \(#function) > Picture message...")
+//            print("\(type(of: self)) > \(#function) > Picture message...")
 //        }
 //        else {
-//            print("\(#file) > \(#function) > \(messageObject.messages[indexPath.item].text)")
+//            print("\(type(of: self)) > \(#function) > \(messageObject.messages[indexPath.item].text)")
 //        }
         return messageObject.messages[indexPath.item]
     }
     
     // Sets the number of messages
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("\(#file) > \(#function) > \(messageObject.messages.count)")
+        print("\(type(of: self)) > \(#function) > \(messageObject.messages.count)")
         return messageObject.messages.count
     }
     
@@ -149,7 +149,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Checks if the message is from the curr user or the peer
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
         let message = messageObject.messages[indexPath.item]
         
         // if the sender ID is us, then get an outgoingBubbleImage, else get an incomingBubbleImage
@@ -162,7 +162,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Changes the text colour depending on who the message is from
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("\(#file) > \(#function)")
+        print("\(type(of: self)) > \(#function)")
         let cell = super.collectionView(collectionView, cellForItemAt: indexPath) as! JSQMessagesCollectionViewCell
         let message = messageObject.messages[indexPath.item]
             
@@ -183,12 +183,12 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, attributedTextForCellBottomLabelAt indexPath: IndexPath!) -> NSAttributedString! {
         
         if (self.latestMessageSentIndex == indexPath.row) {
-            print("\(#file) > \(#function) > Setting to delivered")
+            print("\(type(of: self)) > \(#function) > Setting to delivered")
             
             return NSAttributedString(string: "delivered")
         }
         else {
-            print("\(#file) > \(#function) > Exit")
+            print("\(type(of: self)) > \(#function) > Exit")
         
             return nil
         }
@@ -198,12 +198,12 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, layout collectionViewLayout: JSQMessagesCollectionViewFlowLayout!, heightForCellBottomLabelAt indexPath: IndexPath!) -> CGFloat {
         
         if (self.latestMessageSentIndex == indexPath.row) {
-            print("\(#file) > \(#function) > Updating row")
+            print("\(type(of: self)) > \(#function) > Updating row")
             
             return kJSQMessagesCollectionViewCellLabelHeightDefault
         }
         else {
-            print("\(#file) > \(#function) > Exit")
+            print("\(type(of: self)) > \(#function) > Exit")
             
             return 0.0
         }
@@ -234,7 +234,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         }
         
         if let message = JSQMessage(senderId: id, displayName: name, text: text) {
-            print("\(#file) > \(#function) > Adding message \(text)")
+            print("\(type(of: self)) > \(#function) > Adding message \(text)")
             messageObject.messages.append(message)
         }
     }
@@ -245,7 +245,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         }
         
         if let message = JSQMessage(senderId: id, displayName: name, media: media) {
-            print("\(#file) > \(#function) > Adding media message")
+            print("\(type(of: self)) > \(#function) > Adding media message")
             messageObject.messages.append(message)
         }
     }
@@ -310,7 +310,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         let message = messageObject.messages[indexPath.row]
         
         if (message.isMediaMessage) {
-            print("\(#file) > \(#function) > media item was touched")
+            print("\(type(of: self)) > \(#function) > media item was touched")
             //TODO: display photo
             let mediaItem = message.media as! JSQPhotoMediaItem
             if let test: UIImage = mediaItem.image {
@@ -319,7 +319,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             }
         }
         else {   // Else if message is not a media item, do nothing
-            print("\(#file) > \(#function) > message was touched, nothing to do")
+            print("\(type(of: self)) > \(#function) > message was touched, nothing to do")
         }
     }
     
@@ -327,7 +327,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     //MARK: - Message Received
     
     func receivedMessageObject(_ notification: Notification) {
-        print("\(#file) > \(#function) > Message received")
+        print("\(type(of: self)) > \(#function) > Message received")
         let newMessage = notification.object as! MessageObject
         
         //Vibrate
@@ -349,21 +349,21 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
         }
         
-        print("\(#file) > \(#function) > Exit")
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     func receivedStandardMessage(_ notification: NSNotification) {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         let newMessage = notification.object as! StandardMessage
         
         if newMessage.message == userIsTyping {
-            print("\(#file) > \(#function) > Peer is typing")
+            print("\(type(of: self)) > \(#function) > Peer is typing")
             OperationQueue.main.addOperation {
                 self.showTypingIndicator = true
             }
         }
         else if newMessage.message == userHasStoppedTyping {
-            print("\(#file) > \(#function) > Peer stopped typing")
+            print("\(type(of: self)) > \(#function) > Peer stopped typing")
             OperationQueue.main.addOperation {
                 self.showTypingIndicator = false
             }
@@ -372,26 +372,26 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             self.nextMessageWasDelivered()
         }
         
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
     }
     
     
     //MARK: - Connection Manager
     func foundPeer(_ newPeer: MCPeerID) {
-        print("\(#file) > \(#function) > Peer was found.")
+        print("\(type(of: self)) > \(#function) > Peer was found.")
     }
     
     // TODO: Check if the peer lost was the current peer, if so go back to peer view
     func lostPeer(_ lostPeer: MCPeerID) {
-        print("\(#file) > \(#function) > Peer was lost.")
+        print("\(type(of: self)) > \(#function) > Peer was lost.")
     }
     
     func connectedWithPeer(_ peerID: MCPeerID) {
-        print("\(#file) > \(#function) > connected to new peer \(peerID)")
+        print("\(type(of: self)) > \(#function) > connected to new peer \(peerID)")
     }
     
     func disconnectedFromPeer(_ peerID: MCPeerID) {
-        print("\(#file) > \(#function) > disconnected from peer \(peerID)")
+        print("\(type(of: self)) > \(#function) > disconnected from peer \(peerID)")
         
         if (peerID == messageObject.peerID) {
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
@@ -421,7 +421,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
         // Nothing to do here
-        print("\(#file) > \(#function) > Received inputStream from peer \(peerID.displayName)")
+        print("\(type(of: self)) > \(#function) > Received inputStream from peer \(peerID.displayName)")
     }
     
     
@@ -431,13 +431,13 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         
         if (textView.text != "") {
             if (!isTyping) {
-                print("\(#file) > \(#function) > Sending isTyping to peer")
+                print("\(type(of: self)) > \(#function) > Sending isTyping to peer")
                 _ = appDelegate.connectionManager.sendData(stringMessage: userIsTyping, toPeer: self.messageObject.peerID)
             }
             isTyping = true
         }
         else {
-            print("\(#file) > \(#function) > Sending stopped typing to peer")
+            print("\(type(of: self)) > \(#function) > Sending stopped typing to peer")
             _ = appDelegate.connectionManager.sendData(stringMessage: userHasStoppedTyping, toPeer: self.messageObject.peerID)
             isTyping = false
         }
@@ -452,7 +452,7 @@ extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationCo
     // When a photo from the photo library is taken
     internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
     {
-        print("\(#file) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         let picture = info[UIImagePickerControllerOriginalImage] as! UIImage
         let mediaItem = JSQPhotoMediaItem(image: nil)
@@ -463,20 +463,20 @@ extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationCo
         let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
         let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
         
-        print("\(#file) > \(#function) > Attempting to send photo")
+        print("\(type(of: self)) > \(#function) > Attempting to send photo")
         if (appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)) {
-            print("\(#file) > \(#function) > Added image to messages")
+            print("\(type(of: self)) > \(#function) > Added image to messages")
             
             messageObject.messages.append(jsqMessage!)
             
             self.collectionView.reloadData()
         }
         else {
-            print("\(#file) > \(#function) > Failed to send...")
+            print("\(type(of: self)) > \(#function) > Failed to send...")
         }
 
         self.finishSendingMessage(animated: true)
-        print("\(#file) > \(#function) > Exit")
+        print("\(type(of: self)) > \(#function) > Exit")
         picker.dismiss(animated: true, completion: nil)
     }
     

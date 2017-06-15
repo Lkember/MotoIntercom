@@ -20,14 +20,14 @@ class PeerConnectionStatus: NSObject {
     
     // Adds a new peer to the list
     func addDisconnectedPeer(peer: MCPeerID) {
-        print("\(#file) > \(#function) > Adding peer")
+        print("\(type(of: self)) > \(#function) > Adding peer")
         peers.append(peer)
         status.append(notConnected)
     }
     
     // Removes all peers and statuses from the list
     func removeAll() {
-        print("\(#file) > \(#function) > Resetting data")
+        print("\(type(of: self)) > \(#function) > Resetting data")
         peers.removeAll()
         status.removeAll()
     }
@@ -44,10 +44,10 @@ class PeerConnectionStatus: NSObject {
     func isPeerConnected(peer: MCPeerID) -> Bool {
         
         if status[peers.index(of: peer)!] == connected {
-            print("\(#file) > \(#function) > True")
+            print("\(type(of: self)) > \(#function) > True")
             return true
         }
-        print("\(#file) > \(#function) > False")
+        print("\(type(of: self)) > \(#function) > False")
         return false
     }
     
@@ -62,7 +62,7 @@ class PeerConnectionStatus: NSObject {
             status[index] = connected
             return
         }
-        print("\(#file) > \(#function) > Changing status failed")
+        print("\(type(of: self)) > \(#function) > Changing status failed")
     }
     
     // Sets the given peers status to connecting
@@ -71,7 +71,7 @@ class PeerConnectionStatus: NSObject {
             status[index] = connecting
             return
         }
-        print("\(#file) > \(#function) > Changing status failed")
+        print("\(type(of: self)) > \(#function) > Changing status failed")
     }
     
     // Sets the given peers status to not connected
@@ -80,6 +80,6 @@ class PeerConnectionStatus: NSObject {
             status[index] = notConnected
             return
         }
-        print("\(#file) > \(#function) > Changing status failed")
+        print("\(type(of: self)) > \(#function) > Changing status failed")
     }
 }
