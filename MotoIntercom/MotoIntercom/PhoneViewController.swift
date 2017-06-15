@@ -39,10 +39,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var didReceiveCall: Bool = false
     
     // Streams
-//    var outputStream: OutputStream?
     var outputStreams = [OutputStream]()
     var outputStreamIsSet: Bool = false
-    var inputStream: InputStream?
+    var inputStreams = [InputStream]()
     var inputStreamIsSet: Bool = false
     
     var testBufferCount = 0
@@ -216,48 +215,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.isUserInteractionEnabled = false
         
         peerLabel.text = "\(peerID!.displayName)"
-        
-        print("\(type(of: self)) > \(#function) > Exit")
-    }
-    
-    func callPeer() {
-        print("\(type(of: self)) > \(#function) > Entry")
-        
-        self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
-        
-        // TODO: This code may be unnecessary because we should be already connected to the peer.
-        // sessionIndex is -1 then we are not connected to peer, so send invite
-        if (self.sessionIndex == -1) {
-            print("\(type(of: self)) > \(#function) > Sending call invitation to peer.")
-            self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
-            
-            let isPhoneCall: Bool = true
-            let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
-            
-            self.appDelegate.connectionManager.browser.invitePeer(self.peerID!,
-                                                                  to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
-                                                                  withContext: dataToSend,
-                                                                  timeout: 30)
-            
-        }
-        else {
-            print("\(type(of: self)) > \(#function) > Sending message to peer.")
-            
-            //TODO: Need to change if allowed to connect to multiple users
-            if (!self.appDelegate.connectionManager.sendData(stringMessage: incomingCall, toPeer: self.appDelegate.connectionManager.sessions[self.sessionIndex!].connectedPeers[0])) {
-                print("\(type(of: self)) > \(#function) > Failed to send call invitation to peer")
-                
-                DispatchQueue.main.async {
-                    self.statusLabel.text = "Call Failed"
-                }
-                
-                //TODO: Play a beeping sound to let the user know the call failed
-                
-                // Wait 2 seconds and then end call
-                sleep(2)
-                self.endCallButtonIsClicked(self.nilButton)
-            }
-        }
         
         print("\(type(of: self)) > \(#function) > Exit")
     }
@@ -649,7 +606,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 let availableCount = 1024-self.testBufferCount
                 
                 var tempBuffer: [UInt8] = .init(repeating: 0, count: availableCount)
-                let length = self.inputStream!.read(&tempBuffer, maxLength: availableCount)
+                let inputStream = aStream as! InputStream
+                let length = inputStream.read(&tempBuffer, maxLength: availableCount)
                 
                 if (tempBuffer.count != length) {
                     tempBuffer = [UInt8](tempBuffer.dropLast(tempBuffer.count - length))
@@ -889,7 +847,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             stream.close()
         }
         
-        inputStream?.close()
+        for stream in inputStreams {
+            stream.close()
+        }
         
         print("\(type(of: self)) > \(#function) > Streams closed")
         
@@ -1034,13 +994,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > Entry > Received inputStream from peer \(peerID.displayName)")
         if (peerID == self.peerID) {
             
-            self.inputStream = inputStream
-            self.inputStreamIsSet = true
-            self.inputStream!.delegate = self
-            self.inputStream!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-            self.inputStream!.open()
+            self.inputStreams.append(inputStream)
             
-            let index = outputStreams.count-1
+            let index = inputStreams.count-1
+            self.inputStreams[index].delegate = self
+            self.inputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.inputStreams[index].open()
+            
+            self.inputStreamIsSet = true
+            
             self.outputStreams[index].delegate = self
             self.outputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.outputStreams[index].open()
