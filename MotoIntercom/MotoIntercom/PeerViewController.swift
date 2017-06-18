@@ -861,7 +861,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("\(type(of: self)) > \(#function) > current segue is callSegue")
             
             let dest = segue.destination as? PhoneViewController
-            dest?.peerID = destinationPeerID
+            dest?.peerOrganizer.addNewPeer(peer: destinationPeerID!)
+            dest?.peerOrganizer.sessionIndex = appDelegate.connectionManager.findSinglePeerSession(peer: destinationPeerID!)
             
             if (didAcceptCall) {
                 dest?.didReceiveCall = true

@@ -13,7 +13,6 @@ import UIKit
 import AVFoundation
 import Accelerate
 import MultipeerConnectivity
-import JSQMessagesViewController
 
 @available(iOS 10.0, *)
 class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, StreamDelegate, ConnectionManagerDelegate, PeerAddedDelegate {
@@ -34,16 +33,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     var nilButton: UIButton = UIButton.init()
     
     // MC
-    var peerID: MCPeerID?
-    var sessionIndex: Int?
+//    var peers = [MCPeerID]()
+//    var peerID: MCPeerID?
+//    var sessionIndex: Int?
     var didReceiveCall: Bool = false
     
     // Streams
-    var outputStreams = [OutputStream]()
-    var outputStreamIsSet: Bool = false
-    var inputStreams = [InputStream]()
-    var inputStreamIsSet: Bool = false
+//    var outputStreams = [OutputStream]()
+//    var outputStreamIsSet: Bool = false
+//    var inputStreams = [InputStream]()
+//    var inputStreamIsSet: Bool = false
     
+    var peerOrganizer = PeerStreamOrganizer()
+    
+    // Used to play audio
     var testBufferCount = 0
     var testBuffer: [UInt8] = .init(repeating: 0, count: 0)
     
@@ -97,15 +100,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
         appDelegate.connectionManager.debugSessions()
-        self.sessionIndex = self.appDelegate.connectionManager.findSinglePeerSession(peer: self.peerID!)
         
-        if (sessionIndex! == -1) {
+        if (peerOrganizer.sessionIndex! == -1) {
+            print("\(type(of: self)) > \(#function) > Could not find session")
             statusLabel.text = "Calling..."
             userEndedCall = false
-            disconnectedFromPeer(self.peerID!)
+            disconnectedFromPeer(peerOrganizer.peers[0])
         }
         else {
-            print("\(type(of: self)) > \(#function) > sessionIndex = \(sessionIndex!.description)")
+            print("\(type(of: self)) > \(#function) > sessionIndex = \(peerOrganizer.sessionIndex!.description)")
             
             // When the device is up to the ear, the screen will dim
             DispatchQueue.main.async {
@@ -117,7 +120,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             if (didReceiveCall) {
                 statusLabel.text = "Connecting..."
                 
-                readyToOpenStream()
+                readyToOpenStream(peer: peerOrganizer.peers[0])
             }
             else {
                 statusLabel.text = "Calling"
@@ -214,8 +217,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         speakerButton.isEnabled = false
         speakerButton.isUserInteractionEnabled = false
         
-        peerLabel.text = "\(peerID!.displayName)"
-        
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
@@ -235,6 +236,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > Background task ended")
     }
     
+    func updatePeerLabelText() {
+        peerLabel.text = peerOrganizer.getPeerLabel()
+    }
     
     // MARK: - Dispatch Queue
     
@@ -433,7 +437,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
-                    for stream in self.outputStreams {
+                    for stream in self.peerOrganizer.outputStreams {
                         let _ = stream.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
                     }
                     
@@ -473,7 +477,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.localInput?.removeTap(onBus: 0)
             self.updateAudioSettings()
             
-            if (self.inputStreamIsSet && self.outputStreamIsSet) {
+            if (self.peerOrganizer.areAnyStreamsSet()) {
                 print("\(type(of: self)) > \(#function) > Recording audio")
                 self.recordAudio()
             }
@@ -492,7 +496,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     func audioRecorderEndInterruption(_ recorder: AVAudioRecorder, withOptions flags: Int) {
         print("\(type(of: self)) > \(#function) > Entry")
-        if (inputStreamIsSet && outputStreamIsSet) {
+        if (peerOrganizer.areAnyStreamsSet()) {
             recorder.record()
             // TODO: Resume timer
         }
@@ -561,27 +565,26 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // MARK: - Stream
     
-    func readyToOpenStream() {
+    func readyToOpenStream(peer: MCPeerID) {
         print("\(type(of: self)) > \(#function) > Entry")
 //        let result = appDelegate.connectionManager.sendData(stringMessage: readyForStream, toPeer: peerID!)
-        let result = appDelegate.connectionManager.sendData(format: localInputFormat!, toPeer: peerID!)
+        let result = appDelegate.connectionManager.sendData(format: localInputFormat!, toPeer: peer)
         
         if (!result) {
             print("\(type(of: self)) > \(#function) > Error sending message...")
         }
         
-        setupStream()
+        setupStream(peer: peer)
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
-    func setupStream() {
+    func setupStream(peer: MCPeerID) {
         print("\(type(of: self)) > \(#function) > Creating output stream")
         
-        if (!outputStreamIsSet) {
+        if (!peerOrganizer.isInputStreamSet(for: peer)) {
             do {
-                let stream = try self.appDelegate.connectionManager.sessions[sessionIndex!].startStream(withName: "motoIntercom", toPeer: peerID!)
-                outputStreams.append(stream)
-                outputStreamIsSet = true
+                let stream = try self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].startStream(withName: "motoIntercom", toPeer: peer)
+                peerOrganizer.setOutputStream(for: peer, stream: stream)
             }
             catch let error as NSError {
                 print("\(type(of: self)) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
@@ -666,7 +669,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function)")
         
         let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "AddNewPeers") as! AddPeerViewController
-        popOverView.sessionIndex = self.sessionIndex!
+        popOverView.sessionIndex = self.peerOrganizer.sessionIndex!
         self.addChildViewController(popOverView)
         
         DispatchQueue.main.async {
@@ -799,7 +802,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         if (userEndedCall) {
-            _ = appDelegate.connectionManager.sendData(stringMessage: endingCall, toPeer: peerID!)
+            for peer in self.peerOrganizer.peers {
+                _ = appDelegate.connectionManager.sendData(stringMessage: endingCall, toPeer: peer)
+            }
         }
         
         DispatchQueue.main.async {
@@ -815,6 +820,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         print("\(type(of: self)) > \(#function) > Exit")
     }
+    
     
     // A function which stops recording and closes streams
     func closeAllResources() {
@@ -843,18 +849,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         timer?.invalidate()
         
         // Close the output stream
-        for stream in outputStreams {
-            stream.close()
-        }
-        
-        for stream in inputStreams {
-            stream.close()
-        }
-        
+        peerOrganizer.closeAllStreams()
         print("\(type(of: self)) > \(#function) > Streams closed")
         
-        inputStreamIsSet = false
-        outputStreamIsSet = false
         isAudioSetup = false
         
         self.testBufferCount = 0
@@ -878,11 +875,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         for i in 0..<peers.count {
             
             // If the peer is not already in the session, then send them an invite
-            if (!self.appDelegate.connectionManager.sessions[sessionIndex!].connectedPeers.contains(peers[i])) {
+            if (!self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].connectedPeers.contains(peers[i])) {
                 
                 print("\(type(of: self)) > \(#function) > Adding peer \(peers[i].displayName)")
                 self.appDelegate.connectionManager.browser.invitePeer(peers[i],
-                                                                      to: self.appDelegate.connectionManager.sessions[sessionIndex!],
+                                                                      to: self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!],
                                                                       withContext: dataToSend,
                                                                       timeout: 20)
                 
@@ -921,35 +918,42 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func disconnectedFromPeer(_ peerID: MCPeerID) {
         print("\(type(of: self)) > \(#function) > Disconnected from peer: \(peerID.displayName), user ended call: \(userEndedCall)")
         
-        if (peerID == self.peerID!) {
+        // If the peer is in the call
+        if self.peerOrganizer.peers.contains(peerID) {
             
             // If the user did not end the call and the peer is not connected, attempt to reconnect
             if (!userEndedCall && !appDelegate.connectionManager.checkIfAlreadyConnected(peerID: peerID)) {
                 
-                // Closing all resources (this is to save battery while reconnecting)
-                DispatchQueue.main.async {
-                    self.closeAllResources()
-                    self.statusLabel.text = "Reconnecting..."
+                // Closing all resources if this is the only peer currently connected to (this is to save battery while reconnecting)
+                if (!peerOrganizer.areAnyStreamsSet()) {
+                    DispatchQueue.main.async {
+                        self.closeAllResources()
+                        self.statusLabel.text = "Reconnecting..."
+                    }
                 }
                 
                 // If the user is still available, then attempt a reconnect
                 if (self.appDelegate.connectionManager.availablePeers.peers.contains(peerID)) {
                     print("\(type(of: self)) > \(#function) > Attempting reconnect")
-                    self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
+//                    self.sessionIndex = self.appDelegate.connectionManager.createNewSession()
                     
                     let isPhoneCall: Bool = true
                     let dataToSend : Data = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
                     
-                    self.appDelegate.connectionManager.browser.invitePeer(self.peerID!,
-                                                                          to: self.appDelegate.connectionManager.sessions[self.sessionIndex!],
+                    self.appDelegate.connectionManager.browser.invitePeer(peerID,
+                                                                          to: self.appDelegate.connectionManager.sessions[self.peerOrganizer.sessionIndex!],
                                                                           withContext: dataToSend,
-                                                                          timeout: 60)
+                                                                          timeout: 20)
                 }
                     
-                // Otherwise, end the call
+                // Otherwise, remove the peer from the call
                 else {
-                    print("\(type(of: self)) > \(#function) > Call ending because peer was lost")
-                    endCallButtonIsClicked(self.endCallButton)
+                    print("\(type(of: self)) > \(#function) > Peer was lost. \(peerOrganizer.peers.count-1) peers left in call.")
+                    peerOrganizer.peerWasLost(peer: peerID)
+                    
+                    if (peerOrganizer.peers.count == 0) {
+                        endCallButtonIsClicked(self.endCallButton)
+                    }
                 }
             }
         }
@@ -959,7 +963,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func connectingWithPeer(_ peerID: MCPeerID) {
         print("\(type(of: self)) > \(#function) > peer \(peerID.displayName)")
         
-        if (peerID == self.peerID) {
+        if (peerOrganizer.peers.count == 1 && peerOrganizer.peers[0] == peerID) {
             DispatchQueue.main.async {
                 self.statusLabel.text = "Connecting"
             }
@@ -968,20 +972,27 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.prepareAudio()
             }
         }
+        else {
+            var peerLabel = peerOrganizer.getPeerLabel()
+            peerLabel.append("\nConnecting: \(peerID.displayName)")
+            
+            self.peerLabel.text = peerLabel
+        }
         
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
+    
     func connectedWithPeer(_ peerID : MCPeerID) {
-        
-        if (peerID == self.peerID) {
+        // Check if the peer is in the current session
+        if (self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].connectedPeers.contains(peerID)) {
             print("\(type(of: self)) > \(#function) > Connected with the current peer.")
             
             DispatchQueue.main.async {
-                self.statusLabel.text = "Connected"
+                self.updatePeerLabelText()
             }
-            
-            readyToOpenStream()
+        
+            readyToOpenStream(peer: peerID)
         }
         else {
             print("\(type(of: self)) > \(#function) > New connection to \(peerID.displayName)")

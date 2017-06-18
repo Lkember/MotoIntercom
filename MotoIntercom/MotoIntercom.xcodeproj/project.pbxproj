@@ -13,6 +13,7 @@
 		B200C0971E973E060046914B /* JSQChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200C0961E973E060046914B /* JSQChatViewController.swift */; };
 		B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */; };
 		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
+		B237BEED1EF314370007D4D1 /* PeerStreamOrganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */; };
 		B24248721E292BC200B4D260 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B24248711E292BC200B4D260 /* Assets.xcassets */; };
 		B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2507DD51EC39E9000841F02 /* StandardMessage.swift */; };
 		B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */; };
@@ -69,6 +70,7 @@
 		B200C0961E973E060046914B /* JSQChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSQChatViewController.swift; sourceTree = "<group>"; };
 		B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
+		B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerStreamOrganizer.swift; sourceTree = "<group>"; };
 		B24248711E292BC200B4D260 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2507DD51EC39E9000841F02 /* StandardMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardMessage.swift; sourceTree = "<group>"; };
 		B2515C471D2C7CCB00760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +144,15 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		B237BEEE1EF3144B0007D4D1 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */,
+				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+			);
+			name = Cells;
+			sourceTree = "<group>";
+		};
 		B2515C3E1D2C7CCB00760DE0 = {
 			isa = PBXGroup;
 			children = (
@@ -168,6 +179,7 @@
 		B2515C491D2C7CCB00760DE0 /* MotoIntercom */ = {
 			isa = PBXGroup;
 			children = (
+				B237BEEE1EF3144B0007D4D1 /* Cells */,
 				B2904C811ED8A90700008461 /* Storyboard */,
 				B2904C801ED8A8CC00008461 /* ViewControllers */,
 				B2904C7F1ED8A88900008461 /* Structure */,
@@ -220,13 +232,12 @@
 		B2904C7F1ED8A88900008461 /* Structure */ = {
 			isa = PBXGroup;
 			children = (
-				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
 				B29845241EF05F42004B080D /* PeerConnectionStatus.swift */,
-				B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */,
-				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+				B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */,
+				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
 			);
 			name = Structure;
 			sourceTree = "<group>";
@@ -568,6 +579,7 @@
 				B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */,
 				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
 				B272670F1E1DA80800B86146 /* IncomingCallViewController.swift in Sources */,
+				B237BEED1EF314370007D4D1 /* PeerStreamOrganizer.swift in Sources */,
 				B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */,
 				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);
