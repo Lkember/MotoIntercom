@@ -22,7 +22,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let incomingCall = "_incoming_call_"
     let acceptCall = "_accept_call_"
     let declineCall = "_decline_call_"
-    let endingCall = "_user_ended_call_"
+    let leavingCall = "_user_is_leaving_call_"
     
     // Background Task to keep the app running in the background
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
@@ -803,7 +803,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (userEndedCall) {
             for peer in self.peerOrganizer.peers {
-                _ = appDelegate.connectionManager.sendData(stringMessage: endingCall, toPeer: peer)
+                _ = appDelegate.connectionManager.sendData(stringMessage: leavingCall, toPeer: peer)
             }
         }
         
@@ -1003,20 +1003,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     func startedStreamWithPeer(_ peerID: MCPeerID, inputStream: InputStream) {
         
         print("\(type(of: self)) > \(#function) > Entry > Received inputStream from peer \(peerID.displayName)")
-        if (peerID == self.peerID) {
+        if (self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].connectedPeers.contains(peerID)) {
             
-            self.inputStreams.append(inputStream)
+            let index = self.peerOrganizer.setInputStream(for: peerID, stream: inputStream)
             
-            let index = inputStreams.count-1
-            self.inputStreams[index].delegate = self
-            self.inputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-            self.inputStreams[index].open()
+//            let index = inputStreams.count-1
+            self.peerOrganizer.inputStreams[index].delegate = self
+            self.peerOrganizer.inputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.peerOrganizer.inputStreams[index].open()
             
-            self.inputStreamIsSet = true
-            
-            self.outputStreams[index].delegate = self
-            self.outputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
-            self.outputStreams[index].open()
+            self.peerOrganizer.outputStreams[index].delegate = self
+            self.peerOrganizer.outputStreams[index].schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.peerOrganizer.outputStreams[index].open()
             
             self.recordingQueue.async {
                 sleep(1)
@@ -1049,30 +1047,64 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         let newMessage = notification.object as! StandardMessage
         
-        if (newMessage.peerID == self.peerID) {
-            if newMessage.message == acceptCall {
-                print("\(type(of: self)) > \(#function) > Call accepted")
-                
-                if (!outputStreamIsSet) {
-                    DispatchQueue.main.async {
-                        self.statusLabel.text = "Connecting..."
+        // If there is only one peer
+        if (peerOrganizer.peers.count == 1) {
+            if (newMessage.peerID == self.peerOrganizer.peers[0]) {
+                if newMessage.message == acceptCall {
+                    print("\(type(of: self)) > \(#function) > Call accepted")
+                    
+                    if (!self.peerOrganizer.outputStreamIsSet[0]) {
+                        DispatchQueue.main.async {
+                            self.statusLabel.text = "Connecting..."
+                        }
                     }
                 }
+                else if newMessage.message == declineCall {
+                    print("\(type(of: self)) > \(#function) > Call declined -- Ending")
+                    endCallButtonIsClicked(endCallButton)
+                }
+                
+                else if newMessage.message == leavingCall {
+                    print("\(type(of: self)) > \(#function) > Peer ended call")
+                    //TODO: Need to play a sound to let the user know that the call has ended
+                    endCallButtonIsClicked(nilButton)
+                }
+                
             }
-            else if newMessage.message == declineCall {
-                print("\(type(of: self)) > \(#function) > Call declined -- Ending")
-                endCallButtonIsClicked(endCallButton)
+            else {
+                print("\(type(of: self)) > \(#function) > Wrong peer")
             }
             
-            else if newMessage.message == endingCall {
-                print("\(type(of: self)) > \(#function) > Peer ended call")
-                //TODO: Need to play a sound to let the user know that the call has ended
-                endCallButtonIsClicked(nilButton)
-            }
-            
+            return
         }
-        else {
-            print("\(type(of: self)) > \(#function) > Wrong peer")
+        
+        // If there are multiple peers
+        if newMessage.message == acceptCall {
+            print("\(type(of: self)) > \(#function) > Call accepted")
+            peerOrganizer.addNewPeer(peer: newMessage.peerID!)
+            
+            DispatchQueue.main.async {
+                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+            }
+        }
+        
+        else if newMessage.message == declineCall {
+            peerOrganizer.peerWasLost(peer: newMessage.peerID!)
+            
+            DispatchQueue.main.async {
+                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+            }
+            print("\(type(of: self)) > \(#function) > \(newMessage.peerID!.displayName) left the call")
+//            endCallButtonIsClicked(endCallButton)
+        }
+            
+        else if newMessage.message == leavingCall {
+            print("\(type(of: self)) > \(#function) > Peer ended call")
+            peerOrganizer.peerWasLost(peer: newMessage.peerID!)
+            
+            DispatchQueue.main.async {
+                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+            }
         }
         
         print("\(type(of: self)) > \(#function) > Exit")

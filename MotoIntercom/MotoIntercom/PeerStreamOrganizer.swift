@@ -15,7 +15,7 @@ class PeerStreamOrganizer: NSObject {
     
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
-    var peersToJoin = [MCPeerID]()              //This array is used to hold peers who have been invited to the phone call
+//    var peersToJoin = [MCPeerID]()              //This array is used to hold peers who have been invited to the phone call
     
     var peers = [MCPeerID]()                    //Holds peers in the current phone call
     var inputStreams = [InputStream]()          //Holds inputStreams for the current peers
@@ -32,10 +32,6 @@ class PeerStreamOrganizer: NSObject {
     func addNewPeer(peer: MCPeerID) {
         
         if (!peers.contains(peer)) {
-            
-            if let index = peersToJoin.index(of: peer) {
-                peersToJoin.remove(at: index)
-            }
             
             print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
             peers.append(peer)
@@ -59,6 +55,7 @@ class PeerStreamOrganizer: NSObject {
     }
     
     func peerWasLost(peer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > Entry")
         if let index = peers.index(of: peer) {
             closeStreamsForPeer(peer: peer)
             
@@ -67,35 +64,39 @@ class PeerStreamOrganizer: NSObject {
             outputStreams.remove(at: index)
             inputStreamIsSet.remove(at: index)
             inputStreams.remove(at: index)
+            print("\(type(of: self)) > \(#function) > Peer Removed")
         }
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
-    func addPotentialPeer(peer: MCPeerID) {
-        print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
-        peersToJoin.append(peer)
-        
-        var timer = Timer.init(timeInterval: 20, repeats: false, block: {(timer) in
-            if let index = self.peersToJoin.index(of: peer) {
-                print("\(type(of: self)) > \(#function) > Removing peer \(peer.displayName)")
-                self.peersToJoin.remove(at: index)
-                timer.invalidate()
-            }
-        })
-    }
+//    func addPotentialPeer(peer: MCPeerID) {
+//        print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
+//        peersToJoin.append(peer)
+//        
+//        var timer = Timer.init(timeInterval: 20, repeats: false, block: {(timer) in
+//            if let index = self.peersToJoin.index(of: peer) {
+//                print("\(type(of: self)) > \(#function) > Removing peer \(peer.displayName)")
+//                self.peersToJoin.remove(at: index)
+//                timer.invalidate()
+//            }
+//        })
+//    }
     
     // MARK: Streams
     
     // A function which initializes a peers input stream
-    func setInputStream(for peer: MCPeerID, stream: InputStream) {
+    func setInputStream(for peer: MCPeerID, stream: InputStream) -> Int {
         if let index = peers.index(of: peer) {
             print("\(type(of: self)) > \(#function) > for peer \(peer.displayName)")
             
             inputStreams[index] = stream
             inputStreamIsSet[index] = true
+            
+            return index
         }
-        else {
-            print("\(type(of: self)) > \(#function) > Could not find peer \(peer.displayName)")
-        }
+        
+        print("\(type(of: self)) > \(#function) > Could not find peer \(peer.displayName)")
+        return -1
     }
     
     // A function which initializes a peers output stream
