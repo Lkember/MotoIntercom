@@ -219,28 +219,46 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+//    // Send AVAudioFormat to peer - used by PhoneViewController
+//    func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
+//        print("\(type(of: self)) > \(#function) > Sending audio format")
+//        
+//        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
+//        let peersArray = NSArray(object: targetPeer)
+//        var sess : MCSession = MCSession(peer: peer)
+//        
+//        for session in sessions {
+//            //TODO: If we allow multi-peer connectivity this method must be modified
+//            if session.connectedPeers.contains(targetPeer) {
+//                sess = session
+//            }
+//            else {
+//                // TODO: If message fails to send we need to connect to peer
+//                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
+//                
+//                return false
+//            }
+//        }
+//        do {
+//            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+//        }
+//        catch let error as NSError {
+//            print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+//            return false
+//        }
+//        
+//        return true
+//    }
+    
     // Send AVAudioFormat to peer - used by PhoneViewController
-    func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
+    func sendData(format: [NSObject], toPeer targetPeer: MCPeerID, sessionIndex: Int) -> Bool {
         print("\(type(of: self)) > \(#function) > Sending audio format")
         
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
         let peersArray = NSArray(object: targetPeer)
-        var sess : MCSession = MCSession(peer: peer)
         
-        for session in sessions {
-            //TODO: If we allow multi-peer connectivity this method must be modified
-            if session.connectedPeers.contains(targetPeer) {
-                sess = session
-            }
-            else {
-                // TODO: If message fails to send we need to connect to peer
-                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
-                
-                return false
-            }
-        }
         do {
-            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+            try sessions[sessionIndex].send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")

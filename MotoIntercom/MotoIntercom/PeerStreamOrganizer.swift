@@ -17,29 +17,31 @@ class PeerStreamOrganizer: NSObject {
     
 //    var peersToJoin = [MCPeerID]()              //This array is used to hold peers who have been invited to the phone call
     
-    var peers = [MCPeerID]()                    //Holds peers in the current phone call
-    var inputStreams = [InputStream]()          //Holds inputStreams for the current peers
-    var outputStreams = [OutputStream]()        //Holds outputStreams for the current peers
-    var inputStreamIsSet = [Bool]()             //Holds a boolean value for if the inputStreams have been initialized
-    var outputStreamIsSet = [Bool]()            //Holds a boolean value for if the outputStreams have been initialized
-    var audioFormatForPeer = [AVAudioFormat]()  //Holds the audio format for a given peer
+    var peers = [MCPeerID]()                    //peers in the current phone call
+    var inputStreams = [InputStream?]()          //inputStreams for the current peers
+    var outputStreams = [OutputStream?]()        //outputStreams for the current peers
+    var inputStreamIsSet = [Bool]()             //a boolean value for if the inputStreams have been initialized
+    var outputStreamIsSet = [Bool]()            //a boolean value for if the outputStreams have been initialized
+    var audioFormatForPeer = [AVAudioFormat]()  //the audio format for a given peer
+    var didReceiveCall = [Bool]()               //a boolean value for whether the call was received or not
     
     var sessionIndex: Int?
     
     // MARK: - Peers
     
     // A function which adds a new peer
-    func addNewPeer(peer: MCPeerID) {
+    func addNewPeer(peer: MCPeerID, didReceiveCall: Bool) {
         
         if (!peers.contains(peer)) {
             
             print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
             peers.append(peer)
-            inputStreams.append(InputStream())
-            outputStreams.append(OutputStream())
+            inputStreams.append(nil)
+            outputStreams.append(nil)
             inputStreamIsSet.append(false)
             outputStreamIsSet.append(false)
             audioFormatForPeer.append(AVAudioFormat.init())
+            self.didReceiveCall.append(didReceiveCall)
         }
         else {
             print("\(type(of: self)) > \(#function) > PEER ALREADY EXISTS!!")
@@ -69,20 +71,23 @@ class PeerStreamOrganizer: NSObject {
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
-//    func addPotentialPeer(peer: MCPeerID) {
-//        print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
-//        peersToJoin.append(peer)
-//        
-//        var timer = Timer.init(timeInterval: 20, repeats: false, block: {(timer) in
-//            if let index = self.peersToJoin.index(of: peer) {
-//                print("\(type(of: self)) > \(#function) > Removing peer \(peer.displayName)")
-//                self.peersToJoin.remove(at: index)
-//                timer.invalidate()
-//            }
-//        })
-//    }
     
-    // MARK: Streams
+    // MARK: AudioFormat
+    func updateAudioFormatForPeer(peer: MCPeerID, format: AVAudioFormat) {
+        if let index = peers.index(of: peer) {
+            audioFormatForPeer[index] = format
+        }
+    }
+    
+    
+    func formatForPeer(peer: MCPeerID) -> AVAudioFormat? {
+        if let index = peers.index(of: peer) {
+            return audioFormatForPeer[index]
+        }
+        return nil
+    }
+    
+    // MARK: Stream Setters
     
     // A function which initializes a peers input stream
     func setInputStream(for peer: MCPeerID, stream: InputStream) -> Int {
@@ -112,6 +117,7 @@ class PeerStreamOrganizer: NSObject {
         }
     }
     
+    // MARK: Stream Getters
     
     // A function which sets a peers input stream to true
     func isInputStreamSet(for peer: MCPeerID) -> Bool {
@@ -126,6 +132,18 @@ class PeerStreamOrganizer: NSObject {
         }
     }
 
+    func isOutputStreamSet(for peer: MCPeerID) -> Bool {
+        if let index = peers.index(of: peer) {
+            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName)")
+            
+            return outputStreamIsSet[index]
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Could not find peer \(peer.displayName)")
+            return false
+        }
+    }
+    
     
     // A function which checks if any users streams are set
     func areAnyStreamsSet() -> Bool {
@@ -138,24 +156,41 @@ class PeerStreamOrganizer: NSObject {
         return false
     }
     
+    func findIndexForStream(stream: InputStream) -> Int {
+        print("\(type(of: self)) > \(#function) > Entry")
+        
+        for i in 0..<inputStreams.count {
+            if inputStreams[i] != nil && inputStreams[i] == stream {
+                print("\(type(of: self)) > \(#function) > Exit \(i)")
+                return i
+            }
+        }
+        
+        print("\(type(of: self)) > \(#function) > Exit -1")
+        return -1
+    }
+    
+    // MARK: Stream Closers
+    
     // Closes all open streams
     func closeAllStreams() {
         
         for i in 0..<peers.count {
-            inputStreams[i].close()
+            inputStreams[i]?.close()
             inputStreamIsSet[i] = false
             
-            outputStreams[i].close()
+            outputStreams[i]?.close()
             outputStreamIsSet[i] = false
         }
         
         print("\(type(of: self)) > \(#function) > Streams closed")
     }
     
+    // Closes all open streams for one peer
     func closeStreamsForPeer(peer: MCPeerID) {
         if let index = peers.index(of: peer) {
-            inputStreams[index].close()
-            outputStreams[index].close()
+            inputStreams[index]?.close()
+            outputStreams[index]?.close()
             inputStreamIsSet[index] = false
             outputStreamIsSet[index] = false
         }
