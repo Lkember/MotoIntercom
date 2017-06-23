@@ -1062,7 +1062,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     func receivedStandardMessage(_ notification: Notification) {
-        print("\(type(of: self)) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry \(self.peerOrganizer.peers.count)")
         
         let newMessage = notification.object as! StandardMessage
         
