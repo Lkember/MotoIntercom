@@ -23,6 +23,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let acceptCall = "_accept_call_"
     let declineCall = "_decline_call_"
     let leavingCall = "_user_is_leaving_call_"
+    let receivedStream = "_received_stream_"
     
     // Background Task to keep the app running in the background
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
@@ -94,7 +95,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // MARK: - View Methods
     override func viewDidLoad() {
-        print("\(type(of: self)) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry \(didReceiveCall)")
         super.viewDidLoad()
         
         // Setting the connectionManager delegate to self
@@ -435,10 +436,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //                print("\(type(of: self)) > \(#function) > curr: \(sum) -- average: \(self.averageInputVolume)")
                 
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
-                    print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
                     for i in 0..<self.peerOrganizer.outputStreams.count {
+                        print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                         if let stream = self.peerOrganizer.outputStreams[i] {
                             let _ = stream.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
                         }
@@ -455,6 +456,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
 //                        print("\(type(of: self)) > \(#function) > Cannot write to stream, stream is full")
 //                    }
                 }
+                print("\(type(of: self)) > \(#function) > Data sent")
             }
         }
     }
@@ -581,23 +583,22 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(type(of: self)) > \(#function) > Error sending message...")
         }
         
-        setupStream(peer: peer)
+//        setupStream(peer: peer)
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
     func setupStream(peer: MCPeerID) {
         print("\(type(of: self)) > \(#function) > Creating output stream")
         
-        if (!peerOrganizer.isInputStreamSet(for: peer)) {
-            do {
-                let stream = try self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].startStream(withName: "motoIntercom", toPeer: peer)
-                peerOrganizer.setOutputStream(for: peer, stream: stream)
-            }
-            catch let error as NSError {
-                print("\(type(of: self)) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
-                // TODO: Send streamFailed message to user
-                endCallButtonIsClicked(endCallButton)
-            }
+        do {
+            let stream = try self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].startStream(withName: "motoIntercom", toPeer: peer)
+            peerOrganizer.setOutputStream(for: peer, stream: stream)
+            print("\(type(of: self)) > \(#function) > OutputStream created")
+        }
+        catch let error as NSError {
+            print("\(type(of: self)) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
+            // TODO: Send streamFailed message to user
+            endCallButtonIsClicked(endCallButton)
         }
         
         print("\(type(of: self)) > \(#function) > Exit")
@@ -611,6 +612,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             
         case Stream.Event.hasBytesAvailable:
+            print("\(type(of: self)) > \(#function) > Entry")
             DispatchQueue.global().sync {
                 
                 let availableCount = 1024-self.testBufferCount
@@ -647,6 +649,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(type(of: self)) > \(#function) > ERROR -> COULD NOT FIND PEER")
                 }
             }
+            print("\(type(of: self)) > \(#function) > Exit")
         
         case Stream.Event.hasSpaceAvailable:
             print("\(type(of: self)) > \(#function) > Space available")
@@ -1048,7 +1051,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
         }
         else {
-            print("\(type(of: self)) > \(#function) > Should not print.")
+            print("\(type(of: self)) > \(#function) > ERROR: Should not print.")
         }
         
         DispatchQueue.main.async {
@@ -1093,33 +1096,34 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             return
         }
-        
-        // If there are multiple peers
-        if newMessage.message == acceptCall {
-            print("\(type(of: self)) > \(#function) > Call accepted")
-            peerOrganizer.addNewPeer(peer: newMessage.peerID!, didReceiveCall: false)
-            
-            DispatchQueue.main.async {
-                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+        else {
+            // If there are multiple peers
+            if newMessage.message == acceptCall {
+                print("\(type(of: self)) > \(#function) > Call accepted")
+                peerOrganizer.addNewPeer(peer: newMessage.peerID!, didReceiveCall: false)
+                
+                DispatchQueue.main.async {
+                    self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+                }
             }
-        }
-        
-        else if newMessage.message == declineCall {
-            peerOrganizer.peerWasLost(peer: newMessage.peerID!)
             
-            DispatchQueue.main.async {
-                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+            else if newMessage.message == declineCall {
+                peerOrganizer.peerWasLost(peer: newMessage.peerID!)
+                
+                DispatchQueue.main.async {
+                    self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+                }
+                print("\(type(of: self)) > \(#function) > \(newMessage.peerID!.displayName) left the call")
+//                endCallButtonIsClicked(endCallButton)
             }
-            print("\(type(of: self)) > \(#function) > \(newMessage.peerID!.displayName) left the call")
-//            endCallButtonIsClicked(endCallButton)
-        }
-            
-        else if newMessage.message == leavingCall {
-            print("\(type(of: self)) > \(#function) > Peer ended call")
-            peerOrganizer.peerWasLost(peer: newMessage.peerID!)
-            
-            DispatchQueue.main.async {
-                self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+                
+            else if newMessage.message == leavingCall {
+                print("\(type(of: self)) > \(#function) > Peer ended call")
+                peerOrganizer.peerWasLost(peer: newMessage.peerID!)
+                
+                DispatchQueue.main.async {
+                    self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+                }
             }
         }
         

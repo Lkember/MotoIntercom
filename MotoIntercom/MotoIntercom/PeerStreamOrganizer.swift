@@ -122,7 +122,7 @@ class PeerStreamOrganizer: NSObject {
     // A function which sets a peers input stream to true
     func isInputStreamSet(for peer: MCPeerID) -> Bool {
         if let index = peers.index(of: peer) {
-            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName)")
+            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName) > \(inputStreamIsSet[index])")
             
             return inputStreamIsSet[index]
         }
@@ -134,7 +134,7 @@ class PeerStreamOrganizer: NSObject {
 
     func isOutputStreamSet(for peer: MCPeerID) -> Bool {
         if let index = peers.index(of: peer) {
-            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName)")
+            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName) > \(outputStreamIsSet[index])")
             
             return outputStreamIsSet[index]
         }
@@ -149,10 +149,11 @@ class PeerStreamOrganizer: NSObject {
     func areAnyStreamsSet() -> Bool {
         for i in 0..<peers.count {
             if (outputStreamIsSet[i] == true && inputStreamIsSet[i] == true) {
+                print("\(type(of: self)) > \(#function) > true")
                 return true
             }
         }
-        
+        print("\(type(of: self)) > \(#function) > false")
         return false
     }
     
@@ -200,6 +201,7 @@ class PeerStreamOrganizer: NSObject {
     
     // Creates a label with every peer's display name
     func getPeerLabel() -> String {
+        print("\(type(of: self)) > \(#function) > Entry")
         var peerLabel = ""
         
         for i in 0..<peers.count {
@@ -208,7 +210,7 @@ class PeerStreamOrganizer: NSObject {
             }
             peerLabel.append(peers[i].displayName)
         }
-        
+        print("\(type(of: self)) > \(#function) > Exit \(peerLabel)")
         return peerLabel
     }
     

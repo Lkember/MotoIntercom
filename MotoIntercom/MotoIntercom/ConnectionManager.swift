@@ -423,7 +423,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             newMessage.peerID = peerID
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
         }
-        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? AVAudioFormat {
+        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? [NSObject] {
             print("\(type(of: self)) > \(#function) > Received audio format from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedAVAudioFormat"), object: newMessage)
         }
