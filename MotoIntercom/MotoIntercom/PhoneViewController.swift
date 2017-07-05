@@ -27,6 +27,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // Background Task to keep the app running in the background
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
+    var backgroundTaskIsRegistered = false;
 
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var peerLabel: UILabel!
@@ -223,6 +224,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     
     func registerBackgroundTask() {
+        backgroundTaskIsRegistered = true;
+        
         print("\(type(of: self)) > \(#function) > backgroundTask is registered")
         backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
             self?.endBackgroundTask()
@@ -438,23 +441,26 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
+                    var output = 0
                     for i in 0..<self.peerOrganizer.outputStreams.count {
                         print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
-                        if let stream = self.peerOrganizer.outputStreams[i] {
-                            let _ = stream.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                        print("\(type(of: self)) > \(#function) > Stream is set = \(self.peerOrganizer.outputStreamIsSet)")
+                        if (self.peerOrganizer.outputStreamIsSet[i]) {
+                            let stream = self.peerOrganizer.outputStreams[i]
+                            output = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
                         }
                     }
                     
-//                    if output > 0 {
-////                        print("\(type(of: self)) > \(#function) > \(output) bytes written")
-//                    }
-//                    else if output == -1 {
+                    if output > 0 {
+//                        print("\(type(of: self)) > \(#function) > \(output) bytes written")
+                    }
+                    else if output == -1 {
 //                        let error = self.outputStream!.streamError
-//                        print("\(type(of: self)) > \(#function) > Error writing to stream: \(String(describing: error?.localizedDescription))")
-//                    }
-//                    else {
-//                        print("\(type(of: self)) > \(#function) > Cannot write to stream, stream is full")
-//                    }
+                        print("\(type(of: self)) > \(#function) > Error writing to stream")
+                    }
+                    else {
+                        print("\(type(of: self)) > \(#function) > Cannot write to stream, stream is full")
+                    }
                 }
                 print("\(type(of: self)) > \(#function) > Data sent")
             }
@@ -632,7 +638,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     self.testBufferCount += length
                     self.testBuffer.append(contentsOf: tempBuffer)
                     
-    //                print("\(type(of: self)) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
+                    print("\(type(of: self)) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
                     
                     if (self.testBufferCount >= 1024) {
                         
@@ -661,7 +667,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             
         case Stream.Event.openCompleted:
-            registerBackgroundTask()
+            if (!backgroundTaskIsRegistered) {
+                registerBackgroundTask()
+            }
             print("\(type(of: self)) > \(#function) > Open completed")
         
             
