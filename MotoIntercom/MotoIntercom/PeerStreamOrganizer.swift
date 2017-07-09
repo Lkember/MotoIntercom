@@ -166,16 +166,12 @@ class PeerStreamOrganizer: NSObject {
     }
     
     func findIndexForStream(stream: InputStream) -> Int {
-        print("\(type(of: self)) > \(#function) > Entry")
-        
         for i in 0..<inputStreams.count {
             if inputStreams[i] != nil && inputStreams[i] == stream {
-                print("\(type(of: self)) > \(#function) > Exit \(i)")
                 return i
             }
         }
         
-        print("\(type(of: self)) > \(#function) > Exit -1")
         return -1
     }
     

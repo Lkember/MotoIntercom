@@ -178,6 +178,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     func updateUI() {
         print("\(type(of: self)) > \(#function) > Entry")
+        peerLabel.text = peerOrganizer.getPeerLabel()
+        
         self.navigationController?.navigationBar.isHidden = true
         
         // Giving the background view a blur effect
@@ -616,7 +618,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             
         case Stream.Event.hasBytesAvailable:
-            print("\(type(of: self)) > \(#function) > Entry")
             DispatchQueue.global().sync {
                 
                 let availableCount = 1024-self.testBufferCount
@@ -653,7 +654,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     print("\(type(of: self)) > \(#function) > ERROR -> COULD NOT FIND PEER")
                 }
             }
-            print("\(type(of: self)) > \(#function) > Exit")
         
         case Stream.Event.hasSpaceAvailable:
             print("\(type(of: self)) > \(#function) > Space available")
@@ -989,7 +989,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (peerOrganizer.peers.count == 1 && peerOrganizer.peers[0] == peerID) {
             DispatchQueue.main.async {
-                self.peerLabel.text = peerID.displayName
                 self.statusLabel.text = "Connecting"
             }
             
