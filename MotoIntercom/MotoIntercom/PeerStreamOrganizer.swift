@@ -31,6 +31,7 @@ class PeerStreamOrganizer: NSObject {
     
     // A function which adds a new peer
     func addNewPeer(peer: MCPeerID, didReceiveCall: Bool) {
+        print("\(type(of: self)) > \(#function) > \(peer)")
         
         if (!peers.contains(peer)) {
             
@@ -50,9 +51,12 @@ class PeerStreamOrganizer: NSObject {
     
     // Returns the index for a peer
     func indexFor(peer: MCPeerID) -> Int {
+        print("\(type(of: self)) > \(#function) > Entry")
         if let index = peers.index(of: peer) {
+            print("\(type(of: self)) > \(#function) > Return \(index)")
             return index
         }
+        print("\(type(of: self)) > \(#function) > Exit > Peer not found")
         return -1
     }
     
@@ -74,16 +78,20 @@ class PeerStreamOrganizer: NSObject {
     
     // MARK: AudioFormat
     func updateAudioFormatForPeer(peer: MCPeerID, format: AVAudioFormat) {
+        print("\(type(of: self)) > \(#function) > Entry")
         if let index = peers.index(of: peer) {
             audioFormatForPeer[index] = format
         }
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     
     func formatForPeer(peer: MCPeerID) -> AVAudioFormat? {
+        print("\(type(of: self)) > \(#function)")
         if let index = peers.index(of: peer) {
             return audioFormatForPeer[index]
         }
+        
         return nil
     }
     
@@ -175,7 +183,6 @@ class PeerStreamOrganizer: NSObject {
     
     // Closes all open streams
     func closeAllStreams() {
-        
         for i in 0..<peers.count {
             inputStreams[i]?.close()
             inputStreamIsSet[i] = false
@@ -189,12 +196,14 @@ class PeerStreamOrganizer: NSObject {
     
     // Closes all open streams for one peer
     func closeStreamsForPeer(peer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > Entry")
         if let index = peers.index(of: peer) {
             inputStreams[index]?.close()
             outputStreams[index]?.close()
             inputStreamIsSet[index] = false
             outputStreamIsSet[index] = false
         }
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     // MARK: Labels

@@ -395,7 +395,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 let arraySize = Int(buffer.frameLength)
                 var channelSamples: [[DSPComplex]] = []
                 
-//                for i in 0..<1 {
+//                for i in 0..<1 {  // Used if we are using more than one channel
                 
                     channelSamples.append([])
                     let firstSample = buffer.format.isInterleaved ? 0 : 0*arraySize
@@ -441,28 +441,26 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
-                    var output = 0
+                    var output: Int = 0;
                     for i in 0..<self.peerOrganizer.outputStreams.count {
                         print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
-                        print("\(type(of: self)) > \(#function) > Stream is set = \(self.peerOrganizer.outputStreamIsSet)")
                         if (self.peerOrganizer.outputStreamIsSet[i]) {
                             let stream = self.peerOrganizer.outputStreams[i]
                             output = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
                         }
                     }
                     
-                    if output > 0 {
+//                    if output > 0 {
 //                        print("\(type(of: self)) > \(#function) > \(output) bytes written")
-                    }
-                    else if output == -1 {
-//                        let error = self.outputStream!.streamError
-                        print("\(type(of: self)) > \(#function) > Error writing to stream")
-                    }
-                    else {
-                        print("\(type(of: self)) > \(#function) > Cannot write to stream, stream is full")
-                    }
+//                    }
+//                    else if output == -1 {
+////                        let error = self.outputStream!.streamError
+//                        print("\(type(of: self)) > \(#function) > Error writing to stream")
+//                    }
+//                    else {
+//                        print("\(type(of: self)) > \(#function) > Cannot write to stream, stream is full")
+//                    }
                 }
-                print("\(type(of: self)) > \(#function) > Data sent")
             }
         }
     }
@@ -638,7 +636,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     self.testBufferCount += length
                     self.testBuffer.append(contentsOf: tempBuffer)
                     
-                    print("\(type(of: self)) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
+//                    print("\(type(of: self)) > \(#function) > Size of buffer: \(self.testBufferCount), amount read: \(length), available: \(availableCount - length), buffer size = \(self.testBuffer.count)")
                     
                     if (self.testBufferCount >= 1024) {
                         
@@ -659,7 +657,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         case Stream.Event.hasSpaceAvailable:
             print("\(type(of: self)) > \(#function) > Space available")
-            break
             
             
         case Stream.Event.endEncountered:
@@ -992,10 +989,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         if (peerOrganizer.peers.count == 1 && peerOrganizer.peers[0] == peerID) {
             DispatchQueue.main.async {
+                self.peerLabel.text = peerID.displayName
                 self.statusLabel.text = "Connecting"
             }
             
-            if !isAudioSetup {
+            if (!isAudioSetup) {
                 self.prepareAudio()
             }
         }
@@ -1070,7 +1068,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     
     func receivedStandardMessage(_ notification: Notification) {
-        print("\(type(of: self)) > \(#function) > Entry \(self.peerOrganizer.peers.count)")
+        print("\(type(of: self)) > \(#function) > Entry > Number of peers: \(self.peerOrganizer.peers.count)")
         
         let newMessage = notification.object as! StandardMessage
         
@@ -1104,8 +1102,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             return
         }
+        
+        // If there are multiple peers
         else {
-            // If there are multiple peers
             if newMessage.message == acceptCall {
                 print("\(type(of: self)) > \(#function) > Call accepted")
                 peerOrganizer.addNewPeer(peer: newMessage.peerID!, didReceiveCall: false)
@@ -1142,15 +1141,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > Entry \(localAudioEngine.isRunning)")
         
         let data = notification.object as! [NSObject]
-        let peer = data[0] as! MCPeerID
+        var peer = data[0] as! MCPeerID
         let format = data[1] as! AVAudioFormat
         
         peerOrganizer.updateAudioFormatForPeer(peer: peer, format: format)
         
-//        peerAudioFormat = data[1] as! AVAudioFormat
-//        peerAudioFormatIsSet = true
-        
         if (!didReceiveCall) {
+            print("\(type(of: self)) > \(#function) > Sending audio format back to \(peer.displayName)")
+            
             var data = [NSObject]()
             data.append(appDelegate.connectionManager.peer)
             data.append(localInputFormat!)
@@ -1174,6 +1172,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localAudioPlayer.play()
         
         if (!peerOrganizer.isOutputStreamSet(for: peer)) {
+            // Because this "peer" variable was received from the peer, it's actual memory location is different
+            // which was causing an error. So we need to get the local version of this peer ID.
+            peer = peerOrganizer.peers[peerOrganizer.peers.index(of: peer)!]
             self.setupStream(peer: peer)
         }
         print("\(type(of: self)) > \(#function) > Exit - \(String(describing: peerAudioFormat))")
