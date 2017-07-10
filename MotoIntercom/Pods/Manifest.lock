@@ -1,15 +1,22 @@
 PODS:
+  - DKImagePickerController (3.5.1):
+    - DKImagePickerController/Camera (= 3.5.1)
+    - DKImagePickerController/ImageManager (= 3.5.1)
+  - DKImagePickerController/Camera (3.5.1)
+  - DKImagePickerController/ImageManager (3.5.1)
   - JSQMessagesViewController (7.3.4):
     - JSQSystemSoundPlayer (~> 2.0.1)
   - JSQSystemSoundPlayer (2.0.1)
 
 DEPENDENCIES:
+  - DKImagePickerController
   - JSQMessagesViewController
 
 SPEC CHECKSUMS:
+  DKImagePickerController: 8db7e76a88a7a66a893ba30e935cc4c9bb7ed335
   JSQMessagesViewController: 39fed975e3c9f8eba7292071e29eeb541d105e66
   JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
 
-PODFILE CHECKSUM: de85ab4bcccc134cae6f28d4cb378a5e6802ef5b
+PODFILE CHECKSUM: 6c1cc8fe7958c77b653cd16579d6e6cdd674cf55
 
 COCOAPODS: 1.2.0

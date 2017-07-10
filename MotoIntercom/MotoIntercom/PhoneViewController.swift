@@ -430,12 +430,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
-                    var output: Int = 0;
+//                    var output: Int = 0;
                     for i in 0..<self.peerOrganizer.outputStreams.count {
                         print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                         if (self.peerOrganizer.outputStreamIsSet[i]) {
                             let stream = self.peerOrganizer.outputStreams[i]
-                            output = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
+                            _ = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
                         }
                     }
                     

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "399C3A2ADE9F1B7E780DFFB3D8B64E83"
+               BlueprintIdentifier = "7A0C625446516F8C28472E099CEA25B1"
                BuildableName = "Pods_MotoIntercom.framework"
                BlueprintName = "Pods-MotoIntercom"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -45,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "399C3A2ADE9F1B7E780DFFB3D8B64E83"
+            BlueprintIdentifier = "7A0C625446516F8C28472E099CEA25B1"
             BuildableName = "Pods_MotoIntercom.framework"
             BlueprintName = "Pods-MotoIntercom"
             ReferencedContainer = "container:Pods.xcodeproj">

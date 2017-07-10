@@ -9,6 +9,7 @@
 import UIKit
 import MultipeerConnectivity
 import JSQMessagesViewController
+import DKImagePickerController
 import Photos
 
 @available(iOS 10.0, *)
@@ -252,7 +253,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     
     // When the user sends a message
-    
     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
         isTyping = false
         
@@ -268,42 +268,94 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
     override func didPressAccessoryButton(_ sender: UIButton!) {
-        let picker = UIImagePickerController()
-        picker.delegate = self
+        let picker = DKImagePickerController()
+        picker.allowMultipleTypes = true
+        picker.allowsLandscape = false
+        picker.showsCancelButton = true
+        picker.showsEmptyAlbums = false
         
-        if (!UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera)) {
-            picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-            self.present(picker, animated: true, completion: nil)
+        picker.sourceType = DKImagePickerControllerSourceType.both
+        self.present(picker, animated: true, completion: nil)
+        
+        picker.didCancel = { ()
+            print("\(type(of: self)) > \(#function) > Cancelled")
         }
-        else {
-            let optionMenu = UIAlertController(title: nil, message: "Select an option", preferredStyle: .actionSheet)
+        
+        picker.didSelectAssets = { [unowned self] (assets: [DKAsset]) in
+            let assets = picker.selectedAssets
+            print("\(type(of: self)) > \(#function) > Picked \(assets.count) photos/videos")
+
+            if (assets.count == 0) {
+                // Nothing to do
+                return
+            }
             
-            let cameraOption = UIAlertAction(title: "Camera", style: .default, handler: { (alert: UIAlertAction!) -> Void in
-                picker.sourceType = UIImagePickerControllerSourceType.camera
-                picker.showsCameraControls = true
-                picker.allowsEditing = false
+            var didSend = false
+            
+            for i in 0..<assets.count {
+                let asset = assets[i]
                 
-                self.present(picker, animated: true, completion: nil)
-            })
+                if (!asset.isVideo) {
+                    asset.fetchOriginalImageWithCompleteBlock( { (image, info) in
+                        if let img = image {
+                            if (self.sendPhotoToPeer(image: img)) {
+                                didSend = true
+                            }
+                        }
+                    })
+                }
+                else {
+                    //TODO: Need to decide what to do if video
+                    asset.fetchAVAsset(.none, completeBlock: { (video, info) in
+                        if let asset = video {
+                            if self.sendVideoToPeer(video: asset) {
+                                didSend = true
+                            }
+                        }
+                    })
+                }
+            }
             
-            let photoLibraryOption = UIAlertAction(title: "Photo Library", style: .default, handler: { (alert: UIAlertAction!) -> Void in
-                picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-                picker.allowsEditing = false
-                self.present(picker, animated: true, completion: nil)
-            })
-            
-            let cancelOption = UIAlertAction(title: "Cancel", style: .cancel, handler: { (alert: UIAlertAction!) -> Void in
-                // do nothing
-            })
-            
-            optionMenu.addAction(cameraOption)
-            optionMenu.addAction(photoLibraryOption)
-            optionMenu.addAction(cancelOption)
-            
-            OperationQueue.main.addOperation { () -> Void in
-                self.present(optionMenu, animated: true, completion: nil)
+            if (didSend) {
+                JSQSystemSoundPlayer.jsq_playMessageSentSound()
             }
         }
+    }
+    
+    func sendPhotoToPeer(image: UIImage) -> Bool {
+        
+        let mediaItem = JSQPhotoMediaItem(image: nil)
+        mediaItem!.appliesMediaViewMaskAsOutgoing = true
+        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(image, 0.5)!)
+        
+        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
+        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
+
+        print("\(type(of: self)) > \(#function) > Attempting to send photo")
+        let didSend = appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)
+        if (didSend) {
+            print("\(type(of: self)) > \(#function) > Added image to messages")
+
+            messageObject.messages.append(jsqMessage!)
+            self.collectionView.reloadData()
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Failed to send...")
+        }
+
+        self.finishSendingMessage(animated: true)
+        print("\(type(of: self)) > \(#function) > Exit")
+        
+        if didSend {
+            return true
+        }
+        return false
+    }
+    
+    func sendVideoToPeer(video: AVAsset) -> Bool {
+        let mediaItem = JSQVideoMediaItem()
+        
+        return true
     }
     
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, didTapMessageBubbleAt indexPath: IndexPath!) {
@@ -446,41 +498,41 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
 }
 
 
-@available(iOS 10.0, *)
-extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    // When a photo from the photo library is taken
-    internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-    {
-        print("\(type(of: self)) > \(#function) > Entry")
-        
-        let picture = info[UIImagePickerControllerOriginalImage] as! UIImage
-        let mediaItem = JSQPhotoMediaItem(image: nil)
-        
-        mediaItem!.appliesMediaViewMaskAsOutgoing = true
-        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(picture, 0.5)!)
-        
-        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
-        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
-        
-        print("\(type(of: self)) > \(#function) > Attempting to send photo")
-        if (appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)) {
-            print("\(type(of: self)) > \(#function) > Added image to messages")
-            
-            messageObject.messages.append(jsqMessage!)
-            
-            self.collectionView.reloadData()
-        }
-        else {
-            print("\(type(of: self)) > \(#function) > Failed to send...")
-        }
-
-        self.finishSendingMessage(animated: true)
-        print("\(type(of: self)) > \(#function) > Exit")
-        picker.dismiss(animated: true, completion: nil)
-    }
-    
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion:nil)
-    }
-}
+//@available(iOS 10.0, *)
+//extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+//    
+//    // When a photo from the photo library is taken
+//    internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
+//    {
+//        print("\(type(of: self)) > \(#function) > Entry")
+//        
+//        let picture = info[UIImagePickerControllerOriginalImage] as! UIImage
+//        let mediaItem = JSQPhotoMediaItem(image: nil)
+//        
+//        mediaItem!.appliesMediaViewMaskAsOutgoing = true
+//        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(picture, 0.5)!)
+//        
+//        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
+//        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
+//        
+//        print("\(type(of: self)) > \(#function) > Attempting to send photo")
+//        if (appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)) {
+//            print("\(type(of: self)) > \(#function) > Added image to messages")
+//            
+//            messageObject.messages.append(jsqMessage!)
+//            
+//            self.collectionView.reloadData()
+//        }
+//        else {
+//            print("\(type(of: self)) > \(#function) > Failed to send...")
+//        }
+//
+//        self.finishSendingMessage(animated: true)
+//        print("\(type(of: self)) > \(#function) > Exit")
+//        picker.dismiss(animated: true, completion: nil)
+//    }
+//    
+//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//        picker.dismiss(animated: true, completion:nil)
+//    }
+//}
