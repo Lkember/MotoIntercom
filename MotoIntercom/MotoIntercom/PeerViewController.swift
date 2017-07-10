@@ -730,32 +730,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func connectedWithPeer(_ peerID : MCPeerID) {
         print("\(type(of: self)) > \(#function) > Connected to peer \(peerID)")
         
-//        destinationPeerID = peerID  // This is used so we know what peer was clicked on
-//        isDestPeerIDSet = true
-        
-        if (isDestPeerIDSet) {
-        
-            let peerIndex = getIndexForPeer(peer: peerID)
-            let connType = messages[peerIndex].connectionType
-            
-            
-            if (connType == MESSAGE_CONNECTION_TYPE) {
-                print("\(type(of: self)) > \(#function) > Connection type is MESSAGE_CONNECTION_TYPE)")
-                OperationQueue.main.addOperation {
-                    self.performSegue(withIdentifier: "idChatSegue", sender: self)
-                }
-            }
-            else if (connType == PHONE_CONNECTION_TYPE) {
-                print("\(type(of: self)) > \(#function) connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
-                OperationQueue.main.addOperation {
-                    self.performSegue(withIdentifier: "callSegue", sender: self)
-                }
-            }
-            else {
-                print("\(type(of: self)) > \(#function) > Could NOT recognize a connection type. Cannot perform segue.")
-            }
-        }
-        
         DispatchQueue.main.async {
             self.peersTable.reloadData()
         }
