@@ -34,18 +34,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     @IBOutlet weak var endCallButton: UIButton!
     var nilButton: UIButton = UIButton.init()
     
-    // MC
-//    var peers = [MCPeerID]()
-//    var peerID: MCPeerID?
-//    var sessionIndex: Int?
     var didReceiveCall: Bool = false
     
-    // Streams
-//    var outputStreams = [OutputStream]()
-//    var outputStreamIsSet: Bool = false
-//    var inputStreams = [InputStream]()
-//    var inputStreamIsSet: Bool = false
-    
+    // Holds all peer data and streams
     var peerOrganizer = PeerStreamOrganizer()
     
     // Used to play audio
@@ -72,10 +63,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // Used to fix a crash when attempting to detach a node that isn't attached
     var isNodeAttached = false
     var isAudioSetup = false
-    
-    // Peer audio format
-//    var peerAudioFormat: AVAudioFormat?
-//    var peerAudioFormatIsSet = false
     
     // Average Volume
     var averageInputIsSet = false
@@ -488,6 +475,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.localInput?.removeTap(onBus: 0)
             self.updateAudioSettings()
             
+            // send new format to peers
+            self.sendNewFormatToPeers(format: self.localInputFormat!)
+            
             if (self.peerOrganizer.areAnyStreamsSet()) {
                 print("\(type(of: self)) > \(#function) > Recording audio")
                 self.recordAudio()
@@ -576,9 +566,26 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // MARK: - Stream
     
+    // When audio format is updated, it will be sent to peers
+    func sendNewFormatToPeers(format: AVAudioFormat) {
+        var dataToSend = [NSObject]()
+        dataToSend.append(self.appDelegate.connectionManager.peer)
+        dataToSend.append(localInputFormat!)
+        
+        for i in 0..<peerOrganizer.peers.count {
+            if (peerOrganizer.inputStreamIsSet[i] && peerOrganizer.outputStreamIsSet[i]) {
+                let result = appDelegate.connectionManager.sendData(format: dataToSend, toPeer: peerOrganizer.peers[i], sessionIndex: peerOrganizer.sessionIndex!)
+                
+                if (!result) {
+                    print("\(type(of: self)) > \(#function) > Error sending message...")
+                }
+            }
+        }
+    }
+    
     func readyToOpenStream(peer: MCPeerID) {
         print("\(type(of: self)) > \(#function) > Entry")
-//        let result = appDelegate.connectionManager.sendData(stringMessage: readyForStream, toPeer: peerID!)
+        
         var dataToSend = [NSObject]()
         dataToSend.append(self.appDelegate.connectionManager.peer)
         dataToSend.append(localInputFormat!)
@@ -1145,7 +1152,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         peerOrganizer.updateAudioFormatForPeer(peer: peer, format: format)
         
-        if (!didReceiveCall) {
+        if (!didReceiveCall && (!peerOrganizer.isInputStreamSet(for: peer) && !peerOrganizer.isOutputStreamSet(for: peer))) {
             print("\(type(of: self)) > \(#function) > Sending audio format back to \(peer.displayName)")
             
             var data = [NSObject]()
