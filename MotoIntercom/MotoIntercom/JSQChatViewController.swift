@@ -269,7 +269,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     override func didPressAccessoryButton(_ sender: UIButton!) {
         let picker = DKImagePickerController()
-        picker.allowMultipleTypes = true
+        picker.allowMultipleTypes = false
+        picker.assetType = DKImagePickerControllerAssetType.allPhotos
         picker.allowsLandscape = false
         picker.showsCancelButton = true
         picker.showsEmptyAlbums = false
