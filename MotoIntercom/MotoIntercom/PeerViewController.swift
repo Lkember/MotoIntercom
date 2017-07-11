@@ -388,7 +388,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let currPeer = appDelegate.connectionManager.availablePeers.peers[indexPath.row]
             
             // If the peer is connected
-            if (appDelegate.connectionManager.availablePeers.isPeerConnected(peer: currPeer)) {
+            if (appDelegate.connectionManager.checkIfAlreadyConnected(peerID: currPeer)) {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
                 
                 cell.peerID = currPeer
@@ -422,6 +422,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 let index = getIndexForPeer(peer: currPeer)
                 cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                cell.activityIndicator.startAnimating()
                 
                 print("\(type(of: self)) > \(#function) > Exit - Connecting to peer")
                 return cell
