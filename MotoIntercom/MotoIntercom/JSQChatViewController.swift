@@ -23,8 +23,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     var latestMessageSentIndex = -1
     var latestMessageStatus = ""
     let delivered = "_is_delivered_"
-    // TODO: Add a read message
-//    let read = "_is_read_"
     
     var isTyping: Bool = false
     let userIsTyping: String = "_user_is_typing_"
@@ -33,7 +31,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
     
-    // MARK: ViewDidLoad
+    // MARK: - Views
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,17 +52,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessageObject(_:)), name: NSNotification.Name(rawValue: "receivedMessageObjectNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         
-        print("Checking... ")
         if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messageObject.peerID)) {
-            print("Setting to false...")
-            self.inputToolbar.contentView.rightBarButtonItem.isEnabled = false
-            self.inputToolbar.contentView.rightBarButtonItem.isUserInteractionEnabled = false
-            
-            self.inputToolbar.contentView.textView.isEditable = false
-            self.inputToolbar.contentView.textView.isUserInteractionEnabled = false
-            
-            self.inputToolbar.contentView.leftBarButtonItem.isEnabled = false
-            self.inputToolbar.contentView.leftBarButtonItem.isUserInteractionEnabled = false
+            startDisconnectedMode()
         }
     }
 
@@ -73,6 +62,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         // Dispose of any resources that can be recreated.
     }
     
+    // This updates the latest message sent index
     func updateLatestMessagesIndex() {
         for i in 0..<messageObject.messages.count {
             print("Sender ID = \(messageObject.messages[i].senderId) == uniqueID = \(self.appDelegate.connectionManager.uniqueID)")
@@ -83,6 +73,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
+    // Called when a message has been delivered
     func nextMessageWasDelivered() {
         print("\(type(of: self)) > \(#function) > Updated index from \(self.latestMessageSentIndex)")
         for i in self.latestMessageSentIndex+1..<messageObject.messages.count {
@@ -99,6 +90,19 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
+    // This function makes the text box and send button no longer active
+    func startDisconnectedMode() {
+        DispatchQueue.main.async {
+            self.inputToolbar.contentView.rightBarButtonItem.isEnabled = false
+            self.inputToolbar.contentView.rightBarButtonItem.isUserInteractionEnabled = false
+            
+            self.inputToolbar.contentView.textView.isEditable = false
+            self.inputToolbar.contentView.textView.isUserInteractionEnabled = false
+            
+            self.inputToolbar.contentView.leftBarButtonItem.isEnabled = false
+            self.inputToolbar.contentView.leftBarButtonItem.isUserInteractionEnabled = false
+        }
+    }
 
     // MARK: - Navigation
 
@@ -450,9 +454,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             
             let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                
-                //Go back to PeerView
-                _ = self.navigationController?.popViewController(animated: true)
+                self.startDisconnectedMode()
             }
             
             alert.addAction(okAction)
@@ -497,43 +499,3 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
 }
-
-
-//@available(iOS 10.0, *)
-//extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-//    
-//    // When a photo from the photo library is taken
-//    internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-//    {
-//        print("\(type(of: self)) > \(#function) > Entry")
-//        
-//        let picture = info[UIImagePickerControllerOriginalImage] as! UIImage
-//        let mediaItem = JSQPhotoMediaItem(image: nil)
-//        
-//        mediaItem!.appliesMediaViewMaskAsOutgoing = true
-//        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(picture, 0.5)!)
-//        
-//        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
-//        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
-//        
-//        print("\(type(of: self)) > \(#function) > Attempting to send photo")
-//        if (appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)) {
-//            print("\(type(of: self)) > \(#function) > Added image to messages")
-//            
-//            messageObject.messages.append(jsqMessage!)
-//            
-//            self.collectionView.reloadData()
-//        }
-//        else {
-//            print("\(type(of: self)) > \(#function) > Failed to send...")
-//        }
-//
-//        self.finishSendingMessage(animated: true)
-//        print("\(type(of: self)) > \(#function) > Exit")
-//        picker.dismiss(animated: true, completion: nil)
-//    }
-//    
-//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-//        picker.dismiss(animated: true, completion:nil)
-//    }
-//}
