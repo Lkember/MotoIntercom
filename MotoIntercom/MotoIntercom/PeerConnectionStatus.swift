@@ -58,6 +58,7 @@ class PeerConnectionStatus: NSObject {
     
     // Sets the given peers status to connected
     func setToConnected(peerID: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > \(peerID.displayName)")
         if let index = peers.index(of: peerID) {
             status[index] = connected
             return
@@ -67,6 +68,7 @@ class PeerConnectionStatus: NSObject {
     
     // Sets the given peers status to connecting
     func setToConnecting(peerID: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > \(peerID.displayName)")
         if let index = peers.index(of: peerID) {
             status[index] = connecting
             return
@@ -76,6 +78,7 @@ class PeerConnectionStatus: NSObject {
     
     // Sets the given peers status to not connected
     func setToDisconnected(peerID: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > \(peerID.displayName)")
         if let index = peers.index(of: peerID) {
             status[index] = notConnected
             return
