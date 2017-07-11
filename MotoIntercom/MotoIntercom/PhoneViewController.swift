@@ -94,7 +94,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(type(of: self)) > \(#function) > Could not find session")
             statusLabel.text = "Calling..."
             userEndedCall = false
-            disconnectedFromPeer(peerOrganizer.peers[0])
+            
+            // TODO: Let the user know the call failed
+            statusLabel.text = "Call Failed..."
+            endCallButtonIsClicked(nilButton)
         }
         else {
             print("\(type(of: self)) > \(#function) > sessionIndex = \(peerOrganizer.sessionIndex!.description)")
@@ -663,8 +666,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
         
         case Stream.Event.hasSpaceAvailable:
-            print("\(type(of: self)) > \(#function) > Space available")
-            
+//            print("\(type(of: self)) > \(#function) > Space available")
+            break
             
         case Stream.Event.endEncountered:
             print("\(type(of: self)) > \(#function) > End encountered")
@@ -1007,7 +1010,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             var peerLabel = peerOrganizer.getPeerLabel()
             peerLabel.append("\nConnecting: \(peerID.displayName)")
             
-            self.peerLabel.text = peerLabel
+            DispatchQueue.main.async {
+                self.peerLabel.text = peerLabel
+            }
         }
         
         print("\(type(of: self)) > \(#function) > Exit")
@@ -1053,13 +1058,15 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 self.recordAudio()
                 print("\(type(of: self)) > \(#function) > tap installed")
                 
-                self.muteButton.isEnabled = true
-                self.speakerButton.isEnabled = true
-                self.addPeerButton.isEnabled = true
-                
-                self.muteButton.isUserInteractionEnabled = true
-                self.speakerButton.isUserInteractionEnabled = true
-                self.addPeerButton.isUserInteractionEnabled = true
+                DispatchQueue.main.async {
+                    self.muteButton.isEnabled = true
+                    self.speakerButton.isEnabled = true
+                    self.addPeerButton.isEnabled = true
+                    
+                    self.muteButton.isUserInteractionEnabled = true
+                    self.speakerButton.isUserInteractionEnabled = true
+                    self.addPeerButton.isUserInteractionEnabled = true
+                }
             }
         }
         else {

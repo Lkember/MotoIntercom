@@ -184,6 +184,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.peersTable.reloadData()
         }
         
+        sleep(UInt32(0.5))
         refreshControl.endRefreshing()
     }
     
@@ -396,9 +397,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.peerIsAvailable()
                 
                 let index = getIndexForPeer(peer: currPeer)
-                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                if (index >= 0) {
+                    cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                }
+                else {
+                    // If this is the case, then the peer was added to the availablePeers while in a different view, so add it to messages
+                    let message = MessageObject.init(peerID: currPeer, selfID: self.appDelegate.peer, messages: [])
+                    messages.append(message)
+                    cell.setLatestMessage(latestMessage: self.messages[messages.count-1].getLastMessage())
+                }
                 
-                print("\(type(of: self)) > \(#function) > Exit")
+                print("\(type(of: self)) > \(#function) > Exit - Peer is connected")
                 return cell
             }
                 
@@ -414,7 +423,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let index = getIndexForPeer(peer: currPeer)
                 cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
                 
-                print("\(type(of: self)) > \(#function) > Exit")
+                print("\(type(of: self)) > \(#function) > Exit - Connecting to peer")
                 return cell
             }
         }
@@ -651,7 +660,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // If a peer was found, then reload data
     func foundPeer(_ newPeer: MCPeerID) {
-        print("\(type(of: self)) > \(#function) foundPeer > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         let index = doesMessageObjectExist(forPeer: newPeer)
         
@@ -659,6 +668,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if index == -1 {
             let messageObject = MessageObject.init(peerID: newPeer, messages: [])
             messages.append(messageObject)
+            print("\(type(of: self)) > \(#function) > Peer added")
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Peer already exists")
         }
         
         save()
