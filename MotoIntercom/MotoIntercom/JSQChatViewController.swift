@@ -126,12 +126,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Gets the data for the message at index
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
-//        if messageObject.messages[indexPath.item].isMediaMessage {
-//            print("\(type(of: self)) > \(#function) > Picture message...")
-//        }
-//        else {
-//            print("\(type(of: self)) > \(#function) > \(messageObject.messages[indexPath.item].text)")
-//        }
         return messageObject.messages[indexPath.item]
     }
     
