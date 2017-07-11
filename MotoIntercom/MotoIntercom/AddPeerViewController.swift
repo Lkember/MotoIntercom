@@ -70,6 +70,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         self.foregroundView.alpha = 1.0
+        self.foregroundView.layer.cornerRadius = 10
     }
 
     override func didReceiveMemoryWarning() {
