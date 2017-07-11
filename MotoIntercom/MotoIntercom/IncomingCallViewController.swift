@@ -12,7 +12,6 @@ import UIKit
 class IncomingCallViewController: UIViewController {
     
     var appDelegate: AppDelegate = AppDelegate.init()
-//        UIApplication.shared.delegate as! AppDelegate
     
     @IBOutlet weak var callDisplayNameLabel: UILabel!
     @IBOutlet weak var peerDisplayNameLabel: UILabel!

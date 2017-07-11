@@ -86,3 +86,4 @@ class PeerConnectionStatus: NSObject {
         print("\(type(of: self)) > \(#function) > Changing status failed")
     }
 }
+
