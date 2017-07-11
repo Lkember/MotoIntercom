@@ -11,7 +11,8 @@ import UIKit
 @available(iOS 10.0, *)
 class IncomingCallViewController: UIViewController {
     
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    var appDelegate: AppDelegate = AppDelegate.init()
+//        UIApplication.shared.delegate as! AppDelegate
     
     @IBOutlet weak var callDisplayNameLabel: UILabel!
     @IBOutlet weak var peerDisplayNameLabel: UILabel!
@@ -43,6 +44,8 @@ class IncomingCallViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        appDelegate = UIApplication.shared.delegate as! AppDelegate
+        
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
