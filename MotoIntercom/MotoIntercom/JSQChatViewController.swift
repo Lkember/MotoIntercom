@@ -352,7 +352,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
     func sendVideoToPeer(video: AVAsset) -> Bool {
-        let mediaItem = JSQVideoMediaItem()
+        // TODO: Need to implement sending videos to chat
+//        let mediaItem = JSQVideoMediaItem()
         
         return true
     }
@@ -463,7 +464,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         // Nothing to do here
     }
     
-    func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: UInt8) {
         //TODO: Need to decide what to do if invite is received.
         
     }

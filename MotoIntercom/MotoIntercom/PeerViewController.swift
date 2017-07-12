@@ -696,10 +696,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // When an invite is received
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8) {
         print("\(type(of: self)) > \(#function) > Entry: isPhoneCall=\(isPhoneCall)")
         
-        if (!isPhoneCall) {
+        if (isPhoneCall == 0) {
             // Set the connection type to message
             let peerIndex = self.getIndexForPeer(peer: fromPeer)
             
@@ -719,6 +719,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
             popOverView.messages = self.messages
             popOverView.peerDisplayName = fromPeer.displayName
+            
+            if (isPhoneCall == 2) {
+                popOverView.isMultipeerCall = true
+            }
             
             print("\(type(of: self)) > \(#function) > fromPeer=\(fromPeer.displayName)")
             

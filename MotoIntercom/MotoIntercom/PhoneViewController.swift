@@ -940,7 +940,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > \(lostPeer.displayName)")
     }
     
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8) {
         //TODO: Need to notify the user that someone is trying to connect
         print("\(type(of: self)) > \(#function) > \(fromPeer.displayName)")
         

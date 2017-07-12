@@ -207,7 +207,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.peerViewTable.reloadData()
     }
     
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8) {
         // TODO: Decide what to do
     }
     

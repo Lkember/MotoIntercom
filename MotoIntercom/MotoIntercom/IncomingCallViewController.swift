@@ -18,6 +18,7 @@ class IncomingCallViewController: UIViewController {
     var peerIndex: Int?
     var messages: [MessageObject]?
     var peerDisplayName: String?
+    var isMultipeerCall = false
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var popUpView: UIView!
     
