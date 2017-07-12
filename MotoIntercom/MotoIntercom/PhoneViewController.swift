@@ -701,6 +701,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "AddNewPeers") as! AddPeerViewController
         popOverView.sessionIndex = self.peerOrganizer.sessionIndex!
+        popOverView.delegate = self
         self.addChildViewController(popOverView)
         
         DispatchQueue.main.async {

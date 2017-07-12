@@ -16,6 +16,8 @@ protocol PeerAddedDelegate {
 @available(iOS 10.0, *)
 class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
 
+    var delegate: PeerAddedDelegate! = nil
+    
     // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let peerAddedDelegate: PeerAddedDelegate? = nil
@@ -105,7 +107,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         dismissAnimate()
         
-        peerAddedDelegate?.peersToBeAdded(peers: peersToAdd)
+        delegate.peersToBeAdded(peers: peersToAdd)
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
