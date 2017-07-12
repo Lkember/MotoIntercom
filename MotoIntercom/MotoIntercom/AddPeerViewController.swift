@@ -60,6 +60,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        // Setting up the delegates and also searching and advertising to peers
+        appDelegate.connectionManager.delegate = self
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
+        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
+        
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
