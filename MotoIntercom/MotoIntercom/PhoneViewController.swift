@@ -5,9 +5,6 @@
 //  Created by Logan Kember on 2016-12-18.
 //  Copyright © 2016 Logan Kember. All rights reserved.
 //
-//  This may be helpful when trying to play from the livestream
-//  https://developer.apple.com/library/content/samplecode/HLSCatalog/Introduction/Intro.html#//apple_ref/doc/uid/TP40017320-Intro-DontLinkElementID_2
-//  http://stackoverflow.com/questions/33245063/swift-2-avfoundation-recoding-realtime-audio-samples
 
 import UIKit
 import AVFoundation
@@ -435,7 +432,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                     
 //                    var output: Int = 0;
                     for i in 0..<self.peerOrganizer.outputStreams.count {
-                        print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
+//                        print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                         if (self.peerOrganizer.outputStreamIsSet[i]) {
                             let stream = self.peerOrganizer.outputStreams[i]
                             _ = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
@@ -1008,7 +1005,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         else {
             var peerLabel = peerOrganizer.getPeerLabel()
-            peerLabel.append("\nConnecting: \(peerID.displayName)")
+            
+            if (self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!].connectedPeers.contains(peerID)) {
+                peerLabel.append("\nConnecting: \(peerID.displayName)")
+            }
             
             DispatchQueue.main.async {
                 self.peerLabel.text = peerLabel
