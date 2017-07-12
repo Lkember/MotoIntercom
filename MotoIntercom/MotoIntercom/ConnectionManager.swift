@@ -14,7 +14,7 @@ import JSQMessagesViewController
 protocol ConnectionManagerDelegate {
     func foundPeer(_ newPeer : MCPeerID)
     func lostPeer(_ lostPeer: MCPeerID)
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool)
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8)
     func connectingWithPeer(_ peerID: MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
@@ -366,21 +366,26 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
      */
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         self.invitationHandler = invitationHandler
-        let isPhoneCall = NSKeyedUnarchiver.unarchiveObject(with: context!) as! Bool
         
+        // index 0 indicates whether it is a phone call, index 1 indicates whether it is a multipeer phone call
+        let data = NSKeyedUnarchiver.unarchiveObject(with: context!) as! UInt8
         
-        // Automatically connecting to the user if it is not a phone call
-        if (!isPhoneCall) {
+        // If it a standard connection or a phone call
+        if (data == 0 || data == 1) {
             if (findSinglePeerSession(peer: peerID) == -1) {
-                
                 let index = self.createNewSession()
                 invitationHandler(true, sessions[index])    //Accepting connection
+                
+                delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+                return
             }
         }
         
-        delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
+        // If it is a multipeer phone call
+        if (data == 2) {
+            // TODO: Need to create a new session for the multipeer phone call
+        }
     }
-    
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         print("\(type(of: self)) > \(#function) > \(error.localizedDescription)")

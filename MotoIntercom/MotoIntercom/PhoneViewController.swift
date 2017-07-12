@@ -611,7 +611,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         catch let error as NSError {
             print("\(type(of: self)) > \(#function) > Failed to create outputStream: \(error.localizedDescription)")
             // TODO: Send streamFailed message to user
-            endCallButtonIsClicked(endCallButton)
+            if (peerOrganizer.peers.count == 1 && peerOrganizer.peers[0] == peer) {
+                endCallButtonIsClicked(endCallButton)
+            }
         }
         
         print("\(type(of: self)) > \(#function) > Exit")
@@ -622,6 +624,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         switch (eventCode) {
         case Stream.Event.errorOccurred:
             print("\(type(of: self)) > \(#function) > Error has occurred on input stream")
+            self.statusLabel.text = "Call Failed"
+            endCallButtonIsClicked(nilButton)
             
             
         case Stream.Event.hasBytesAvailable:
@@ -900,8 +904,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // called when peers need to be added to the call
     func peersToBeAdded(peers: [MCPeerID]) {
         print("\(type(of: self)) > \(#function) > Entry -- \(peers.count) peers to call")
-        let isPhoneCall = true
-        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: isPhoneCall)
+        
+        let data: UInt8 = 2
+        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: data)
         
         // Loop through each peer and send them an invite
         for i in 0..<peers.count {
@@ -914,7 +919,6 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                                                                       to: self.appDelegate.connectionManager.sessions[peerOrganizer.sessionIndex!],
                                                                       withContext: dataToSend,
                                                                       timeout: 20)
-                
             }
             else {
                 print("\(type(of: self)) > \(#function) > Peer \(peers[i].displayName) is already in the call")
@@ -1111,7 +1115,16 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 
             }
             else {
-                print("\(type(of: self)) > \(#function) > Wrong peer")
+                if newMessage.message == acceptCall {
+                    print("\(type(of: self)) > \(#function) > Peer accepted call")
+                    
+                    // TODO: Play a noise to let the user know someone joined their call
+                    peerOrganizer.addNewPeer(peer: newMessage.peerID!, didReceiveCall: false)
+                    
+                    DispatchQueue.main.async {
+                        self.statusLabel.text = self.peerOrganizer.getPeerLabel()
+                    }
+                }
             }
             
             return
@@ -1186,6 +1199,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.localAudioPlayer.play()
         
         if (!peerOrganizer.isOutputStreamSet(for: peer)) {
+            print("\(type(of: self)) > \(#function) > TESTING: size of peers table \(peerOrganizer.peers.count)")
+            for i in 0..<peerOrganizer.peers.count {
+                print("\(type(of: self)) > \(#function) > \(i): \(peerOrganizer.peers[i].displayName)")
+            }
+            
             // Because this "peer" variable was received from the peer, it's actual memory location is different
             // which was causing an error. So we need to get the local version of this peer ID.
             peer = peerOrganizer.peers[peerOrganizer.peers.index(of: peer)!]
