@@ -48,19 +48,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
         
-//        print("\(type(of: self)) > \(#function) > Resetting peer array.")
-//        appDelegate.connectionManager.resetPeerArray()
         navigationItem.leftBarButtonItem?.title = "Back"
+        navigationItem.rightBarButtonItem = self.editButtonItem
         
         peersTable.delegate = self
         peersTable.dataSource = self
         
-        self.navigationItem.rightBarButtonItem = self.editButtonItem
-        
+        // Setting up the pull to refresh
         refreshControl = UIRefreshControl()
 //        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
         refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
-        
         peersTable.addSubview(refreshControl)
         
         //set the delegate to self, and start browsing for peers
@@ -76,15 +73,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         didAcceptCall = false
         print("\(type(of: self)) > \(#function) > Advertising and browsing for peers. Thread: \(Thread.current)")
     }
-    
-    
-//    // If the view disappears than stop advertising and browsing for peers.
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        
-//        //        appDelegate.connectionManager.resetPeerArray()
-//        //        print("\(type(of: self)) > \(#function) viewWillDisappear > Resetting table")
-//    }
     
     // Called before the view appears, this way the user won't see the view updating
     override func viewWillAppear(_ animated: Bool) {

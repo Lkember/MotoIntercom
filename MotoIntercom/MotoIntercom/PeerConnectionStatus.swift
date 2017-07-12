@@ -51,11 +51,6 @@ class PeerConnectionStatus: NSObject {
         return false
     }
     
-    // Returns the status of the given peer
-//    func getStatus(index: Int) -> String {
-//        return self.status[index]
-//    }
-    
     // Sets the given peers status to connected
     func setToConnected(peerID: MCPeerID) {
         print("\(type(of: self)) > \(#function) > \(peerID.displayName)")
