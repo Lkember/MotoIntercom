@@ -246,9 +246,9 @@
 			isa = PBXGroup;
 			children = (
 				B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */,
-				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
 				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
 				B200C0961E973E060046914B /* JSQChatViewController.swift */,
+				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
 				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
