@@ -109,9 +109,19 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 return i
             }
         }
+        
         print("\(type(of: self)) > \(#function) > Exit - Failure")
         return -1
     }
+    
+    // A function which adds a peer to messages
+    func addPeerToMessages(peer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > Entry")
+        let newPeer = MessageObject.init(peerID: peer, messages: [])
+        messages.append(newPeer)
+        print("\(type(of: self)) > \(#function) > Exit")
+    }
+    
     
     // Returns a list of unavailablePeers
     func getUnavailablePeers() -> [MCPeerID] {
@@ -408,7 +418,12 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.selectionStyle = UITableViewCellSelectionStyle.none
                 cell.isUserInteractionEnabled = false
                 
-                let index = getIndexForPeer(peer: currPeer)
+                var index = getIndexForPeer(peer: currPeer)
+                if (index == -1) {
+                    addPeerToMessages(peer: currPeer)
+                    index = messages.count - 1
+                }
+                
                 cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
                 cell.activityIndicator.startAnimating()
                 

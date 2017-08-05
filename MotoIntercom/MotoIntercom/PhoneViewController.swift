@@ -1053,6 +1053,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.peerOrganizer.inputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.peerOrganizer.inputStreams[index]!.open()
             
+            // If the output stream has not been set, then set it
+            if (self.peerOrganizer.outputStreams[index] == nil) {
+                setupStream(peer: peerID)
+            }
+            
             self.peerOrganizer.outputStreams[index]!.delegate = self
             self.peerOrganizer.outputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
             self.peerOrganizer.outputStreams[index]!.open()

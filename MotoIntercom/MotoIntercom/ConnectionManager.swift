@@ -110,7 +110,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // a function which finds the index for a session with a given peer
     func findSinglePeerSession(peer: MCPeerID) -> Int {
-        print("\(type(of: self)) > \(#function) > Entry \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Entry: \(peer.displayName), # of sessions: \(sessions.count)")
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.contains(peer) && sessions[i].connectedPeers.count == 1) {
                 print("\(type(of: self)) > \(#function) > Exit: Found session \(i)")
@@ -273,13 +273,14 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        
+        print("\(type(of: self)) > \(#function) > Entry")
         if (!availablePeers.peers.contains(peerID)) {
             availablePeers.addDisconnectedPeer(peer: peerID)
             connectToPeer(peerID: peerID, isPhoneCall: false)
         }
         
         delegate?.foundPeer(peerID)
+        print("\(type(of: self)) > \(#function) > Entry")
     }
 
     // Checks to see if a peer is already in the availablePeers array
@@ -365,6 +366,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         immediately go into the chat.
      */
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        print("\(type(of: self)) > \(#function) > Entry")
         self.invitationHandler = invitationHandler
         
         // index 0 indicates whether it is a phone call, index 1 indicates whether it is a multipeer phone call
@@ -396,6 +398,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             delegate?.inviteWasReceived(peerID, isPhoneCall: data)
             return
         }
+        print("\(type(of: self)) > \(#function) > Exit")
     }
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
