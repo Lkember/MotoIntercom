@@ -371,7 +371,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         let data = NSKeyedUnarchiver.unarchiveObject(with: context!) as! UInt8
         
         // If it a standard connection or a phone call
-        if (data == 0 || data == 1) {
+        if (data == 0) {
             if (findSinglePeerSession(peer: peerID) == -1) {
                 let index = self.createNewSession()
                 invitationHandler(true, sessions[index])    //Accepting connection
@@ -380,10 +380,21 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
                 return
             }
         }
-        
+            
+        // if it is a single peer phone call
+        else if (data == 1) {
+            delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+            return
+        }
+            
         // If it is a multipeer phone call
-        if (data == 2) {
+        else if (data == 2) {
             // TODO: Need to create a new session for the multipeer phone call
+//            let index = self.createNewSession()
+//            invitationHandler(true, sessions[index])
+            
+            delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+            return
         }
     }
     

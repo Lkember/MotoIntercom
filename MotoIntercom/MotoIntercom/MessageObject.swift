@@ -18,7 +18,7 @@ class MessageObject: NSObject, NSCoding {
     var selfID: MCPeerID!
     var messages = [JSQMessage]()
     
-    var connectionType : Int = 0    // 0 = not specified, 1 = message, 2 = voice
+//    var connectionType : Int = 0    // 0 = not specified, 1 = message, 2 = voice
     
     
     // MARK: init
@@ -44,20 +44,20 @@ class MessageObject: NSObject, NSCoding {
     }
     
     // MARK: Functions
-    func resetConnectionType() {
-        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
-        connectionType = 0
-    }
-    
-    func setConnectionTypeToMessage() {
-        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
-        connectionType = 1
-    }
-    
-    func setConnectionTypeToVoice() {
-        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
-        connectionType = 2
-    }
+//    func resetConnectionType() {
+//        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
+//        connectionType = 0
+//    }
+//    
+//    func setConnectionTypeToMessage() {
+//        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
+//        connectionType = 1
+//    }
+//    
+//    func setConnectionTypeToVoice() {
+//        print("\(type(of: self)) > \(#function) > forPeer \(self.peerID.displayName)")
+//        connectionType = 2
+//    }
     
     func getLastMessage() -> String {
         if (messages.count == 0) {

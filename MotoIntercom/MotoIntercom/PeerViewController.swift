@@ -467,9 +467,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     if (check == -1) {
                         //Setting the connection type to voice
-                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
-                        self.messages[peerIndex].setConnectionTypeToVoice()
-                            
+//                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+//                        self.messages[peerIndex].setConnectionTypeToVoice()
+                        
                         self.destinationPeerID = currCell.peerID!
                         self.isDestPeerIDSet = true
                         
@@ -506,8 +506,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     if (check == -1) {
                         
                         // Set connection type to message
-                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
-                        self.messages[peerIndex].setConnectionTypeToMessage()
+//                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+//                        self.messages[peerIndex].setConnectionTypeToMessage()
                         
                         print("\(type(of: self)) > \(#function) > Creating a new session")
                         
@@ -701,25 +701,28 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         if (isPhoneCall == 0) {
             // Set the connection type to message
-            let peerIndex = self.getIndexForPeer(peer: fromPeer)
-            
-            if (peerIndex >= 0) {
-                self.messages[peerIndex].setConnectionTypeToMessage()
-            }
-            else {
-                print("\(type(of: self)) > \(#function) > ERROR! COULD NOT FIND PEER!")
-            }
+//            let peerIndex = self.getIndexForPeer(peer: fromPeer)
+//            if (peerIndex >= 0) {
+//                self.messages[peerIndex].setConnectionTypeToMessage()
+//            }
+//            else {
+//                print("\(type(of: self)) > \(#function) > ERROR! COULD NOT FIND PEER!")
+//            }
         }
         else {
+            // There is an incoming call
             print("\(type(of: self)) > \(#function) > Incoming call!")
             
+            // Create call overlay
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
             self.addChildViewController(popOverView)
             
+            // Getting index for the peer
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
             popOverView.messages = self.messages
             popOverView.peerDisplayName = fromPeer.displayName
             
+            // If it is a multipeer call
             if (isPhoneCall == 2) {
                 popOverView.isMultipeerCall = true
             }
@@ -746,8 +749,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(type(of: self)) > \(#function) > Entry: Disconnected from peer \(peerID)")
         
         // Resetting the peers connected type
-        let peerIndex = getIndexForPeer(peer: peerID)
-        messages[peerIndex].resetConnectionType()
+//        let peerIndex = getIndexForPeer(peer: peerID)
+//        messages[peerIndex].resetConnectionType()
         
         if let currView = navigationController?.topViewController as? JSQChatViewController {
             print("\(type(of: self)) > \(#function) > topViewController is ChatView. ")

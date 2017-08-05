@@ -79,23 +79,35 @@ class IncomingCallViewController: UIViewController {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
         
             var index = -1
-        
-            if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
-                print("\(type(of: self)) > \(#function) > Accepting invitation")
+            
+            // If a single peer call
+            if (!isMultipeerCall) {
+                if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
+                    print("\(type(of: self)) > \(#function) > Accepting invitation")
+                    index = self.appDelegate.connectionManager.createNewSession()
+                    
+                    if self.appDelegate.connectionManager.invitationHandler != nil {
+                        self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+                    }
+                }
+                else {
+                    print("\(type(of: self)) > \(#function) > Already connected")
+                    index = peerIndex!
+                }
+            }
+            // If a multipeer call we need to create a new session
+            else {
+                print("\(type(of: self)) > \(#function) > Multipeer Call Incoming")
                 index = self.appDelegate.connectionManager.createNewSession()
                 
                 if self.appDelegate.connectionManager.invitationHandler != nil {
                     self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
                 }
             }
-            else {
-                print("\(type(of: self)) > \(#function) > Already connected")
-                index = peerIndex!
-            }
                 
-            superview!.destinationPeerID = messages?[index].peerID
+            superview!.destinationPeerID = messages?[peerIndex!].peerID
             superview!.isDestPeerIDSet = true
-            superview!.messages[peerIndex!].setConnectionTypeToVoice()
+//            superview!.messages[peerIndex!].setConnectionTypeToVoice()
             superview!.didAcceptCall = true
             
             dismissAnimate()
