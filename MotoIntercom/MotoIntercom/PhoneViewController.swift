@@ -24,7 +24,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // Background Task to keep the app running in the background
     var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
-    var backgroundTaskIsRegistered = false;
+    var backgroundTaskIsRegistered = false
 
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var peerLabel: UILabel!
@@ -53,12 +53,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     // Audio Capture and Playing
     var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
     var localAudioEngine: AVAudioEngine = AVAudioEngine()
-    var localAudioPlayer: AVAudioPlayerNode = AVAudioPlayerNode()
     var localInput: AVAudioInputNode?
     var localInputFormat: AVAudioFormat?
     
     // Used to fix a crash when attempting to detach a node that isn't attached
-    var isNodeAttached = false
     var isAudioSetup = false
     
     // Average Volume
@@ -266,14 +264,22 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(type(of: self)) > \(#function) > Error encountered: \(error)")
         }
         
-        
         // Setting up audio engine for local recording and sounds
         self.localInput = self.localAudioEngine.inputNode
-        self.localAudioEngine.attach(self.localAudioPlayer)
-        self.isNodeAttached = true
         self.localInputFormat = self.localInput?.inputFormat(forBus: 0)
         
-        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: localInputFormat)
+        //TODO: This method may be unnecessary since we haven't received any peers formats
+        print("\(type(of: self)) > \(#function) > connecting audioPlayers | # peers: \(peerOrganizer.peers.count)")
+        for i in 0..<self.peerOrganizer.audioPlayers.count {
+            if (peerOrganizer.isFormatSetForPeer[i]) {
+                let audioPlayer = peerOrganizer.audioPlayers[i]
+            
+                self.localAudioEngine.attach(audioPlayer)
+                self.localAudioEngine.connect(audioPlayer, to: self.localAudioEngine.mainMixerNode, format: peerOrganizer.audioFormatForPeer[i])
+                peerOrganizer.isAudioPlayerAttached[i] = true
+            }
+        }
+        
         self.localAudioEngine.prepare()
         
         print("\(type(of: self)) > \(#function) > localInputFormat = \(self.localInputFormat.debugDescription)")
@@ -282,7 +288,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         localPlayerQueue.sync {
             do {
                 try self.localAudioEngine.start()
-                self.localAudioPlayer.play()
+                for i in 0..<peerOrganizer.audioPlayers.count {
+                    if (peerOrganizer.isFormatSetForPeer[i]) {
+                        peerOrganizer.audioPlayers[i].play()
+                    }
+                }
             }
             catch let error as NSError {
                 print("\(type(of: self)) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
@@ -339,7 +349,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             self.localAudioEngine.prepare()
             do {
                 try self.localAudioEngine.start()
-                self.localAudioPlayer.play()
+//                self.localAudioPlayer.play()
             }
             catch let error as NSError {
                 print("\(type(of: self)) > \(#function) > Error starting audio engine: \(error.localizedDescription)")
@@ -655,7 +665,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                         let data = NSData.init(bytes: &self.testBuffer, length: self.testBufferCount)
                         let audioBuffer = self.dataToPCMBuffer(format: format, data: data)
                         
-                        self.localAudioPlayer.scheduleBuffer(audioBuffer, completionHandler: nil)
+                        peerOrganizer.audioPlayers[index].scheduleBuffer(audioBuffer, completionHandler: nil)
                         
                         self.testBuffer.removeAll()
                         self.testBufferCount = 0
@@ -866,19 +876,20 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.endBackgroundTask()
         
         //Stop recording and playing
-        if localAudioPlayer.isPlaying {
-            print("\(type(of: self)) > \(#function) > localAudioPlayer stopped")
-            localAudioPlayer.stop()
-        }
+        peerOrganizer.stopAllAudioPlayers()
         
+        // Stopping the audioEngine
         if localAudioEngine.isRunning {
             print("\(type(of: self)) > \(#function) > localAudioEngine stopped")
             localAudioEngine.stop()
         }
         
-        if (self.isNodeAttached) {
-            self.localAudioEngine.detach(self.localAudioPlayer)
-            self.isNodeAttached = false
+        // Detaching the audioPlayers from the audioEngine
+        for i in 0..<peerOrganizer.peers.count {
+            if (peerOrganizer.isAudioPlayerAttached[i]) {
+                localAudioEngine.detach(self.peerOrganizer.audioPlayers[i])
+                peerOrganizer.isAudioPlayerAttached[i] = false
+            }
         }
         
         // Stop the timer
@@ -1176,6 +1187,9 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         var peer = data[0] as! MCPeerID
         let format = data[1] as! AVAudioFormat
         
+        let index = peerOrganizer.indexFor(peer: peer)
+        let wasFormatSet = peerOrganizer.isFormatSetForPeer[index]
+        
         peerOrganizer.updateAudioFormatForPeer(peer: peer, format: format)
         
         if (!didReceiveCall && (!peerOrganizer.isInputStreamSet(for: peer) && !peerOrganizer.isOutputStreamSet(for: peer))) {
@@ -1191,17 +1205,29 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Setting the format for the localAudioPlayer
         let peerAudioFormat = peerOrganizer.formatForPeer(peer: peer)
         
-        self.localAudioEngine.disconnectNodeInput(self.localAudioPlayer)
-        self.localAudioEngine.connect(self.localAudioPlayer, to: self.localAudioEngine.mainMixerNode, format: peerAudioFormat)
-        self.localAudioEngine.prepare()
-        do {
-            try self.localAudioEngine.start()
-        }
-        catch let error as NSError {
-            print("\(type(of: self)) > \(#function) > failed to start audio engine \(error.localizedDescription)")
+        // Updating the audioPlayer
+        print("\(type(of: self)) > \(#function) > format was already set: \(wasFormatSet)")
+        if (wasFormatSet) {
+            self.localAudioEngine.disconnectNodeInput(peerOrganizer.audioPlayers[index])
         }
         
-        self.localAudioPlayer.play()
+        self.localAudioEngine.connect(peerOrganizer.audioPlayers[index], to: self.localAudioEngine.mainMixerNode, format: peerAudioFormat)
+        
+        if (!self.localAudioEngine.isRunning) {
+            print("\(type(of: self)) > \(#function) > Starting engine")
+            self.localAudioEngine.prepare()
+            do {
+                try self.localAudioEngine.start()
+            }
+            catch let error as NSError {
+                print("\(type(of: self)) > \(#function) > failed to start audio engine \(error.localizedDescription)")
+            }
+        }
+        
+        if (!peerOrganizer.audioPlayers[index].isPlaying) {
+            print("\(type(of: self)) > \(#function) > Setting audioPlayer to play")
+            peerOrganizer.audioPlayers[index].play()
+        }
         
         if (!peerOrganizer.isOutputStreamSet(for: peer)) {
             print("\(type(of: self)) > \(#function) > TESTING: size of peers table \(peerOrganizer.peers.count)")

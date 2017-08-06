@@ -18,11 +18,14 @@ class PeerStreamOrganizer: NSObject {
 //    var peersToJoin = [MCPeerID]()              //This array is used to hold peers who have been invited to the phone call
     
     var peers = [MCPeerID]()                    //peers in the current phone call
-    var inputStreams = [InputStream?]()          //inputStreams for the current peers
-    var outputStreams = [OutputStream?]()        //outputStreams for the current peers
+    var inputStreams = [InputStream?]()         //inputStreams for the current peers
+    var outputStreams = [OutputStream?]()       //outputStreams for the current peers
     var inputStreamIsSet = [Bool]()             //a boolean value for if the inputStreams have been initialized
     var outputStreamIsSet = [Bool]()            //a boolean value for if the outputStreams have been initialized
     var audioFormatForPeer = [AVAudioFormat]()  //the audio format for a given peer
+    var isFormatSetForPeer = [Bool]()           //Tells whether the audioFormat is set or not
+    var audioPlayers = [AVAudioPlayerNode]()    //Stores the audio player for a given peer
+    var isAudioPlayerAttached = [Bool]()        //Tells whether the audioPlayer is attached to the audioEngine or not
     var didReceiveCall = [Bool]()               //a boolean value for whether the call was received or not
     
     var sessionIndex: Int?
@@ -42,6 +45,9 @@ class PeerStreamOrganizer: NSObject {
             inputStreamIsSet.append(false)
             outputStreamIsSet.append(false)
             audioFormatForPeer.append(AVAudioFormat.init())
+            isFormatSetForPeer.append(false)
+            audioPlayers.append(AVAudioPlayerNode())
+            isAudioPlayerAttached.append(false)
             self.didReceiveCall.append(didReceiveCall)
         }
         else {
@@ -76,11 +82,12 @@ class PeerStreamOrganizer: NSObject {
     }
     
     
-    // MARK: AudioFormat
+    // MARK: - Audio
     func updateAudioFormatForPeer(peer: MCPeerID, format: AVAudioFormat) {
         print("\(type(of: self)) > \(#function) > Entry")
         if let index = peers.index(of: peer) {
             audioFormatForPeer[index] = format
+            isFormatSetForPeer[index] = true
         }
         print("\(type(of: self)) > \(#function) > Exit")
     }
@@ -95,7 +102,17 @@ class PeerStreamOrganizer: NSObject {
         return nil
     }
     
-    // MARK: Stream Setters
+    // Stops all audio players from playing
+    func stopAllAudioPlayers() {
+        print("\(type(of: self)) > \(#function)")
+        for audioPlayer in audioPlayers {
+            if audioPlayer.isPlaying {
+                audioPlayer.stop()
+            }
+        }
+    }
+    
+    // MARK: - Stream Setters
     
     // A function which initializes a peers input stream
     func setInputStream(for peer: MCPeerID, stream: InputStream) -> Int {
@@ -125,7 +142,7 @@ class PeerStreamOrganizer: NSObject {
         }
     }
     
-    // MARK: Stream Getters
+    // MARK: - Stream Getters
     
     // A function which sets a peers input stream to true
     func isInputStreamSet(for peer: MCPeerID) -> Bool {
@@ -175,7 +192,7 @@ class PeerStreamOrganizer: NSObject {
         return -1
     }
     
-    // MARK: Stream Closers
+    // MARK: - Stream Closers
     
     // Closes all open streams
     func closeAllStreams() {
