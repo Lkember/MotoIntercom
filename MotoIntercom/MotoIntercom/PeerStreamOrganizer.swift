@@ -37,8 +37,6 @@ class PeerStreamOrganizer: NSObject {
         print("\(type(of: self)) > \(#function) > \(peer)")
         
         if (!peers.contains(peer)) {
-            
-            print("\(type(of: self)) > \(#function) > adding peer \(peer.displayName)")
             peers.append(peer)
             inputStreams.append(nil)
             outputStreams.append(nil)
@@ -46,9 +44,10 @@ class PeerStreamOrganizer: NSObject {
             outputStreamIsSet.append(false)
             audioFormatForPeer.append(AVAudioFormat.init())
             isFormatSetForPeer.append(false)
-            audioPlayers.append(AVAudioPlayerNode())
+            audioPlayers.append(AVAudioPlayerNode.init())
             isAudioPlayerAttached.append(false)
             self.didReceiveCall.append(didReceiveCall)
+            print("\(type(of: self)) > \(#function) > peer added: \(peer.displayName)")
         }
         else {
             print("\(type(of: self)) > \(#function) > PEER ALREADY EXISTS!!")
@@ -84,7 +83,7 @@ class PeerStreamOrganizer: NSObject {
     
     // MARK: - Audio
     func updateAudioFormatForPeer(peer: MCPeerID, format: AVAudioFormat) {
-        print("\(type(of: self)) > \(#function) > Entry")
+        print("\(type(of: self)) > \(#function) > Entry: Peer = \(peer.displayName)")
         if let index = peers.index(of: peer) {
             audioFormatForPeer[index] = format
             isFormatSetForPeer[index] = true
@@ -94,7 +93,7 @@ class PeerStreamOrganizer: NSObject {
     
     
     func formatForPeer(peer: MCPeerID) -> AVAudioFormat? {
-        print("\(type(of: self)) > \(#function)")
+        print("\(type(of: self)) > \(#function) > Entry: Peer = \(peer.displayName)")
         if let index = peers.index(of: peer) {
             return audioFormatForPeer[index]
         }
@@ -116,16 +115,17 @@ class PeerStreamOrganizer: NSObject {
     
     // A function which initializes a peers input stream
     func setInputStream(for peer: MCPeerID, stream: InputStream) -> Int {
+        print("\(type(of: self)) > \(#function) > Entry: Peer = \(peer.displayName)")
         if let index = peers.index(of: peer) {
-            print("\(type(of: self)) > \(#function) > for peer \(peer.displayName)")
             
             inputStreams[index] = stream
             inputStreamIsSet[index] = true
             
+            print("\(type(of: self)) > \(#function) > Exit - Success")
             return index
         }
         
-        print("\(type(of: self)) > \(#function) > Could not find peer \(peer.displayName)")
+        print("\(type(of: self)) > \(#function) > Exit: Could not find peer \(peer.displayName)")
         return -1
     }
     
@@ -170,7 +170,7 @@ class PeerStreamOrganizer: NSObject {
     }
     
     
-    // A function which checks if any users streams are set
+    // A function which checks if any streams are set
     func areAnyStreamsSet() -> Bool {
         for i in 0..<peers.count {
             if (outputStreamIsSet[i] == true && inputStreamIsSet[i] == true) {
