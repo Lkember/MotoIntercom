@@ -7,7 +7,7 @@ target 'MotoIntercom' do
 
   # Pods for MotoIntercom
   pod 'JSQMessagesViewController'
-  pod 'DKImagePickerController'
+  pod 'DKImagePickerController', :git => 'https://github.com/zhangao0086/DKImagePickerController.git', :branch => 'Swift4'
 
   target 'MotoIntercomTests' do
     inherit! :search_paths

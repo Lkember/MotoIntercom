@@ -31,32 +31,32 @@ class StartupViewController: UIViewController {
         print("\(type(of: self)) > \(#function) > Entry")
         super.viewDidLoad()
         
-        let recordPermission = audioSession.recordPermission()
-        if recordPermission == AVAudioSessionRecordPermission.undetermined {
+        let recordPermission = audioSession.recordPermission
+        if recordPermission == AVAudioSession.RecordPermission.undetermined {
             print("\(type(of: self)) > \(#function) > Record permission is undetermined")
             
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "RequestMicrophoneAccess") as! RequestRecordPermissionViewController
-            self.addChildViewController(popOverView)
+            self.addChild(popOverView)
             
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
-            popOverView.didMove(toParentViewController: self)
+            popOverView.didMove(toParent: self)
         }
-        else if recordPermission == AVAudioSessionRecordPermission.denied {
+        else if recordPermission == AVAudioSession.RecordPermission.denied {
             print("\(type(of: self)) > \(#function) > Record permission is denied. Phone calls will be disabled.")
             
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "RequestMicrophoneAccess") as! RequestRecordPermissionViewController
             
-            self.addChildViewController(popOverView)
+            self.addChild(popOverView)
             
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
-            popOverView.didMove(toParentViewController: self)
+            popOverView.didMove(toParent: self)
             
             popOverView.mainLabel.text = "No Microphone Access"
             popOverView.microphoneAccessLabel.text = "You have not given this app access to your microphone. This means that you will not be able to send any audio to your peers. It is recommended to change this option by going into Settings > Privacy > Microphone and giving access to MotoIntercom."
         }
-        else if recordPermission == AVAudioSessionRecordPermission.granted {
+        else if recordPermission == AVAudioSession.RecordPermission.granted {
             print("\(type(of: self)) > \(#function) > Record permission is granted.")
         }
     }

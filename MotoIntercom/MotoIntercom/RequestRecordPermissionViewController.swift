@@ -34,10 +34,10 @@ class RequestRecordPermissionViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if !UIAccessibilityIsReduceTransparencyEnabled() {
+        if !UIAccessibility.isReduceTransparencyEnabled {
             self.backgroundView.backgroundColor = UIColor.clear
             
-            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+            let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
             let blurEffectView = UIVisualEffectView(effect: blurEffect)
             
             blurEffectView.frame = self.backgroundView.bounds

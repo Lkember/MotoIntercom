@@ -23,7 +23,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     let receivedStream = "_received_stream_"
     
     // Background Task to keep the app running in the background
-    var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
+    var backgroundTask: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier.invalid
     var backgroundTaskIsRegistered = false
 
     @IBOutlet weak var statusLabel: UILabel!
@@ -120,7 +120,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(errorReceivedWhileRecording), name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioHardwareRouteChanged(notification:)), name: AVAudioSession.routeChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedPeerStreamInformation(_:)), name: NSNotification.Name(rawValue: "receivedAVAudioFormat"), object: nil)
         
         print("\(type(of: self)) > \(#function) > Exit")
@@ -168,7 +168,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         self.navigationController?.navigationBar.isHidden = true
         
         // Giving the background view a blur effect
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView.frame = view.bounds
         blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -177,8 +177,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         
         // Making the buttons circular
         let muteImage: UIImage = UIImage.init(named: "microphone.png")!
-        let tintedMuteImage = muteImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
-        muteButton.setImage(tintedMuteImage, for: UIControlState.normal)
+        let tintedMuteImage = muteImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
+        muteButton.setImage(tintedMuteImage, for: UIControl.State.normal)
         muteButton.tintColor = UIColor.white
         muteButton.layer.cornerRadius = muteButton.frame.width/2
         muteButton.layer.borderWidth = 1
@@ -187,8 +187,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         muteButton.isEnabled = false
         
         let addPeerImage: UIImage = UIImage.init(named: "add (1).png")!
-        let tintedAddPeerImage = addPeerImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
-        addPeerButton.setImage(tintedAddPeerImage, for: UIControlState.normal)
+        let tintedAddPeerImage = addPeerImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
+        addPeerButton.setImage(tintedAddPeerImage, for: UIControl.State.normal)
         addPeerButton.tintColor = UIColor.white
         addPeerButton.layer.cornerRadius = muteButton.frame.width/2
         addPeerButton.layer.borderWidth = 1
@@ -197,8 +197,8 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         addPeerButton.isEnabled = false
         
         let speakerImage: UIImage = UIImage.init(named: "High Volume-50.png")!
-        let tintedSpeakerImage = speakerImage.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
-        speakerButton.setImage(tintedSpeakerImage, for: UIControlState.normal)
+        let tintedSpeakerImage = speakerImage.withRenderingMode(UIImage.RenderingMode.alwaysTemplate)
+        speakerButton.setImage(tintedSpeakerImage, for: UIControl.State.normal)
         speakerButton.tintColor = UIColor.white
         speakerButton.layer.cornerRadius = speakerButton.frame.width/2
         speakerButton.layer.borderWidth = 1
@@ -217,13 +217,13 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
             self?.endBackgroundTask()
         }
-        assert(backgroundTask != UIBackgroundTaskInvalid)
+        assert(backgroundTask != UIBackgroundTaskIdentifier.invalid)
     }
     
     
     func endBackgroundTask() {
-        UIApplication.shared.endBackgroundTask(backgroundTask)
-        backgroundTask = UIBackgroundTaskInvalid
+        UIApplication.shared.endBackgroundTask(convertToUIBackgroundTaskIdentifier(backgroundTask.rawValue))
+        backgroundTask = UIBackgroundTaskIdentifier.invalid
         print("\(type(of: self)) > \(#function) > Background task ended")
     }
     
@@ -246,7 +246,10 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         // Setting up AVAudioSession
         do {
             print("\(type(of: self)) > \(#function) > setCategory")
-            try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [AVAudioSessionCategoryOptions.allowBluetooth])
+            try
+                
+               audioSession.setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.spokenAudio, options: [AVAudioSession.CategoryOptions.allowBluetooth, AVAudioSession.CategoryOptions.allowBluetoothA2DP])
+//            audioSession.setCategory(convertFromAVAudioSessionCategory(AVAudioSession.Category.playAndRecord), mode: [AVAudioSession.CategoryOptions.allowBluetooth])
             print("\(type(of: self)) > \(#function) > setPreferredIOBufferDuration")
             try audioSession.setPreferredIOBufferDuration(0.001)
 //            print("\(type(of: self)) > \(#function) > setPreferredNumberOfChannels")
@@ -254,7 +257,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             print("\(type(of: self)) > \(#function) > setPreferredSampleRate")
             try audioSession.setPreferredSampleRate(44100)
             print("\(type(of: self)) > \(#function) > setMode")
-            try audioSession.setMode(AVAudioSessionModeVoiceChat)
+            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
             print("\(type(of: self)) > \(#function) > setActive")
             try audioSession.setActive(true)
         }
@@ -476,11 +479,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         return data
     }
     
-    func errorReceivedWhileRecording() {
+    @objc func errorReceivedWhileRecording() {
         print("\(type(of: self)) > \(#function) > Error")
     }
     
-    func audioHardwareRouteChanged(notification: NSNotification) {
+    @objc func audioHardwareRouteChanged(notification: NSNotification) {
         print("\(type(of: self)) > \(#function) > Entry \(notification.name)")
         
         DispatchQueue.main.async {
@@ -701,13 +704,18 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     func dataToPCMBuffer(format: AVAudioFormat, data: NSData) -> AVAudioPCMBuffer {
         
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: format,
-                                           frameCapacity: UInt32(data.length) / format.streamDescription.pointee.mBytesPerFrame)
+        if let audioBuffer = AVAudioPCMBuffer(pcmFormat: format,
+                                              frameCapacity: UInt32(data.length) / format.streamDescription.pointee.mBytesPerFrame) {
         
-        audioBuffer.frameLength = audioBuffer.frameCapacity
-        let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: Int(audioBuffer.format.channelCount))
-        data.getBytes(UnsafeMutableRawPointer(channels[0]) , length: data.length)
-        return audioBuffer
+            audioBuffer.frameLength = audioBuffer.frameCapacity
+            let channels = UnsafeBufferPointer(start: audioBuffer.floatChannelData, count: Int(audioBuffer.format.channelCount))
+            data.getBytes(UnsafeMutableRawPointer(channels[0]) , length: data.length)
+            return audioBuffer
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Error converting data")
+            return AVAudioPCMBuffer.init()
+        }
     }
     
     
@@ -719,12 +727,12 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "AddNewPeers") as! AddPeerViewController
         popOverView.sessionIndex = self.peerOrganizer.sessionIndex!
         popOverView.delegate = self
-        self.addChildViewController(popOverView)
+        self.addChild(popOverView)
         
         DispatchQueue.main.async {
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
-            popOverView.didMove(toParentViewController: self)
+            popOverView.didMove(toParent: self)
         }
     }
     
@@ -801,7 +809,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             DispatchQueue.global().sync {
                 do {
                     print("\(type(of: self)) > \(#function) > Setting output to speaker")
-                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
+                    try self.audioSession.overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
                 }
                 catch let error as NSError {
                     print("\(type(of: self)) > \(#function) > Could not change to speaker: \(error.description)")
@@ -824,7 +832,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             DispatchQueue.global().sync {
                 do {
                     print("\(type(of: self)) > \(#function) > Setting output to ear speaker")
-                    try self.audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.none)
+                    try self.audioSession.overrideOutputAudioPort(AVAudioSession.PortOverride.none)
                 }
                 catch let error as NSError {
                     print("\(type(of: self)) > \(#function) > Could not change to ear speaker: \(error.description)")
@@ -862,7 +870,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "AVCaptureSessionRuntimeError"), object: nil)
-            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
+            NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "receivedAVAudioFormat"), object: nil)
             
             self.dismiss(animated: true, completion: nil)
@@ -1066,7 +1074,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             
 //            let index = inputStreams.count-1
             self.peerOrganizer.inputStreams[index]!.delegate = self
-            self.peerOrganizer.inputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.peerOrganizer.inputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoop.Mode.default)
             self.peerOrganizer.inputStreams[index]!.open()
             
             // If the output stream has not been set, then set it
@@ -1075,7 +1083,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
             }
             
             self.peerOrganizer.outputStreams[index]!.delegate = self
-            self.peerOrganizer.outputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+            self.peerOrganizer.outputStreams[index]!.schedule(in: RunLoop.main, forMode: RunLoop.Mode.default)
             self.peerOrganizer.outputStreams[index]!.open()
             
             self.recordingQueue.async {
@@ -1106,7 +1114,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
-    func receivedStandardMessage(_ notification: Notification) {
+    @objc func receivedStandardMessage(_ notification: Notification) {
         print("\(type(of: self)) > \(#function) > Entry > Number of peers: \(self.peerOrganizer.peers.count)")
         
         let newMessage = notification.object as! StandardMessage
@@ -1196,7 +1204,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
-    func receivedPeerStreamInformation(_ notification: NSNotification) {
+    @objc func receivedPeerStreamInformation(_ notification: NSNotification) {
         print("\(type(of: self)) > \(#function) > Entry - isRunning: \(localAudioEngine.isRunning)")
         
         let data = notification.object as! [NSObject]
@@ -1275,4 +1283,14 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     }
     */
 
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToUIBackgroundTaskIdentifier(_ input: Int) -> UIBackgroundTaskIdentifier {
+	return UIBackgroundTaskIdentifier(rawValue: input)
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVAudioSessionCategory(_ input: AVAudioSession.Category) -> String {
+	return input.rawValue
 }

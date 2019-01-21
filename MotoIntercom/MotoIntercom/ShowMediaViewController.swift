@@ -59,7 +59,7 @@ class ShowMediaViewController: UIViewController, UIScrollViewDelegate {
         }
     }
     
-    func toggleNavBar() {
+    @objc func toggleNavBar() {
         if (self.navigationController!.navigationBar.isHidden) {
             self.navigationController?.setNavigationBarHidden(false, animated: true)
             self.setNeedsStatusBarAppearanceUpdate()
