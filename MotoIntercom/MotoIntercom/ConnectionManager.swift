@@ -14,7 +14,7 @@ import JSQMessagesViewController
 protocol ConnectionManagerDelegate {
     func foundPeer(_ newPeer : MCPeerID)
     func lostPeer(_ lostPeer: MCPeerID)
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool)
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8)
     func connectingWithPeer(_ peerID: MCPeerID)
     func connectedWithPeer(_ peerID : MCPeerID)
     func disconnectedFromPeer(_ peerID: MCPeerID)
@@ -110,7 +110,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     // a function which finds the index for a session with a given peer
     func findSinglePeerSession(peer: MCPeerID) -> Int {
-        print("\(type(of: self)) > \(#function) > Entry \(sessions.count)")
+        print("\(type(of: self)) > \(#function) > Entry: \(peer.displayName), # of sessions: \(sessions.count)")
         for i in 0..<sessions.count {
             if (sessions[i].connectedPeers.contains(peer) && sessions[i].connectedPeers.count == 1) {
                 print("\(type(of: self)) > \(#function) > Exit: Found session \(i)")
@@ -219,28 +219,46 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         return true
     }
     
+//    // Send AVAudioFormat to peer - used by PhoneViewController
+//    func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
+//        print("\(type(of: self)) > \(#function) > Sending audio format")
+//        
+//        let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
+//        let peersArray = NSArray(object: targetPeer)
+//        var sess : MCSession = MCSession(peer: peer)
+//        
+//        for session in sessions {
+//            //TODO: If we allow multi-peer connectivity this method must be modified
+//            if session.connectedPeers.contains(targetPeer) {
+//                sess = session
+//            }
+//            else {
+//                // TODO: If message fails to send we need to connect to peer
+//                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
+//                
+//                return false
+//            }
+//        }
+//        do {
+//            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+//        }
+//        catch let error as NSError {
+//            print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
+//            return false
+//        }
+//        
+//        return true
+//    }
+    
     // Send AVAudioFormat to peer - used by PhoneViewController
-    func sendData(format: AVAudioFormat, toPeer targetPeer: MCPeerID) -> Bool {
+    func sendData(format: [NSObject], toPeer targetPeer: MCPeerID, sessionIndex: Int) -> Bool {
         print("\(type(of: self)) > \(#function) > Sending audio format")
         
         let dataToSend = NSKeyedArchiver.archivedData(withRootObject: format)
         let peersArray = NSArray(object: targetPeer)
-        var sess : MCSession = MCSession(peer: peer)
         
-        for session in sessions {
-            //TODO: If we allow multi-peer connectivity this method must be modified
-            if session.connectedPeers.contains(targetPeer) {
-                sess = session
-            }
-            else {
-                // TODO: If message fails to send we need to connect to peer
-                print("\(type(of: self)) > \(#function) > Not connected to peer. Message couldn't be sent.")
-                
-                return false
-            }
-        }
         do {
-            try sess.send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
+            try sessions[sessionIndex].send(dataToSend, toPeers: peersArray as! [MCPeerID], with: MCSessionSendDataMode.reliable)
         }
         catch let error as NSError {
             print("\(type(of: self)) > \(#function) > Error, data could not be sent for the following reason: \(error.localizedDescription)")
@@ -255,13 +273,14 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
     
     //MCNearbyServiceBrowserDelegate
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        
+        print("\(type(of: self)) > \(#function) > Entry")
         if (!availablePeers.peers.contains(peerID)) {
             availablePeers.addDisconnectedPeer(peer: peerID)
             connectToPeer(peerID: peerID, isPhoneCall: false)
         }
         
         delegate?.foundPeer(peerID)
+        print("\(type(of: self)) > \(#function) > Entry")
     }
 
     // Checks to see if a peer is already in the availablePeers array
@@ -347,22 +366,40 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         immediately go into the chat.
      */
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        print("\(type(of: self)) > \(#function) > Entry")
         self.invitationHandler = invitationHandler
-        let isPhoneCall = NSKeyedUnarchiver.unarchiveObject(with: context!) as! Bool
         
+        // index 0 indicates whether it is a phone call, index 1 indicates whether it is a multipeer phone call
+        let data = NSKeyedUnarchiver.unarchiveObject(with: context!) as! UInt8
         
-        // Automatically connecting to the user if it is not a phone call
-        if (!isPhoneCall) {
+        // If it a standard connection or a phone call
+        if (data == 0) {
             if (findSinglePeerSession(peer: peerID) == -1) {
-                
                 let index = self.createNewSession()
                 invitationHandler(true, sessions[index])    //Accepting connection
+                
+                delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+                return
             }
         }
-        
-        delegate?.inviteWasReceived(peerID, isPhoneCall: isPhoneCall)
+            
+        // if it is a single peer phone call
+        else if (data == 1) {
+            delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+            return
+        }
+            
+        // If it is a multipeer phone call
+        else if (data == 2) {
+            // TODO: Need to create a new session for the multipeer phone call
+//            let index = self.createNewSession()
+//            invitationHandler(true, sessions[index])
+            
+            delegate?.inviteWasReceived(peerID, isPhoneCall: data)
+            return
+        }
+        print("\(type(of: self)) > \(#function) > Exit")
     }
-    
     
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
         print("\(type(of: self)) > \(#function) > \(error.localizedDescription)")
@@ -405,7 +442,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
             newMessage.peerID = peerID
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedMessageObjectNotification"), object: newMessage)
         }
-        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? AVAudioFormat {
+        else if let newMessage = NSKeyedUnarchiver.unarchiveObject(with: data) as? [NSObject] {
             print("\(type(of: self)) > \(#function) > Received audio format from peer \(peerID.displayName)")
             NotificationCenter.default.post(name: Notification.Name(rawValue: "receivedAVAudioFormat"), object: newMessage)
         }
@@ -421,7 +458,7 @@ class ConnectionManager : NSObject, MCSessionDelegate, MCNearbyServiceBrowserDel
         print("\(type(of: self)) > \(#function)")
     }
     
-    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?) {
+    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
         print("\(type(of: self)) > \(#function)")
     }
     

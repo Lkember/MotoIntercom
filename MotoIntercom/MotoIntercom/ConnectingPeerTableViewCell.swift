@@ -19,7 +19,6 @@ class ConnectingPeerTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        
         activityIndicator.startAnimating()
     }
 

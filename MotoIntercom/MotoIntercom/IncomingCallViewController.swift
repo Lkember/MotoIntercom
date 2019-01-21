@@ -11,13 +11,14 @@ import UIKit
 @available(iOS 10.0, *)
 class IncomingCallViewController: UIViewController {
     
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    var appDelegate: AppDelegate = AppDelegate.init()
     
     @IBOutlet weak var callDisplayNameLabel: UILabel!
     @IBOutlet weak var peerDisplayNameLabel: UILabel!
     var peerIndex: Int?
     var messages: [MessageObject]?
     var peerDisplayName: String?
+    var isMultipeerCall = false
     @IBOutlet var backgroundView: UIView!
     @IBOutlet weak var popUpView: UIView!
     
@@ -43,6 +44,8 @@ class IncomingCallViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        appDelegate = UIApplication.shared.delegate as! AppDelegate
+        
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
@@ -76,23 +79,35 @@ class IncomingCallViewController: UIViewController {
             let superview = navigationController?.viewControllers[(navigationController?.viewControllers.count)! - 1] as? PeerViewController
         
             var index = -1
-        
-            if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
-                print("\(type(of: self)) > \(#function) > Accepting invitation")
+            
+            // If a single peer call
+            if (!isMultipeerCall) {
+                if (!self.appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messages![peerIndex!].peerID)) {
+                    print("\(type(of: self)) > \(#function) > Accepting invitation")
+                    index = self.appDelegate.connectionManager.createNewSession()
+                    
+                    if self.appDelegate.connectionManager.invitationHandler != nil {
+                        self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
+                    }
+                }
+                else {
+                    print("\(type(of: self)) > \(#function) > Already connected")
+                    index = peerIndex!
+                }
+            }
+            // If a multipeer call we need to create a new session
+            else {
+                print("\(type(of: self)) > \(#function) > Multipeer Call Incoming")
                 index = self.appDelegate.connectionManager.createNewSession()
                 
                 if self.appDelegate.connectionManager.invitationHandler != nil {
                     self.appDelegate.connectionManager.invitationHandler!(true, self.appDelegate.connectionManager.sessions[index])
                 }
             }
-            else {
-                print("\(type(of: self)) > \(#function) > Already connected")
-                index = peerIndex!
-            }
                 
-            superview!.destinationPeerID = messages?[index].peerID
+            superview!.destinationPeerID = messages?[peerIndex!].peerID
             superview!.isDestPeerIDSet = true
-            superview!.messages[peerIndex!].setConnectionTypeToVoice()
+//            superview!.messages[peerIndex!].setConnectionTypeToVoice()
             superview!.didAcceptCall = true
             
             dismissAnimate()

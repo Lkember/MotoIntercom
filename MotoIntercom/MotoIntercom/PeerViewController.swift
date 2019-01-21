@@ -48,19 +48,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Setting the connectionManager delegate to self
         appDelegate.connectionManager.delegate = self
         
-//        print("\(type(of: self)) > \(#function) > Resetting peer array.")
-//        appDelegate.connectionManager.resetPeerArray()
         navigationItem.leftBarButtonItem?.title = "Back"
+        navigationItem.rightBarButtonItem = self.editButtonItem
         
         peersTable.delegate = self
         peersTable.dataSource = self
         
-        self.navigationItem.rightBarButtonItem = self.editButtonItem
-        
+        // Setting up the pull to refresh
         refreshControl = UIRefreshControl()
 //        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
         refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
-        
         peersTable.addSubview(refreshControl)
         
         //set the delegate to self, and start browsing for peers
@@ -76,15 +73,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         didAcceptCall = false
         print("\(type(of: self)) > \(#function) > Advertising and browsing for peers. Thread: \(Thread.current)")
     }
-    
-    
-//    // If the view disappears than stop advertising and browsing for peers.
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        
-//        //        appDelegate.connectionManager.resetPeerArray()
-//        //        print("\(type(of: self)) > \(#function) viewWillDisappear > Resetting table")
-//    }
     
     // Called before the view appears, this way the user won't see the view updating
     override func viewWillAppear(_ animated: Bool) {
@@ -121,9 +109,19 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 return i
             }
         }
+        
         print("\(type(of: self)) > \(#function) > Exit - Failure")
         return -1
     }
+    
+    // A function which adds a peer to messages
+    func addPeerToMessages(peer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > Entry")
+        let newPeer = MessageObject.init(peerID: peer, messages: [])
+        messages.append(newPeer)
+        print("\(type(of: self)) > \(#function) > Exit")
+    }
+    
     
     // Returns a list of unavailablePeers
     func getUnavailablePeers() -> [MCPeerID] {
@@ -184,6 +182,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.peersTable.reloadData()
         }
         
+        sleep(UInt32(0.5))
         refreshControl.endRefreshing()
     }
     
@@ -387,7 +386,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             let currPeer = appDelegate.connectionManager.availablePeers.peers[indexPath.row]
             
             // If the peer is connected
-            if (appDelegate.connectionManager.availablePeers.isPeerConnected(peer: currPeer)) {
+            if (appDelegate.connectionManager.checkIfAlreadyConnected(peerID: currPeer)) {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell") as! PeerTableViewCell
                 
                 cell.peerID = currPeer
@@ -396,9 +395,17 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.peerIsAvailable()
                 
                 let index = getIndexForPeer(peer: currPeer)
-                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                if (index >= 0) {
+                    cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                }
+                else {
+                    // If this is the case, then the peer was added to the availablePeers while in a different view, so add it to messages
+                    let message = MessageObject.init(peerID: currPeer, selfID: self.appDelegate.peer, messages: [])
+                    messages.append(message)
+                    cell.setLatestMessage(latestMessage: self.messages[messages.count-1].getLastMessage())
+                }
                 
-                print("\(type(of: self)) > \(#function) > Exit")
+                print("\(type(of: self)) > \(#function) > Exit - Peer is connected")
                 return cell
             }
                 
@@ -411,10 +418,16 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.selectionStyle = UITableViewCellSelectionStyle.none
                 cell.isUserInteractionEnabled = false
                 
-                let index = getIndexForPeer(peer: currPeer)
-                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                var index = getIndexForPeer(peer: currPeer)
+                if (index == -1) {
+                    addPeerToMessages(peer: currPeer)
+                    index = messages.count - 1
+                }
                 
-                print("\(type(of: self)) > \(#function) > Exit")
+                cell.setLatestMessage(latestMessage: self.messages[index].getLastMessage())
+                cell.activityIndicator.startAnimating()
+                
+                print("\(type(of: self)) > \(#function) > Exit - Connecting to peer")
                 return cell
             }
         }
@@ -469,9 +482,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     if (check == -1) {
                         //Setting the connection type to voice
-                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
-                        self.messages[peerIndex].setConnectionTypeToVoice()
-                            
+//                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+//                        self.messages[peerIndex].setConnectionTypeToVoice()
+                        
                         self.destinationPeerID = currCell.peerID!
                         self.isDestPeerIDSet = true
                         
@@ -508,8 +521,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     if (check == -1) {
                         
                         // Set connection type to message
-                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
-                        self.messages[peerIndex].setConnectionTypeToMessage()
+//                        let peerIndex = self.getIndexForPeer(peer: currCell.peerID!)
+//                        self.messages[peerIndex].setConnectionTypeToMessage()
                         
                         print("\(type(of: self)) > \(#function) > Creating a new session")
                         
@@ -651,7 +664,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // If a peer was found, then reload data
     func foundPeer(_ newPeer: MCPeerID) {
-        print("\(type(of: self)) > \(#function) foundPeer > Entry")
+        print("\(type(of: self)) > \(#function) > Entry")
         
         let index = doesMessageObjectExist(forPeer: newPeer)
         
@@ -659,6 +672,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if index == -1 {
             let messageObject = MessageObject.init(peerID: newPeer, messages: [])
             messages.append(messageObject)
+            print("\(type(of: self)) > \(#function) > Peer added")
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Peer already exists")
         }
         
         save()
@@ -694,29 +711,36 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // When an invite is received
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8) {
         print("\(type(of: self)) > \(#function) > Entry: isPhoneCall=\(isPhoneCall)")
         
-        if (!isPhoneCall) {
+        if (isPhoneCall == 0) {
             // Set the connection type to message
-            let peerIndex = self.getIndexForPeer(peer: fromPeer)
-            
-            if (peerIndex >= 0) {
-                self.messages[peerIndex].setConnectionTypeToMessage()
-            }
-            else {
-                print("\(type(of: self)) > \(#function) > ERROR! COULD NOT FIND PEER!")
-            }
+//            let peerIndex = self.getIndexForPeer(peer: fromPeer)
+//            if (peerIndex >= 0) {
+//                self.messages[peerIndex].setConnectionTypeToMessage()
+//            }
+//            else {
+//                print("\(type(of: self)) > \(#function) > ERROR! COULD NOT FIND PEER!")
+//            }
         }
         else {
+            // There is an incoming call
             print("\(type(of: self)) > \(#function) > Incoming call!")
             
+            // Create call overlay
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
             self.addChildViewController(popOverView)
             
+            // Getting index for the peer
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
             popOverView.messages = self.messages
             popOverView.peerDisplayName = fromPeer.displayName
+            
+            // If it is a multipeer call
+            if (isPhoneCall == 2) {
+                popOverView.isMultipeerCall = true
+            }
             
             print("\(type(of: self)) > \(#function) > fromPeer=\(fromPeer.displayName)")
             
@@ -730,32 +754,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func connectedWithPeer(_ peerID : MCPeerID) {
         print("\(type(of: self)) > \(#function) > Connected to peer \(peerID)")
         
-//        destinationPeerID = peerID  // This is used so we know what peer was clicked on
-//        isDestPeerIDSet = true
-        
-        if (isDestPeerIDSet) {
-        
-            let peerIndex = getIndexForPeer(peer: peerID)
-            let connType = messages[peerIndex].connectionType
-            
-            
-            if (connType == MESSAGE_CONNECTION_TYPE) {
-                print("\(type(of: self)) > \(#function) > Connection type is MESSAGE_CONNECTION_TYPE)")
-                OperationQueue.main.addOperation {
-                    self.performSegue(withIdentifier: "idChatSegue", sender: self)
-                }
-            }
-            else if (connType == PHONE_CONNECTION_TYPE) {
-                print("\(type(of: self)) > \(#function) connectedWithPeer > Connection type is PHONE_CONNECTION_TYPE)")
-                OperationQueue.main.addOperation {
-                    self.performSegue(withIdentifier: "callSegue", sender: self)
-                }
-            }
-            else {
-                print("\(type(of: self)) > \(#function) > Could NOT recognize a connection type. Cannot perform segue.")
-            }
-        }
-        
         DispatchQueue.main.async {
             self.peersTable.reloadData()
         }
@@ -766,8 +764,8 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         print("\(type(of: self)) > \(#function) > Entry: Disconnected from peer \(peerID)")
         
         // Resetting the peers connected type
-        let peerIndex = getIndexForPeer(peer: peerID)
-        messages[peerIndex].resetConnectionType()
+//        let peerIndex = getIndexForPeer(peer: peerID)
+//        messages[peerIndex].resetConnectionType()
         
         if let currView = navigationController?.topViewController as? JSQChatViewController {
             print("\(type(of: self)) > \(#function) > topViewController is ChatView. ")
@@ -861,7 +859,13 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("\(type(of: self)) > \(#function) > current segue is callSegue")
             
             let dest = segue.destination as? PhoneViewController
-            dest?.peerID = destinationPeerID
+            if (didAcceptCall) {
+                dest?.peerOrganizer.addNewPeer(peer: destinationPeerID!, didReceiveCall: true)
+            }
+            else {
+                dest?.peerOrganizer.addNewPeer(peer: destinationPeerID!, didReceiveCall: false)
+            }
+            dest?.peerOrganizer.sessionIndex = appDelegate.connectionManager.findSinglePeerSession(peer: destinationPeerID!)
             
             if (didAcceptCall) {
                 dest?.didReceiveCall = true

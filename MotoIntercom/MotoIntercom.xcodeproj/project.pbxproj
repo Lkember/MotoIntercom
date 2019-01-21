@@ -13,6 +13,7 @@
 		B200C0971E973E060046914B /* JSQChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200C0961E973E060046914B /* JSQChatViewController.swift */; };
 		B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */; };
 		B2324A351D2EEE7A00EB88FC /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */; };
+		B237BEED1EF314370007D4D1 /* PeerStreamOrganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */; };
 		B24248721E292BC200B4D260 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B24248711E292BC200B4D260 /* Assets.xcassets */; };
 		B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2507DD51EC39E9000841F02 /* StandardMessage.swift */; };
 		B2515C4B1D2C7CCB00760DE0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */; };
@@ -69,6 +70,7 @@
 		B200C0961E973E060046914B /* JSQChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSQChatViewController.swift; sourceTree = "<group>"; };
 		B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerTableViewCell.swift; sourceTree = "<group>"; };
 		B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
+		B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerStreamOrganizer.swift; sourceTree = "<group>"; };
 		B24248711E292BC200B4D260 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2507DD51EC39E9000841F02 /* StandardMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardMessage.swift; sourceTree = "<group>"; };
 		B2515C471D2C7CCB00760DE0 /* MotoIntercom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoIntercom.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +144,15 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		B237BEEE1EF3144B0007D4D1 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */,
+				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+			);
+			name = Cells;
+			sourceTree = "<group>";
+		};
 		B2515C3E1D2C7CCB00760DE0 = {
 			isa = PBXGroup;
 			children = (
@@ -168,6 +179,7 @@
 		B2515C491D2C7CCB00760DE0 /* MotoIntercom */ = {
 			isa = PBXGroup;
 			children = (
+				B237BEEE1EF3144B0007D4D1 /* Cells */,
 				B2904C811ED8A90700008461 /* Storyboard */,
 				B2904C801ED8A8CC00008461 /* ViewControllers */,
 				B2904C7F1ED8A88900008461 /* Structure */,
@@ -220,13 +232,12 @@
 		B2904C7F1ED8A88900008461 /* Structure */ = {
 			isa = PBXGroup;
 			children = (
-				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
 				B2515C4A1D2C7CCB00760DE0 /* AppDelegate.swift */,
 				B2324A341D2EEE7A00EB88FC /* ConnectionManager.swift */,
 				B262DE381DF9B97A00DA9931 /* MessageObject.swift */,
 				B29845241EF05F42004B080D /* PeerConnectionStatus.swift */,
-				B29845261EF086F8004B080D /* ConnectingPeerTableViewCell.swift */,
-				B203E5A71DFE427100B6E1CE /* PeerTableViewCell.swift */,
+				B237BEEC1EF314370007D4D1 /* PeerStreamOrganizer.swift */,
+				B2507DD51EC39E9000841F02 /* StandardMessage.swift */,
 			);
 			name = Structure;
 			sourceTree = "<group>";
@@ -235,10 +246,10 @@
 			isa = PBXGroup;
 			children = (
 				B2904C7D1ED8A87600008461 /* AddPeerViewController.swift */,
-				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
-				B200C0961E973E060046914B /* JSQChatViewController.swift */,
-				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B272670E1E1DA80800B86146 /* IncomingCallViewController.swift */,
+				B200C0961E973E060046914B /* JSQChatViewController.swift */,
+				B2515C4C1D2C7CCB00760DE0 /* PeerViewController.swift */,
+				B2BB1A051E07921800AA8AED /* PhoneViewController.swift */,
 				B274AE821D464C9200E732FD /* StartupViewController.swift */,
 				B29185141EA3BD7A0020CEE6 /* ShowMediaViewController.swift */,
 				B2CEC2A11EB3B71D008B06B5 /* RequestRecordPermissionViewController.swift */,
@@ -337,12 +348,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "Logan Kember";
 				TargetAttributes = {
 					B2515C461D2C7CCB00760DE0 = {
 						CreatedOnToolsVersion = 7.3;
-						DevelopmentTeam = X2RHS589XN;
+						DevelopmentTeam = 937346EGUH;
 						LastSwiftMigration = 0810;
 						ProvisioningStyle = Automatic;
 					};
@@ -434,13 +445,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotoIntercomUITests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		295EE371A3298D632D944849 /* [CP] Check Pods Manifest.lock */ = {
@@ -449,13 +463,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotoIntercom-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		7DCFFFB07EC37728454CE70C /* [CP] Copy Pods Resources */ = {
@@ -509,13 +526,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MotoIntercomTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CEE302D5C66484830B129B5D /* [CP] Embed Pods Frameworks */ = {
@@ -524,9 +544,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-MotoIntercom/Pods-MotoIntercom-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/DKImagePickerController/DKImagePickerController.framework",
+				"${BUILT_PRODUCTS_DIR}/JSQMessagesViewController/JSQMessagesViewController.framework",
+				"${BUILT_PRODUCTS_DIR}/JSQSystemSoundPlayer/JSQSystemSoundPlayer.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DKImagePickerController.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JSQMessagesViewController.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JSQSystemSoundPlayer.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -568,6 +595,7 @@
 				B29185151EA3BD7A0020CEE6 /* ShowMediaViewController.swift in Sources */,
 				B203E5A81DFE427100B6E1CE /* PeerTableViewCell.swift in Sources */,
 				B272670F1E1DA80800B86146 /* IncomingCallViewController.swift in Sources */,
+				B237BEED1EF314370007D4D1 /* PeerStreamOrganizer.swift in Sources */,
 				B2507DD61EC39E9100841F02 /* StandardMessage.swift in Sources */,
 				B274AE831D464C9200E732FD /* StartupViewController.swift in Sources */,
 			);
@@ -633,14 +661,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -681,14 +715,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -721,7 +761,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = X2RHS589XN;
+				DEVELOPMENT_TEAM = 937346EGUH;
 				INFOPLIST_FILE = MotoIntercom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -741,7 +781,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = X2RHS589XN;
+				DEVELOPMENT_TEAM = 937346EGUH;
 				INFOPLIST_FILE = MotoIntercom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

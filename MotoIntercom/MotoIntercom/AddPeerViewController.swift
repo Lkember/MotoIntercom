@@ -16,11 +16,16 @@ protocol PeerAddedDelegate {
 @available(iOS 10.0, *)
 class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ConnectionManagerDelegate {
 
+    var delegate: PeerAddedDelegate! = nil
+    
     // MARK: - Properties
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let peerAddedDelegate: PeerAddedDelegate? = nil
     var sessionIndex = -1
     var peers = [MCPeerID]()
+    
+    // used to update the table
+    var refreshControl: UIRefreshControl!
     
     @IBOutlet weak var peerViewTable: UITableView!
     @IBOutlet var backgroundView: UIView!
@@ -30,6 +35,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - Views
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(AddPeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
+        peerViewTable.addSubview(refreshControl)
         
         // Setting delegates
         peerViewTable.delegate = self
@@ -52,6 +62,11 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        // Setting up the delegates and also searching and advertising to peers
+        appDelegate.connectionManager.delegate = self
+        appDelegate.connectionManager.browser.startBrowsingForPeers()
+        appDelegate.connectionManager.advertiser.startAdvertisingPeer()
+        
         //only apply blur if the user hasn't disabled transparency effects
         if !UIAccessibilityIsReduceTransparencyEnabled() {
             self.backgroundView.backgroundColor = UIColor.clear
@@ -70,6 +85,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         self.foregroundView.alpha = 1.0
+        self.foregroundView.layer.cornerRadius = 10
     }
 
     override func didReceiveMemoryWarning() {
@@ -91,7 +107,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         dismissAnimate()
         
-        peerAddedDelegate?.peersToBeAdded(peers: peersToAdd)
+        delegate.peersToBeAdded(peers: peersToAdd)
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
@@ -128,6 +144,20 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     // MARK: - TableViewDelegate Methods
+    
+    //Called to refresh the table
+    func refresh(sender: AnyObject) {
+        print("\(type(of: self)) > \(#function) > Refreshing table")
+        
+        self.appDelegate.generator.impactOccurred()     // Haptic feedback when the user refreshes the screen
+        
+        DispatchQueue.main.async {
+            self.peerViewTable.reloadData()
+        }
+        
+        sleep(UInt32(0.5))
+        refreshControl.endRefreshing()
+    }
     
     // We only ever want 1 section -> the users available
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -166,16 +196,18 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: - Connection Manager Delegate
     func foundPeer(_ newPeer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > \(newPeer.displayName)")
         peers = self.appDelegate.connectionManager.getPeersNotInSession(sessionIndex: sessionIndex)
         self.peerViewTable.reloadData()
     }
     
     func lostPeer(_ lostPeer: MCPeerID) {
+        print("\(type(of: self)) > \(#function) > \(lostPeer.displayName)")
         peers = self.appDelegate.connectionManager.getPeersNotInSession(sessionIndex: sessionIndex)
         self.peerViewTable.reloadData()
     }
     
-    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer : MCPeerID, isPhoneCall: UInt8) {
         // TODO: Decide what to do
     }
     

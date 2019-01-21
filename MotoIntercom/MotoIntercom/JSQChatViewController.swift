@@ -9,6 +9,7 @@
 import UIKit
 import MultipeerConnectivity
 import JSQMessagesViewController
+import DKImagePickerController
 import Photos
 
 @available(iOS 10.0, *)
@@ -22,8 +23,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     var latestMessageSentIndex = -1
     var latestMessageStatus = ""
     let delivered = "_is_delivered_"
-    // TODO: Add a read message
-//    let read = "_is_read_"
     
     var isTyping: Bool = false
     let userIsTyping: String = "_user_is_typing_"
@@ -32,7 +31,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     lazy var outgoingBubbleImageView: JSQMessagesBubbleImage = self.setupOutgoingBubble()
     lazy var incomingBubbleImageView: JSQMessagesBubbleImage = self.setupIncomingBubble()
     
-    // MARK: ViewDidLoad
+    // MARK: - Views
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,17 +52,8 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessageObject(_:)), name: NSNotification.Name(rawValue: "receivedMessageObjectNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
         
-        print("Checking... ")
         if (!appDelegate.connectionManager.checkIfAlreadyConnected(peerID: messageObject.peerID)) {
-            print("Setting to false...")
-            self.inputToolbar.contentView.rightBarButtonItem.isEnabled = false
-            self.inputToolbar.contentView.rightBarButtonItem.isUserInteractionEnabled = false
-            
-            self.inputToolbar.contentView.textView.isEditable = false
-            self.inputToolbar.contentView.textView.isUserInteractionEnabled = false
-            
-            self.inputToolbar.contentView.leftBarButtonItem.isEnabled = false
-            self.inputToolbar.contentView.leftBarButtonItem.isUserInteractionEnabled = false
+            startDisconnectedMode()
         }
     }
 
@@ -72,6 +62,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         // Dispose of any resources that can be recreated.
     }
     
+    // This updates the latest message sent index
     func updateLatestMessagesIndex() {
         for i in 0..<messageObject.messages.count {
             print("Sender ID = \(messageObject.messages[i].senderId) == uniqueID = \(self.appDelegate.connectionManager.uniqueID)")
@@ -82,6 +73,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
+    // Called when a message has been delivered
     func nextMessageWasDelivered() {
         print("\(type(of: self)) > \(#function) > Updated index from \(self.latestMessageSentIndex)")
         for i in self.latestMessageSentIndex+1..<messageObject.messages.count {
@@ -98,6 +90,19 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > Updated index to \(self.latestMessageSentIndex)")
     }
     
+    // This function makes the text box and send button no longer active
+    func startDisconnectedMode() {
+        DispatchQueue.main.async {
+            self.inputToolbar.contentView.rightBarButtonItem.isEnabled = false
+            self.inputToolbar.contentView.rightBarButtonItem.isUserInteractionEnabled = false
+            
+            self.inputToolbar.contentView.textView.isEditable = false
+            self.inputToolbar.contentView.textView.isUserInteractionEnabled = false
+            
+            self.inputToolbar.contentView.leftBarButtonItem.isEnabled = false
+            self.inputToolbar.contentView.leftBarButtonItem.isUserInteractionEnabled = false
+        }
+    }
 
     // MARK: - Navigation
 
@@ -121,12 +126,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     // Gets the data for the message at index
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
-//        if messageObject.messages[indexPath.item].isMediaMessage {
-//            print("\(type(of: self)) > \(#function) > Picture message...")
-//        }
-//        else {
-//            print("\(type(of: self)) > \(#function) > \(messageObject.messages[indexPath.item].text)")
-//        }
         return messageObject.messages[indexPath.item]
     }
     
@@ -252,7 +251,6 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     
     // When the user sends a message
-    
     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
         isTyping = false
         
@@ -268,42 +266,96 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     }
     
     override func didPressAccessoryButton(_ sender: UIButton!) {
-        let picker = UIImagePickerController()
-        picker.delegate = self
+        let picker = DKImagePickerController()
+        picker.allowMultipleTypes = false
+        picker.assetType = DKImagePickerControllerAssetType.allPhotos
+        picker.allowsLandscape = false
+        picker.showsCancelButton = true
+        picker.showsEmptyAlbums = false
         
-        if (!UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera)) {
-            picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-            self.present(picker, animated: true, completion: nil)
+        picker.sourceType = DKImagePickerControllerSourceType.both
+        self.present(picker, animated: true, completion: nil)
+        
+        picker.didCancel = { ()
+            print("\(type(of: self)) > \(#function) > Cancelled")
         }
-        else {
-            let optionMenu = UIAlertController(title: nil, message: "Select an option", preferredStyle: .actionSheet)
+        
+        picker.didSelectAssets = { [unowned self] (assets: [DKAsset]) in
+            let assets = picker.selectedAssets
+            print("\(type(of: self)) > \(#function) > Picked \(assets.count) photos/videos")
+
+            if (assets.count == 0) {
+                // Nothing to do
+                return
+            }
             
-            let cameraOption = UIAlertAction(title: "Camera", style: .default, handler: { (alert: UIAlertAction!) -> Void in
-                picker.sourceType = UIImagePickerControllerSourceType.camera
-                picker.showsCameraControls = true
-                picker.allowsEditing = false
+            var didSend = false
+            
+            for i in 0..<assets.count {
+                let asset = assets[i]
                 
-                self.present(picker, animated: true, completion: nil)
-            })
+                if (!asset.isVideo) {
+                    asset.fetchOriginalImageWithCompleteBlock( { (image, info) in
+                        if let img = image {
+                            if (self.sendPhotoToPeer(image: img)) {
+                                didSend = true
+                            }
+                        }
+                    })
+                }
+                else {
+                    //TODO: Need to decide what to do if video
+                    asset.fetchAVAsset(.none, completeBlock: { (video, info) in
+                        if let asset = video {
+                            if self.sendVideoToPeer(video: asset) {
+                                didSend = true
+                            }
+                        }
+                    })
+                }
+            }
             
-            let photoLibraryOption = UIAlertAction(title: "Photo Library", style: .default, handler: { (alert: UIAlertAction!) -> Void in
-                picker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-                picker.allowsEditing = false
-                self.present(picker, animated: true, completion: nil)
-            })
-            
-            let cancelOption = UIAlertAction(title: "Cancel", style: .cancel, handler: { (alert: UIAlertAction!) -> Void in
-                // do nothing
-            })
-            
-            optionMenu.addAction(cameraOption)
-            optionMenu.addAction(photoLibraryOption)
-            optionMenu.addAction(cancelOption)
-            
-            OperationQueue.main.addOperation { () -> Void in
-                self.present(optionMenu, animated: true, completion: nil)
+            if (didSend) {
+                JSQSystemSoundPlayer.jsq_playMessageSentSound()
             }
         }
+    }
+    
+    func sendPhotoToPeer(image: UIImage) -> Bool {
+        
+        let mediaItem = JSQPhotoMediaItem(image: nil)
+        mediaItem!.appliesMediaViewMaskAsOutgoing = true
+        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(image, 0.5)!)
+        
+        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
+        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
+
+        print("\(type(of: self)) > \(#function) > Attempting to send photo")
+        let didSend = appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)
+        if (didSend) {
+            print("\(type(of: self)) > \(#function) > Added image to messages")
+
+            messageObject.messages.append(jsqMessage!)
+            self.collectionView.reloadData()
+        }
+        else {
+            print("\(type(of: self)) > \(#function) > Failed to send...")
+        }
+
+        self.finishSendingMessage(animated: true)
+        print("\(type(of: self)) > \(#function) > Exit")
+        
+        if didSend {
+            return true
+        }
+        return false
+    }
+    
+    func sendVideoToPeer(video: AVAsset) -> Bool {
+        // TODO: Need to implement sending videos to chat
+//        let mediaItem = JSQVideoMediaItem()
+        
+        return true
     }
     
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, didTapMessageBubbleAt indexPath: IndexPath!) {
@@ -397,9 +449,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
             
             let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
-                
-                //Go back to PeerView
-                _ = self.navigationController?.popViewController(animated: true)
+                self.startDisconnectedMode()
             }
             
             alert.addAction(okAction)
@@ -414,7 +464,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         // Nothing to do here
     }
     
-    func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: Bool) {
+    func inviteWasReceived(_ fromPeer: MCPeerID, isPhoneCall: UInt8) {
         //TODO: Need to decide what to do if invite is received.
         
     }
@@ -443,44 +493,4 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         }
     }
     
-}
-
-
-@available(iOS 10.0, *)
-extension JSQChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    // When a photo from the photo library is taken
-    internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-    {
-        print("\(type(of: self)) > \(#function) > Entry")
-        
-        let picture = info[UIImagePickerControllerOriginalImage] as! UIImage
-        let mediaItem = JSQPhotoMediaItem(image: nil)
-        
-        mediaItem!.appliesMediaViewMaskAsOutgoing = true
-        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(picture, 0.5)!)
-        
-        let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
-        let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
-        
-        print("\(type(of: self)) > \(#function) > Attempting to send photo")
-        if (appDelegate.connectionManager.sendData(message: message, toPeer: messageObject.peerID)) {
-            print("\(type(of: self)) > \(#function) > Added image to messages")
-            
-            messageObject.messages.append(jsqMessage!)
-            
-            self.collectionView.reloadData()
-        }
-        else {
-            print("\(type(of: self)) > \(#function) > Failed to send...")
-        }
-
-        self.finishSendingMessage(animated: true)
-        print("\(type(of: self)) > \(#function) > Exit")
-        picker.dismiss(animated: true, completion: nil)
-    }
-    
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion:nil)
-    }
 }
