@@ -1,22 +1,84 @@
 PODS:
-  - DKImagePickerController (3.5.1):
-    - DKImagePickerController/Camera (= 3.5.1)
-    - DKImagePickerController/ImageManager (= 3.5.1)
-  - DKImagePickerController/Camera (3.5.1)
-  - DKImagePickerController/ImageManager (3.5.1)
-  - JSQMessagesViewController (7.3.4):
+  - CLImageEditor (0.2.0):
+    - CLImageEditor/Core (= 0.2.0)
+  - CLImageEditor/Core (0.2.0)
+  - DKCamera (1.5.3)
+  - DKImagePickerController (4.0.0):
+    - DKImagePickerController/Camera (= 4.0.0)
+    - DKImagePickerController/Core (= 4.0.0)
+    - DKImagePickerController/ImageDataManager (= 4.0.0)
+    - DKImagePickerController/InlineCamera (= 4.0.0)
+    - DKImagePickerController/PhotoEditor (= 4.0.0)
+    - DKImagePickerController/PhotoGallery (= 4.0.0)
+    - DKImagePickerController/Resource (= 4.0.0)
+  - DKImagePickerController/Camera (4.0.0):
+    - DKCamera (= 1.5.3)
+    - DKImagePickerController/Core
+  - DKImagePickerController/Core (4.0.0):
+    - DKImagePickerController/ImageDataManager
+    - DKImagePickerController/Resource
+  - DKImagePickerController/ImageDataManager (4.0.0)
+  - DKImagePickerController/InlineCamera (4.0.0):
+    - DKCamera (= 1.5.3)
+    - DKImagePickerController/Core
+  - DKImagePickerController/PhotoEditor (4.0.0):
+    - CLImageEditor (= 0.2.0)
+    - DKImagePickerController/Core
+  - DKImagePickerController/PhotoGallery (4.0.0):
+    - DKImagePickerController/Core
+    - DKPhotoGallery (= 0.0.7)
+  - DKImagePickerController/Resource (4.0.0)
+  - DKPhotoGallery (0.0.7):
+    - DKPhotoGallery/Core (= 0.0.7)
+    - DKPhotoGallery/Model (= 0.0.7)
+    - DKPhotoGallery/Preview (= 0.0.7)
+    - DKPhotoGallery/Resource (= 0.0.7)
+    - SDWebImage/GIF
+  - DKPhotoGallery/Core (0.0.7):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Preview
+    - SDWebImage/GIF
+  - DKPhotoGallery/Model (0.0.7):
+    - SDWebImage/GIF
+  - DKPhotoGallery/Preview (0.0.7):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Resource
+    - SDWebImage/GIF
+  - DKPhotoGallery/Resource (0.0.7):
+    - SDWebImage/GIF
+  - FLAnimatedImage (1.0.12)
+  - JSQMessagesViewController (7.3.5):
     - JSQSystemSoundPlayer (~> 2.0.1)
   - JSQSystemSoundPlayer (2.0.1)
+  - SDWebImage/Core (4.4.3)
+  - SDWebImage/GIF (4.4.3):
+    - FLAnimatedImage (~> 1.0)
+    - SDWebImage/Core
 
 DEPENDENCIES:
-  - DKImagePickerController
+  - DKImagePickerController (from `https://github.com/zhangao0086/DKImagePickerController.git`, branch `Swift4`)
   - JSQMessagesViewController
 
+EXTERNAL SOURCES:
+  DKImagePickerController:
+    :branch: Swift4
+    :git: https://github.com/zhangao0086/DKImagePickerController.git
+
+CHECKOUT OPTIONS:
+  DKImagePickerController:
+    :commit: fae0808a6670b3aedb80574df7c647d98c401458
+    :git: https://github.com/zhangao0086/DKImagePickerController.git
+
 SPEC CHECKSUMS:
-  DKImagePickerController: 8db7e76a88a7a66a893ba30e935cc4c9bb7ed335
-  JSQMessagesViewController: 39fed975e3c9f8eba7292071e29eeb541d105e66
+  CLImageEditor: ec5ae50b3a54c9818c0bdb243b20665a1c6718e3
+  DKCamera: 6077537273ffac6288071fbbbbf57d57c62e6803
+  DKImagePickerController: 33b5af00df291c0f50770be90440261c5e43e495
+  DKPhotoGallery: 7f07b6d8a47733fdd76856113c474456b92fc769
+  FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
+  JSQMessagesViewController: 6587f56aedbcb150a8ba1d968e1ef58b1bc758b7
   JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
+  SDWebImage: c5594f1a19c48d526d321e548902b56b479cd508
 
-PODFILE CHECKSUM: 6c1cc8fe7958c77b653cd16579d6e6cdd674cf55
+PODFILE CHECKSUM: 553c513251492f76608a965b1ae1a19c392e56cc
 
-COCOAPODS: 1.3.0.beta.2
+COCOAPODS: 1.3.1

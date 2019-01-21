@@ -65,7 +65,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     // This updates the latest message sent index
     func updateLatestMessagesIndex() {
         for i in 0..<messageObject.messages.count {
-            print("Sender ID = \(messageObject.messages[i].senderId) == uniqueID = \(self.appDelegate.connectionManager.uniqueID)")
+            print("Sender ID = \(String(describing: messageObject.messages[i].senderId)) == uniqueID = \(String(describing: self.appDelegate.connectionManager.uniqueID))")
             if (messageObject.messages[i].senderId == self.appDelegate.connectionManager.uniqueID) {
                 self.latestMessageSentIndex = i
             }
@@ -294,18 +294,18 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             for i in 0..<assets.count {
                 let asset = assets[i]
                 
-                if (!asset.isVideo) {
-                    asset.fetchOriginalImageWithCompleteBlock( { (image, info) in
+                if (asset.image != nil) {
+                    asset.fetchOriginalImage(completeBlock: ( { (image, info) in
                         if let img = image {
                             if (self.sendPhotoToPeer(image: img)) {
                                 didSend = true
                             }
                         }
-                    })
+                    }))
                 }
                 else {
                     //TODO: Need to decide what to do if video
-                    asset.fetchAVAsset(.none, completeBlock: { (video, info) in
+                    asset.fetchAVAsset(options: .none, completeBlock: { (video, info) in
                         if let asset = video {
                             if self.sendVideoToPeer(video: asset) {
                                 didSend = true
@@ -325,7 +325,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         
         let mediaItem = JSQPhotoMediaItem(image: nil)
         mediaItem!.appliesMediaViewMaskAsOutgoing = true
-        mediaItem!.image = UIImage(data: UIImageJPEGRepresentation(image, 0.5)!)
+        mediaItem!.image = UIImage(data: image.jpegData(compressionQuality: 0.5)!)
         
         let jsqMessage = JSQMessage(senderId: self.senderId, displayName: self.senderDisplayName, media: mediaItem)
         let message = MessageObject.init(peerID: messageObject.peerID, messages: [jsqMessage!])
@@ -378,7 +378,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
     
     //MARK: - Message Received
     
-    func receivedMessageObject(_ notification: Notification) {
+    @objc func receivedMessageObject(_ notification: Notification) {
         print("\(type(of: self)) > \(#function) > Message received")
         let newMessage = notification.object as! MessageObject
         
@@ -398,13 +398,13 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             self.collectionView.reloadData()
             
             let lastMessage: IndexPath = IndexPath.init(row: self.messageObject.messages.count-1, section: 0)
-            self.collectionView.scrollToItem(at: lastMessage, at: UICollectionViewScrollPosition.bottom, animated: true)
+            self.collectionView.scrollToItem(at: lastMessage, at: UICollectionView.ScrollPosition.bottom, animated: true)
         }
         
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
-    func receivedStandardMessage(_ notification: NSNotification) {
+    @objc func receivedStandardMessage(_ notification: NSNotification) {
         print("\(type(of: self)) > \(#function) > Entry")
         let newMessage = notification.object as! StandardMessage
         
@@ -446,9 +446,9 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > disconnected from peer \(peerID)")
         
         if (peerID == messageObject.peerID) {
-            let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+            let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(messageObject.peerID.displayName)", preferredStyle: UIAlertController.Style.alert)
             
-            let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+            let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (alertAction) -> Void in
                 self.startDisconnectedMode()
             }
             

@@ -38,7 +38,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         
         refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(AddPeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
+        refreshControl.addTarget(self, action: #selector(AddPeerViewController.refresh(sender:)), for: UIControl.Event.valueChanged)
         peerViewTable.addSubview(refreshControl)
         
         // Setting delegates
@@ -68,10 +68,10 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
         appDelegate.connectionManager.advertiser.startAdvertisingPeer()
         
         //only apply blur if the user hasn't disabled transparency effects
-        if !UIAccessibilityIsReduceTransparencyEnabled() {
+        if !UIAccessibility.isReduceTransparencyEnabled {
             self.backgroundView.backgroundColor = UIColor.clear
             
-            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+            let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
             let blurEffectView = UIVisualEffectView(effect: blurEffect)
             
             blurEffectView.frame = self.backgroundView.bounds
@@ -146,7 +146,7 @@ class AddPeerViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - TableViewDelegate Methods
     
     //Called to refresh the table
-    func refresh(sender: AnyObject) {
+    @objc func refresh(sender: AnyObject) {
         print("\(type(of: self)) > \(#function) > Refreshing table")
         
         self.appDelegate.generator.impactOccurred()     // Haptic feedback when the user refreshes the screen

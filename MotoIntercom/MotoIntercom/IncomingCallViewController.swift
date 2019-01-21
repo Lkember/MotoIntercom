@@ -47,10 +47,10 @@ class IncomingCallViewController: UIViewController {
         appDelegate = UIApplication.shared.delegate as! AppDelegate
         
         //only apply blur if the user hasn't disabled transparency effects
-        if !UIAccessibilityIsReduceTransparencyEnabled() {
+        if !UIAccessibility.isReduceTransparencyEnabled {
             self.backgroundView.backgroundColor = UIColor.clear
             
-            let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+            let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
             let blurEffectView = UIVisualEffectView(effect: blurEffect)
             
             blurEffectView.frame = self.backgroundView.bounds

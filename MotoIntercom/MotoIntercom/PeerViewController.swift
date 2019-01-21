@@ -57,7 +57,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Setting up the pull to refresh
         refreshControl = UIRefreshControl()
 //        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
-        refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControlEvents.valueChanged)
+        refreshControl.addTarget(self, action: #selector(PeerViewController.refresh(sender:)), for: UIControl.Event.valueChanged)
         peersTable.addSubview(refreshControl)
         
         //set the delegate to self, and start browsing for peers
@@ -103,7 +103,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     func getIndexForPeer(peer: MCPeerID) -> Int {
         print("\(type(of: self)) > \(#function) > Entry \(peer)")
         for i in 0..<messages.count {
-            print("\(type(of: self)) > \(#function) > \(i) \(messages[i].peerID)")
+            print("\(type(of: self)) > \(#function) > \(i) \(String(describing: messages[i].peerID))")
             if (messages[i].peerID == peer) {
                 print("\(type(of: self)) > \(#function) > Exit - Success")
                 return i
@@ -173,7 +173,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     //Called to refresh the table
-    func refresh(sender: AnyObject) {
+    @objc func refresh(sender: AnyObject) {
         print("\(type(of: self)) > \(#function) > Refreshing table")
         
         self.appDelegate.generator.impactOccurred()     // Haptic feedback when the user refreshes the screen
@@ -187,7 +187,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    func didReceiveMessageObject(_ notification: Notification) {
+    @objc func didReceiveMessageObject(_ notification: Notification) {
         print("\(type(of: self)) > \(#function) > Entry")
         
         // If currently visible
@@ -199,7 +199,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             let peerIndex = getIndexForPeer(peer: fromPeer)
         
-            print("\(type(of: self)) > \(#function) > message: \(newMessage.messages[0].text), from peer \(newMessage.peerID.displayName), peerIndex = \(peerIndex)")
+            print("\(type(of: self)) > \(#function) > message: \(String(describing: newMessage.messages[0].text)), from peer \(newMessage.peerID.displayName), peerIndex = \(peerIndex)")
             messages[peerIndex].messages.append(newMessage.messages[0])
             
             _ = appDelegate.connectionManager.sendData(stringMessage: delivered, toPeer: fromPeer)
@@ -240,7 +240,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    func didReceiveStandardMessage(_ notification: NSNotification) {
+    @objc func didReceiveStandardMessage(_ notification: NSNotification) {
         
         let newMessage = notification.object as! StandardMessage
         let fromPeer = newMessage.peerID!
@@ -252,7 +252,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("\(type(of: self)) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
             
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
-            self.addChildViewController(popOverView)
+            self.addChild(popOverView)
             
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
             popOverView.messages = self.messages
@@ -263,7 +263,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             OperationQueue.main.addOperation { () -> Void in
                 popOverView.view.frame = self.view.frame
                 self.view.addSubview(popOverView.view)
-                popOverView.didMove(toParentViewController: self)
+                popOverView.didMove(toParent: self)
             }
         }
         else if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
@@ -376,7 +376,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let tempCell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as UITableViewCell
                 
                 tempCell.textLabel?.text = "Searching for peers..."
-                tempCell.selectionStyle = UITableViewCellSelectionStyle.none
+                tempCell.selectionStyle = UITableViewCell.SelectionStyle.none
                 
                 print("\(type(of: self)) > \(#function) > Exit")
                 return tempCell
@@ -391,7 +391,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 cell.peerID = currPeer
                 cell.setPeerDisplayName(displayName: currPeer.displayName)
-                cell.selectionStyle = UITableViewCellSelectionStyle.blue
+                cell.selectionStyle = UITableViewCell.SelectionStyle.blue
                 cell.peerIsAvailable()
                 
                 let index = getIndexForPeer(peer: currPeer)
@@ -415,7 +415,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 cell.peerID = currPeer
                 cell.setPeerDisplayName(displayName: currPeer.displayName)
-                cell.selectionStyle = UITableViewCellSelectionStyle.none
+                cell.selectionStyle = UITableViewCell.SelectionStyle.none
                 cell.isUserInteractionEnabled = false
                 
                 var index = getIndexForPeer(peer: currPeer)
@@ -447,7 +447,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             cell.peerID = currPeer
             cell.setPeerDisplayName(displayName: currPeer.displayName)
-            cell.selectionStyle = UITableViewCellSelectionStyle.blue
+            cell.selectionStyle = UITableViewCell.SelectionStyle.blue
             cell.peerIsUnavailable()
             
             let index = getIndexForPeer(peer: currPeer)
@@ -608,15 +608,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         return true
     }
     
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
-        return UITableViewCellEditingStyle.delete
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return UITableViewCell.EditingStyle.delete
     }
     
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         print("\(type(of: self)) > \(#function) > Setting buttons")
         
-        let clearHistoryAction = UITableViewRowAction(style: UITableViewRowActionStyle.normal, title: "Clear", handler:{action, indexPath in
+        let clearHistoryAction = UITableViewRowAction(style: UITableViewRowAction.Style.normal, title: "Clear", handler:{action, indexPath in
             
             let unavailablePeers = self.getUnavailablePeers()
             
@@ -643,14 +643,14 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             return [clearHistoryAction]
         }
         else {
-            let removePeerAction = UITableViewRowAction(style: UITableViewRowActionStyle.destructive, title: "Delete", handler: {action, indexPath in
+            let removePeerAction = UITableViewRowAction(style: UITableViewRowAction.Style.destructive, title: "Delete", handler: {action, indexPath in
                 
                 let unavailablePeers = self.getUnavailablePeers()
                 let currPeer = unavailablePeers[indexPath.row]
                 let index = self.getIndexForPeer(peer: currPeer)
                 
                 self.messages.remove(at: index)
-                self.peersTable.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+                self.peersTable.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
                 
                 self.save()
             });
@@ -730,7 +730,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             // Create call overlay
             let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
-            self.addChildViewController(popOverView)
+            self.addChild(popOverView)
             
             // Getting index for the peer
             popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
@@ -746,7 +746,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             popOverView.view.frame = self.view.frame
             self.view.addSubview(popOverView.view)
-            popOverView.didMove(toParentViewController: self)
+            popOverView.didMove(toParent: self)
         }
         print("\(type(of: self)) > \(#function) > Exit")
     }
@@ -770,9 +770,9 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         if let currView = navigationController?.topViewController as? JSQChatViewController {
             print("\(type(of: self)) > \(#function) > topViewController is ChatView. ")
             if (peerID == currView.messageObject.peerID) {
-                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messageObject.peerID.displayName)", preferredStyle: UIAlertControllerStyle.alert)
+                let alert = UIAlertController(title: "Connection Lost", message: "You have lost connection to \(currView.messageObject.peerID.displayName)", preferredStyle: UIAlertController.Style.alert)
 
-                let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (alertAction) -> Void in
+                let okAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (alertAction) -> Void in
 
                     //Go back to PeerView
                     _ = self.navigationController?.popViewController(animated: true)
@@ -817,7 +817,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             var messageIsSet = false
             
             for message in messages {
-                print("\(type(of: self)) > \(#function) > Currently looking at messages from peer \(message.peerID)")
+                print("\(type(of: self)) > \(#function) > Currently looking at messages from peer \(String(describing: message.peerID))")
                 if (message.peerID == destinationPeerID) {
                     dest?.messageObject = message
                     messageIsSet = true
