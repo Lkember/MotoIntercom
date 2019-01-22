@@ -477,7 +477,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 let optionMenu = UIAlertController(title: nil, message: "Select an option", preferredStyle: .actionSheet)
                 
-                let phoneOption = UIAlertAction(title: "Voice", style: .default, handler: { (alert: UIAlertAction!) -> Void in
+                let phoneOption = UIAlertAction(title: "Voice Call", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
                     let check = self.appDelegate.connectionManager.findSinglePeerSession(peer: currCell.peerID!)
                     if (check == -1) {
@@ -510,7 +510,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                     }
                 })
                 
-                let chatOption = UIAlertAction(title: "Chat", style: .default, handler: { (alert: UIAlertAction!) -> Void in
+                let chatOption = UIAlertAction(title: "Text Chat", style: .default, handler: { (alert: UIAlertAction!) -> Void in
                     
                     currCell.removeNewMessageIcon()
                     print("\(type(of: self)) > \(#function) > Checking if connected to \(String(describing: currCell.peerID?.displayName))")
@@ -540,7 +540,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
                             self.isDestPeerIDSet = true
                         }
                         
-                        // Invite the peer to communicate
+                        // Invite the peer to a call
                         self.appDelegate.connectionManager.browser.invitePeer(currCell.peerID!, to: self.appDelegate.connectionManager.sessions[index], withContext: dataToSend, timeout: 20)
                         
                         // TODO: If the user declines the invitation, then delete the session
