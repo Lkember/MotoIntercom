@@ -441,14 +441,11 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
                 //---------------------------------------------------
                 // Sending the data to peer
                 
-//                print("\(type(of: self)) > \(#function) > curr: \(sum) -- average: \(self.averageInputVolume)")
-                
                 if (sum > self.averageInputVolume || !self.averageInputIsSet) {
                     let data = self.audioBufferToNSData(PCMBuffer: buffer)
                     
 //                    var output: Int = 0;
                     for i in 0..<self.peerOrganizer.outputStreams.count {
-//                        print("\(type(of: self)) > \(#function) > Sending data to peer: \(sum) > \(self.averageInputVolume) ")
                         if (self.peerOrganizer.outputStreamIsSet[i]) {
                             let stream = self.peerOrganizer.outputStreams[i]
                             _ = stream!.write(data.bytes.assumingMemoryBound(to: UInt8.self), maxLength: data.length)
@@ -551,33 +548,25 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
     
     // MARK: - Timer
     
-//    // Used to display how long the call has been going on for
-//    func updateTime() {
-//        print("\(type(of: self)) > \(#function) > Running...")
-//        if (outputStreamIsSet && inputStreamIsSet) {
-//            let currentTime = NSDate.timeIntervalSinceReferenceDate
-//            
-//            var elapsedTime = currentTime - startTime
-//            
-//            let minutes = UInt8(elapsedTime / 60)
-//            elapsedTime -= (TimeInterval(minutes) * 60)
-//            
-//            let seconds = UInt8(elapsedTime)
-//            
-//            let minuteString = String(format: "%02d", minutes)
-//            let secondString = String(format: "%02d", seconds)
-//            
-//            DispatchQueue.main.async {
-//                self.statusLabel.text = "\(minuteString):\(secondString)"
-//            }
-//            
-//            let second = Int(secondString)
-//            
-//            if (second! % 10 == 0) {
-//                print("\(type(of: self)) > \(#function) > Timer updated to \(minuteString):\(secondString)")
-//            }
-//        }
-//    }
+    // Used to display how long the call has been going on for
+    func updateTime() {
+        if (peerOrganizer.areAnyStreamsSet()) {
+            let currentTime = NSDate.timeIntervalSinceReferenceDate
+            var elapsedTime = currentTime - startTime
+            
+            let minutes = UInt8(elapsedTime / 60)
+            elapsedTime -= (TimeInterval(minutes) * 60)
+            
+            let seconds = UInt8(elapsedTime)
+            
+            let minuteString = String(format: "%02d", minutes)
+            let secondString = String(format: "%02d", seconds)
+            
+            DispatchQueue.main.async {
+                self.statusLabel.text = "\(minuteString):\(secondString)"
+            }
+        }
+    }
     
     
     // MARK: - Stream
@@ -1108,7 +1097,7 @@ class PhoneViewController: UIViewController, AVAudioRecorderDelegate, AVCaptureA
         }
         
         DispatchQueue.main.async {
-            self.statusLabel.text = "Connected"
+            self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in self.updateTime() } )
         }
         
         print("\(type(of: self)) > \(#function) > Exit")
