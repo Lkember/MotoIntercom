@@ -242,57 +242,58 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     @objc func didReceiveStandardMessage(_ notification: NSNotification) {
         
-        let newMessage = notification.object as! StandardMessage
-        let fromPeer = newMessage.peerID!
-        
-        print("\(type(of: self)) > \(#function) > Received message = \(newMessage.message)")
-        
-        if newMessage.message == incomingCall {
+        if let newMessage = notification.object as? StandardMessage {
+            let fromPeer = newMessage.peerID!
             
-            print("\(type(of: self)) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
+            print("\(type(of: self)) > \(#function) > Received message = \(newMessage.message)")
             
-            let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
-            self.addChild(popOverView)
-            
-            popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
-            popOverView.messages = self.messages
-            popOverView.peerDisplayName = fromPeer.displayName
-            
-            print("\(type(of: self)) > \(#function) > fromPeer=\(fromPeer.displayName)")
-            
-            OperationQueue.main.addOperation { () -> Void in
-                popOverView.view.frame = self.view.frame
-                self.view.addSubview(popOverView.view)
-                popOverView.didMove(toParent: self)
-            }
-        }
-        else if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
-            
-            DispatchQueue.main.async {
-            
-                let numRows = self.peersTable.numberOfRows(inSection: 0)
-//                var indexPathsToUpdate: [IndexPath] = []
+            if newMessage.message == incomingCall {
                 
-                for i in 0..<numRows {
-                    let currIndexPath = IndexPath.init(row: i, section: 0)
-                    let currCell = self.peersTable.cellForRow(at: currIndexPath) as! PeerTableViewCell
+                print("\(type(of: self)) > \(#function) > Incoming call from peer \(fromPeer.displayName)")
+                
+                let popOverView = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IncomingCall") as! IncomingCallViewController
+                self.addChild(popOverView)
+                
+                popOverView.peerIndex = self.getIndexForPeer(peer: fromPeer)
+                popOverView.messages = self.messages
+                popOverView.peerDisplayName = fromPeer.displayName
+                
+                print("\(type(of: self)) > \(#function) > fromPeer=\(fromPeer.displayName)")
+                
+                OperationQueue.main.addOperation { () -> Void in
+                    popOverView.view.frame = self.view.frame
+                    self.view.addSubview(popOverView.view)
+                    popOverView.didMove(toParent: self)
+                }
+            }
+            else if (newMessage.message == peerIsTyping || newMessage.message == peerStoppedTyping) {
+                
+                DispatchQueue.main.async {
+                
+                    let numRows = self.peersTable.numberOfRows(inSection: 0)
                     
-                    if currCell.peerID == newMessage.peerID {
-//                        indexPathsToUpdate.append(currIndexPath)
-                        if (newMessage.message == self.peerIsTyping) {
-                            currCell.peerIsTyping()
+                    for i in 0..<numRows {
+                        let currIndexPath = IndexPath.init(row: i, section: 0)
+                        if let currCell = self.peersTable.cellForRow(at: currIndexPath) as? PeerTableViewCell {
+                        
+                            if currCell.peerID == newMessage.peerID {
+                                if (newMessage.message == self.peerIsTyping) {
+                                    currCell.peerIsTyping()
+                                }
+                                else {
+                                    currCell.removeNewMessageIcon()
+                                }
+                            }
                         }
                         else {
-                            currCell.removeNewMessageIcon()
+                            // TODO: Notify the user that there was an error receiving messages
                         }
                     }
                 }
-            
-//                self.peersTable.reloadRows(at: indexPathsToUpdate, with: .fade)
             }
-        }
-        else if (newMessage.message == self.endingCall) {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "peerEndedCall"), object: newMessage)
+            else if (newMessage.message == self.endingCall) {
+                NotificationCenter.default.post(name: Notification.Name(rawValue: "peerEndedCall"), object: newMessage)
+            }
         }
     }
     
