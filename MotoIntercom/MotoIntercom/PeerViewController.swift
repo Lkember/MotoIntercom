@@ -68,6 +68,7 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
         //Adding an observer for when data is received
         NotificationCenter.default.addObserver(self, selector: #selector(didReceiveMessageObject(_:)), name: NSNotification.Name(rawValue: "receivedMessageObjectNotification"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didReceiveStandardMessage(_:)), name: NSNotification.Name(rawValue: "receivedStandardMessageNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(saveMessageFromUser(_:)), name: NSNotification.Name(rawValue: "SaveNewMessage"), object: nil)
         
         isDestPeerIDSet = false
         didAcceptCall = false
@@ -97,7 +98,6 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     // MARK: - Actions
-    
     
     // A function which returns the index for a given peer
     func getIndexForPeer(peer: MCPeerID) -> Int {
@@ -817,12 +817,10 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
             var messageIsSet = false
             
             for message in messages {
-                print("\(type(of: self)) > \(#function) > Currently looking at messages from peer \(String(describing: message.peerID))")
                 if (message.peerID == destinationPeerID) {
                     dest?.messageObject = message
                     messageIsSet = true
                     
-                    print("\(type(of: self)) > \(#function) > # of messages \(message.messages.count)")
                     break
                 }
             }
@@ -891,6 +889,15 @@ class PeerViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     //MARK: - Save and Load
+    // This is called from a notification within a message
+    @objc func saveMessageFromUser(_ notification: Notification) {
+        if let message = notification.object as? MessageObject {
+            let index = getIndexForPeer(peer: message.peerID)
+            messages[index] = message
+            save()
+            return
+        }
+    }
     
     // Save user information
     func save() {

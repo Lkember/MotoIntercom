@@ -122,6 +122,12 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         }
     }
 
+    // MARK: - Saving Messages
+    func sendSaveMessageNotification() {
+        // Send a notification to the PeerViewController to save the chat transcript
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "SaveNewMessage"), object: self.messageObject, userInfo: nil)
+    }
+    
     // MARK: - JSQMessagesViewController
     
     // Gets the data for the message at index
@@ -259,6 +265,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         
         if (appDelegate.connectionManager.sendData(message: message, toPeer: message.peerID)) {
             messageObject.messages.append(jsqMessage!)
+            sendSaveMessageNotification()
         }
         
         JSQSystemSoundPlayer.jsq_playMessageSentSound()
@@ -346,6 +353,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         print("\(type(of: self)) > \(#function) > Exit")
         
         if didSend {
+            sendSaveMessageNotification()
             return true
         }
         return false
@@ -385,6 +393,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
         //Vibrate
         JSQSystemSoundPlayer.jsq_playMessageReceivedAlert()
         
+        // Checking if media message or regular text message
         if (!newMessage.messages[0].isMediaMessage) {
             addMessage(withId: newMessage.messages[0].senderId, name: newMessage.messages[0].senderDisplayName, text: newMessage.messages[0].text)
         }
@@ -401,6 +410,7 @@ class JSQChatViewController: JSQMessagesViewController, ConnectionManagerDelegat
             self.collectionView.scrollToItem(at: lastMessage, at: UICollectionView.ScrollPosition.bottom, animated: true)
         }
         
+        sendSaveMessageNotification()
         print("\(type(of: self)) > \(#function) > Exit")
     }
     
